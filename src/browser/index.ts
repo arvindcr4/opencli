@@ -7,7 +7,7 @@
 
 export { Page } from './page.js';
 export { PlaywrightMCP } from './mcp.js';
-export { getTokenFingerprint, formatBrowserConnectError } from './errors.js';
+export { formatBrowserConnectError } from './errors.js';
 export type { ConnectFailureKind, ConnectFailureInput } from './errors.js';
 
 // Test-only helpers — exposed for unit tests

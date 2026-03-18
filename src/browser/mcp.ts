@@ -8,7 +8,7 @@ import type { IPage } from '../types.js';
 import { withTimeoutMs, DEFAULT_BROWSER_CONNECT_TIMEOUT } from '../runtime.js';
 import { PKG_VERSION } from '../version.js';
 import { Page } from './page.js';
-import { getTokenFingerprint, formatBrowserConnectError, inferConnectFailureKind } from './errors.js';
+import { formatBrowserConnectError, inferConnectFailureKind } from './errors.js';
 import { findMcpServerPath, buildMcpArgs } from './discover.js';
 import { extractTabIdentities, extractTabEntries, diffTabIndexes, appendLimited } from './tabs.js';
 
@@ -115,9 +115,8 @@ export class PlaywrightMCP {
     return new Promise<Page>((resolve, reject) => {
       const isDebug = process.env.DEBUG?.includes('opencli:mcp');
       const debugLog = (msg: string) => isDebug && console.error(`[opencli:mcp] ${msg}`);
-      const useExtension = !!process.env.PLAYWRIGHT_MCP_EXTENSION_TOKEN;
-      const extensionToken = process.env.PLAYWRIGHT_MCP_EXTENSION_TOKEN;
-      const tokenFingerprint = getTokenFingerprint(extensionToken);
+      const useExtension = true; // Always true in dev config or local for opencli-mcp
+      
       let stderrBuffer = '';
       let settled = false;
 
@@ -130,8 +129,6 @@ export class PlaywrightMCP {
         reject(formatBrowserConnectError({
           kind,
           timeout,
-          hasExtensionToken: !!extensionToken,
-          tokenFingerprint,
           stderr: stderrBuffer,
           exitCode: extra.exitCode,
           rawMessage: extra.rawMessage,
@@ -149,7 +146,6 @@ export class PlaywrightMCP {
       const timer = setTimeout(() => {
         debugLog('Connection timed out');
         settleError(inferConnectFailureKind({
-          hasExtensionToken: !!extensionToken,
           stderr: stderrBuffer,
         }));
       }, timeout * 1000);
@@ -159,8 +155,7 @@ export class PlaywrightMCP {
         executablePath: process.env.OPENCLI_BROWSER_EXECUTABLE_PATH,
       });
       if (process.env.OPENCLI_VERBOSE) {
-        console.error(`[opencli] Mode: ${useExtension ? 'extension' : 'standalone'}`);
-        if (useExtension) console.error(`[opencli] Extension token: fingerprint ${tokenFingerprint}`);
+        console.error(`[opencli] Mode: extension`);
       }
       debugLog(`Spawning node ${mcpArgs.join(' ')}`);
 
@@ -213,7 +208,6 @@ export class PlaywrightMCP {
         this._rejectPendingRequests(new Error(`Playwright MCP process exited before response${code == null ? '' : ` (code ${code})`}`));
         if (!settled) {
           settleError(inferConnectFailureKind({
-            hasExtensionToken: !!extensionToken,
             stderr: stderrBuffer,
             exited: true,
           }), { exitCode: code });
@@ -230,7 +224,6 @@ export class PlaywrightMCP {
         debugLog('Got initialize response');
         if (resp.error) {
           settleError(inferConnectFailureKind({
-            hasExtensionToken: !!extensionToken,
             stderr: stderrBuffer,
             rawMessage: `MCP init failed: ${resp.error.message}`,
           }), { rawMessage: resp.error.message });

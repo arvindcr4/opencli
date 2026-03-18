@@ -127,10 +127,10 @@ describe('browser helpers', () => {
     expect(existsSync).toHaveBeenCalledWith('/env/mcp/cli.js');
   });
 
-  it('discovers global @playwright/mcp from the current Node runtime prefix', () => {
+  it('discovers global opencli-mcp from the current Node runtime prefix', () => {
     const originalExecPath = process.execPath;
     const runtimeExecPath = '/opt/homebrew/Cellar/node/25.2.1/bin/node';
-    const runtimeGlobalMcp = '/opt/homebrew/Cellar/node/25.2.1/lib/node_modules/@playwright/mcp/cli.js';
+    const runtimeGlobalMcp = '/opt/homebrew/Cellar/node/25.2.1/lib/node_modules/opencli-mcp/packages/playwright-mcp/cli.js';
     Object.defineProperty(process, 'execPath', {
       value: runtimeExecPath,
       configurable: true,
@@ -155,9 +155,9 @@ describe('browser helpers', () => {
   it('falls back to npm root -g when runtime prefix lookup misses', () => {
     const originalExecPath = process.execPath;
     const runtimeExecPath = '/opt/homebrew/Cellar/node/25.2.1/bin/node';
-    const runtimeGlobalMcp = '/opt/homebrew/Cellar/node/25.2.1/lib/node_modules/@playwright/mcp/cli.js';
+    const runtimeGlobalMcp = '/opt/homebrew/Cellar/node/25.2.1/lib/node_modules/opencli-mcp/packages/playwright-mcp/cli.js';
     const npmRootGlobal = '/Users/jakevin/.nvm/versions/node/v22.14.0/lib/node_modules';
-    const npmGlobalMcp = '/Users/jakevin/.nvm/versions/node/v22.14.0/lib/node_modules/@playwright/mcp/cli.js';
+    const npmGlobalMcp = '/Users/jakevin/.nvm/versions/node/v22.14.0/lib/node_modules/opencli-mcp/packages/playwright-mcp/cli.js';
     Object.defineProperty(process, 'execPath', {
       value: runtimeExecPath,
       configurable: true,

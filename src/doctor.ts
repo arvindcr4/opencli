@@ -6,7 +6,7 @@ import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import chalk from 'chalk';
 import type { IPage } from './types.js';
-import { PlaywrightMCP, getTokenFingerprint } from './browser/index.js';
+import { PlaywrightMCP } from './browser/index.js';
 import { browserSession } from './runtime.js';
 
 const PLAYWRIGHT_SERVER_NAME = 'playwright';
@@ -27,7 +27,6 @@ export type ShellFileStatus = {
   path: string;
   exists: boolean;
   token: string | null;
-  fingerprint: string | null;
 };
 
 export type McpConfigFormat = 'json' | 'toml';
@@ -37,7 +36,6 @@ export type McpConfigStatus = {
   exists: boolean;
   format: McpConfigFormat;
   token: string | null;
-  fingerprint: string | null;
   writable: boolean;
   parseError?: string;
 };
@@ -51,15 +49,12 @@ export type ConnectivityResult = {
 export type DoctorReport = {
   cliVersion?: string;
   envToken: string | null;
-  envFingerprint: string | null;
   extensionToken: string | null;
-  extensionFingerprint: string | null;
   extensionInstalled: boolean;
   extensionBrowsers: string[];
   shellFiles: ShellFileStatus[];
   configs: McpConfigStatus[];
   recommendedToken: string | null;
-  recommendedFingerprint: string | null;
   connectivity?: ConnectivityResult;
   warnings: string[];
   issues: string[];
@@ -80,9 +75,9 @@ function statusLine(status: ReportStatus, text: string): string {
   return `${colorLabel(status)} ${text}`;
 }
 
-function tokenSummary(token: string | null, fingerprint: string | null): string {
+function tokenSummary(token: string | null): string {
   if (!token) return chalk.dim('missing');
-  return `configured ${chalk.dim(`(${fingerprint})`)}`;
+  return `configured`;
 }
 
 export function shortenPath(p: string): string {
@@ -145,97 +140,7 @@ export function readTokenFromShellContent(content: string): string | null {
   return m?.[3] ?? null;
 }
 
-export function upsertShellToken(content: string, token: string, filePath?: string): string {
-  if (filePath && isFishConfig(filePath)) {
-    // Fish shell uses `set -gx` instead of `export`
-    const fishLine = `set -gx ${PLAYWRIGHT_TOKEN_ENV} "${token}"`;
-    const fishRe = /^\s*set\s+(-gx\s+)?PLAYWRIGHT_MCP_EXTENSION_TOKEN\s+.*/m;
-    if (!content.trim()) return `${fishLine}\n`;
-    if (fishRe.test(content)) return content.replace(fishRe, fishLine);
-    return `${content.replace(/\s*$/, '')}\n${fishLine}\n`;
-  }
-  const nextLine = `export ${PLAYWRIGHT_TOKEN_ENV}="${token}"`;
-  if (!content.trim()) return `${nextLine}\n`;
-  if (TOKEN_LINE_RE.test(content)) return content.replace(TOKEN_LINE_RE, `$1"${
-    token
-  }"`);
-  return `${content.replace(/\s*$/, '')}\n${nextLine}\n`;
-}
 
-function readJsonConfigToken(content: string): string | null {
-  try {
-    const parsed = JSON.parse(content);
-    return readTokenFromJsonObject(parsed);
-  } catch {
-    return null;
-  }
-}
-
-function readTokenFromJsonObject(parsed: any): string | null {
-  const direct = parsed?.mcpServers?.[PLAYWRIGHT_SERVER_NAME]?.env?.[PLAYWRIGHT_TOKEN_ENV];
-  if (typeof direct === 'string' && direct) return direct;
-  const opencode = parsed?.mcp?.[PLAYWRIGHT_SERVER_NAME]?.environment?.[PLAYWRIGHT_TOKEN_ENV];
-  if (typeof opencode === 'string' && opencode) return opencode;
-  return null;
-}
-
-export function upsertJsonConfigToken(content: string, token: string, filePath?: string): string {
-  const parsed = content.trim() ? JSON.parse(content) : {};
-
-  // Determine format: use OpenCode format only if explicitly an opencode config,
-  // or if the existing content already uses `mcp` key (not `mcpServers`)
-  const useOpenCodeFormat = filePath
-    ? isOpenCodeConfig(filePath)
-    : (!parsed.mcpServers && parsed.mcp);
-
-  if (useOpenCodeFormat) {
-    parsed.mcp = parsed.mcp ?? {};
-    parsed.mcp[PLAYWRIGHT_SERVER_NAME] = parsed.mcp[PLAYWRIGHT_SERVER_NAME] ?? {
-      command: ['npx', '-y', '@playwright/mcp@latest', '--extension'],
-      enabled: true,
-      type: 'local',
-    };
-    parsed.mcp[PLAYWRIGHT_SERVER_NAME].environment = parsed.mcp[PLAYWRIGHT_SERVER_NAME].environment ?? {};
-    parsed.mcp[PLAYWRIGHT_SERVER_NAME].environment[PLAYWRIGHT_TOKEN_ENV] = token;
-  } else {
-    parsed.mcpServers = parsed.mcpServers ?? {};
-    parsed.mcpServers[PLAYWRIGHT_SERVER_NAME] = parsed.mcpServers[PLAYWRIGHT_SERVER_NAME] ?? {
-      command: 'npx',
-      args: ['-y', '@playwright/mcp@latest', '--extension'],
-    };
-    parsed.mcpServers[PLAYWRIGHT_SERVER_NAME].env = parsed.mcpServers[PLAYWRIGHT_SERVER_NAME].env ?? {};
-    parsed.mcpServers[PLAYWRIGHT_SERVER_NAME].env[PLAYWRIGHT_TOKEN_ENV] = token;
-  }
-  return `${JSON.stringify(parsed, null, 2)}\n`;
-}
-
-export function readTomlConfigToken(content: string): string | null {
-  const sectionMatch = content.match(/\[mcp_servers\.playwright\.env\][\s\S]*?(?=\n\[|$)/);
-  if (!sectionMatch) return null;
-  const tokenMatch = sectionMatch[0].match(/^\s*PLAYWRIGHT_MCP_EXTENSION_TOKEN\s*=\s*"([^"\n]+)"/m);
-  return tokenMatch?.[1] ?? null;
-}
-
-export function upsertTomlConfigToken(content: string, token: string): string {
-  const envSectionRe = /(\[mcp_servers\.playwright\.env\][\s\S]*?)(?=\n\[|$)/;
-  const tokenLine = `PLAYWRIGHT_MCP_EXTENSION_TOKEN = "${token}"`;
-  if (envSectionRe.test(content)) {
-    return content.replace(envSectionRe, (section) => {
-      if (/^\s*PLAYWRIGHT_MCP_EXTENSION_TOKEN\s*=/m.test(section)) {
-        return section.replace(/^\s*PLAYWRIGHT_MCP_EXTENSION_TOKEN\s*=.*$/m, tokenLine);
-      }
-      return `${section.replace(/\s*$/, '')}\n${tokenLine}\n`;
-    });
-  }
-
-  const baseSectionRe = /(\[mcp_servers\.playwright\][\s\S]*?)(?=\n\[|$)/;
-  if (baseSectionRe.test(content)) {
-    return content.replace(baseSectionRe, (section) => `${section.replace(/\s*$/, '')}\n\n[mcp_servers.playwright.env]\n${tokenLine}\n`);
-  }
-
-  const prefix = content.trim() ? `${content.replace(/\s*$/, '')}\n\n` : '';
-  return `${prefix}[mcp_servers.playwright]\ntype = "stdio"\ncommand = "npx"\nargs = ["-y", "@playwright/mcp@latest", "--extension"]\n\n[mcp_servers.playwright.env]\n${tokenLine}\n`;
-}
 
 export function fileExists(filePath: string): boolean {
   try {
@@ -261,17 +166,17 @@ function canWrite(filePath: string): boolean {
 function readConfigStatus(filePath: string): McpConfigStatus {
   const format: McpConfigFormat = filePath.endsWith('.toml') ? 'toml' : 'json';
   if (!fileExists(filePath)) {
-    return { path: filePath, exists: false, format, token: null, fingerprint: null, writable: canWrite(filePath) };
+    return { path: filePath, exists: false, format, token: null, writable: canWrite(filePath) };
   }
   try {
     const content = fs.readFileSync(filePath, 'utf-8');
-    const token = format === 'toml' ? readTomlConfigToken(content) : readJsonConfigToken(content);
+    // Deprecated token extraction.
+    const token = null;
     return {
       path: filePath,
       exists: true,
       format,
       token,
-      fingerprint: getTokenFingerprint(token ?? undefined),
       writable: canWrite(filePath),
     };
   } catch (error: any) {
@@ -280,7 +185,6 @@ function readConfigStatus(filePath: string): McpConfigStatus {
       exists: true,
       format,
       token: null,
-      fingerprint: null,
       writable: canWrite(filePath),
       parseError: error?.message ?? String(error),
     };
@@ -518,10 +422,10 @@ export async function runBrowserDoctor(opts: DoctorOptions = {}): Promise<Doctor
   const envToken = process.env[PLAYWRIGHT_TOKEN_ENV] ?? null;
   const shellPath = opts.shellRc ?? getDefaultShellRcPath();
   const shellFiles: ShellFileStatus[] = [shellPath].map((filePath) => {
-    if (!fileExists(filePath)) return { path: filePath, exists: false, token: null, fingerprint: null };
+    if (!fileExists(filePath)) return { path: filePath, exists: false, token: null };
     const content = fs.readFileSync(filePath, 'utf-8');
     const token = readTokenFromShellContent(content);
-    return { path: filePath, exists: true, token, fingerprint: getTokenFingerprint(token ?? undefined) };
+    return { path: filePath, exists: true, token };
   });
   const configPaths = opts.configPaths?.length ? opts.configPaths : getDefaultMcpConfigPaths();
   const configs = configPaths.map(readConfigStatus);
@@ -551,44 +455,29 @@ export async function runBrowserDoctor(opts: DoctorOptions = {}): Promise<Doctor
   const report: DoctorReport = {
     cliVersion: opts.cliVersion,
     envToken,
-    envFingerprint: getTokenFingerprint(envToken ?? undefined),
     extensionToken,
-    extensionFingerprint: getTokenFingerprint(extensionToken ?? undefined),
     extensionInstalled: extInstall.installed,
     extensionBrowsers: extInstall.browsers,
     shellFiles,
     configs,
     recommendedToken,
-    recommendedFingerprint: getTokenFingerprint(recommendedToken ?? undefined),
     connectivity,
     warnings: [],
     issues: [],
   };
 
-  if (!extInstall.installed) report.issues.push('Playwright MCP Bridge extension is not installed in any browser.');
-  if (!envToken) report.issues.push(`Current environment is missing ${PLAYWRIGHT_TOKEN_ENV}.`);
-  if (!shellFiles.some(s => s.token)) report.issues.push('Shell startup file does not export PLAYWRIGHT_MCP_EXTENSION_TOKEN.');
-  if (!configs.some(c => c.token)) report.issues.push('No scanned MCP config currently contains a Playwright extension token.');
-  if (uniqueTokens.length > 1) report.issues.push('Detected inconsistent Playwright MCP tokens across env/config files.');
+  if (!extInstall.installed) report.issues.push('OpenCLI MCP Bridge extension is not installed in any browser.');
   if (connectivity && !connectivity.ok) report.issues.push(`Browser connectivity test failed: ${connectivity.error ?? 'unknown'}`);
   for (const config of configs) {
     if (config.parseError) report.warnings.push(`Could not parse ${config.path}: ${config.parseError}`);
   }
   if (!recommendedToken) {
-    report.warnings.push('No token source found.');
+    //
   }
   return report;
 }
 
 export function renderBrowserDoctorReport(report: DoctorReport): string {
-  const tokenFingerprints = [
-    report.extensionFingerprint,
-    report.envFingerprint,
-    ...report.shellFiles.map(shell => shell.fingerprint),
-    ...report.configs.filter(config => config.exists).map(config => config.fingerprint),
-  ].filter((value): value is string => !!value);
-  const uniqueFingerprints = [...new Set(tokenFingerprints)];
-  const hasMismatch = uniqueFingerprints.length > 1;
   const lines = [chalk.bold(`opencli v${report.cliVersion ?? 'unknown'} doctor`), ''];
 
   const installStatus: ReportStatus = report.extensionInstalled ? 'OK' : 'MISSING';
@@ -597,17 +486,17 @@ export function renderBrowserDoctorReport(report: DoctorReport): string {
     : 'Extension not installed in any browser';
   lines.push(statusLine(installStatus, installDetail));
 
-  const extStatus: ReportStatus = !report.extensionToken ? 'MISSING' : hasMismatch ? 'MISMATCH' : 'OK';
-  lines.push(statusLine(extStatus, `Extension token (Chrome LevelDB): ${tokenSummary(report.extensionToken, report.extensionFingerprint)}`));
+  const extStatus: ReportStatus = 'OK';
+  lines.push(statusLine(extStatus, `Extension token (Chrome LevelDB): ${tokenSummary(report.extensionToken)}`));
 
-  const envStatus: ReportStatus = !report.envToken ? 'MISSING' : hasMismatch ? 'MISMATCH' : 'OK';
-  lines.push(statusLine(envStatus, `Environment token: ${tokenSummary(report.envToken, report.envFingerprint)}`));
+  const envStatus: ReportStatus = 'OK';
+  lines.push(statusLine(envStatus, `Environment token: ${tokenSummary(report.envToken)}`));
 
   for (const shell of report.shellFiles) {
-    const shellStatus: ReportStatus = !shell.token ? 'MISSING' : hasMismatch ? 'MISMATCH' : 'OK';
+    const shellStatus: ReportStatus = 'OK';
     const tool = toolName(shell.path);
     const suffix = tool ? chalk.dim(` [${tool}]`) : '';
-    lines.push(statusLine(shellStatus, `${shortenPath(shell.path)}${suffix}: ${tokenSummary(shell.token, shell.fingerprint)}`));
+    lines.push(statusLine(shellStatus, `${shortenPath(shell.path)}${suffix}: ${tokenSummary(shell.token)}`));
   }
   const existingConfigs = report.configs.filter(config => config.exists);
   const missingConfigCount = report.configs.length - existingConfigs.length;
@@ -618,12 +507,10 @@ export function renderBrowserDoctorReport(report: DoctorReport): string {
         ? 'WARN'
         : !config.token
           ? 'MISSING'
-          : hasMismatch
-            ? 'MISMATCH'
-            : 'OK';
+          : 'OK';
       const tool = toolName(config.path);
       const suffix = tool ? chalk.dim(` [${tool}]`) : '';
-      lines.push(statusLine(configStatus, `${shortenPath(config.path)}${suffix}: ${tokenSummary(config.token, config.fingerprint)}${parseSuffix}`));
+      lines.push(statusLine(configStatus, `${shortenPath(config.path)}${suffix}: ${tokenSummary(config.token)}${parseSuffix}`));
     }
   } else {
     lines.push(statusLine('MISSING', 'MCP config: no existing config files found'));
@@ -643,8 +530,8 @@ export function renderBrowserDoctorReport(report: DoctorReport): string {
   }
 
   lines.push(statusLine(
-    hasMismatch ? 'MISMATCH' : report.recommendedToken ? 'OK' : 'WARN',
-    `Recommended token fingerprint: ${report.recommendedFingerprint ?? 'unavailable'}`,
+    'OK',
+    `Token Configuration: Not required for OpenCLI MCP`,
   ));
   if (report.issues.length) {
     lines.push('', chalk.yellow('Issues:'));
@@ -673,48 +560,6 @@ export function writeFileWithMkdir(filePath: string, content: string): void {
 }
 
 export async function applyBrowserDoctorFix(report: DoctorReport, opts: DoctorOptions = {}): Promise<string[]> {
-  const token = opts.token ?? report.recommendedToken;
-  if (!token) throw new Error('No Playwright MCP token is available to write. Provide --token first.');
-  const fp = getTokenFingerprint(token);
-
-  const plannedWrites: string[] = [];
-  const shellPath = opts.shellRc ?? report.shellFiles[0]?.path ?? getDefaultShellRcPath();
-  const shellStatus = report.shellFiles.find(s => s.path === shellPath);
-  if (shellStatus?.fingerprint !== fp) plannedWrites.push(shellPath);
-  for (const config of report.configs) {
-    if (!config.writable) continue;
-    if (config.fingerprint === fp) continue; // already correct
-    plannedWrites.push(config.path);
-  }
-
-  if (plannedWrites.length === 0) {
-    console.log(chalk.green('All config files are already up to date.'));
-    return [];
-  }
-
-  if (!opts.yes) {
-    const ok = await confirmPrompt(`Update ${plannedWrites.length} file(s) with Playwright MCP token fingerprint ${fp}?`);
-    if (!ok) return [];
-  }
-
-  const written: string[] = [];
-  if (plannedWrites.includes(shellPath)) {
-    const shellBefore = fileExists(shellPath) ? fs.readFileSync(shellPath, 'utf-8') : '';
-    writeFileWithMkdir(shellPath, upsertShellToken(shellBefore, token, shellPath));
-    written.push(shellPath);
-  }
-
-  for (const config of report.configs) {
-    if (!plannedWrites.includes(config.path)) continue;
-    if (config.parseError) continue;
-    const before = fileExists(config.path) ? fs.readFileSync(config.path, 'utf-8') : '';
-    const next = config.format === 'toml'
-      ? upsertTomlConfigToken(before, token)
-      : upsertJsonConfigToken(before, token, config.path);
-    writeFileWithMkdir(config.path, next);
-    written.push(config.path);
-  }
-
-  process.env[PLAYWRIGHT_TOKEN_ENV] = token;
-  return written;
+  console.log(chalk.green('OpenCLI MCP Bridge does not require token configuration!'));
+  return [];
 }

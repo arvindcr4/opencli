@@ -7,6 +7,7 @@ export default defineConfig({
         test: {
           name: 'unit',
           include: ['src/**/*.test.ts'],
+          sequence: { groupOrder: 1 },
         },
       },
       {
@@ -14,6 +15,7 @@ export default defineConfig({
           name: 'e2e',
           include: ['tests/**/*.test.ts'],
           maxWorkers: 2,
+          sequence: { groupOrder: 2 },
         },
       },
     ],
