@@ -2057,6 +2057,16 @@
   },
   {
     "site": "chatgpt",
+    "name": "summarize",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/summarize.js"
+  },
+  {
+    "site": "chatgpt",
     "name": "switch",
     "description": "Switch ChatGPT model (instant/gpt-4o, thinking/o3, pro/o3-pro)",
     "strategy": "public",
@@ -2130,6 +2140,16 @@
       "Text"
     ],
     "timeout": 3600
+  },
+  {
+    "site": "chatgpt",
+    "name": "translate",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/translate.js"
   },
   {
     "site": "chatgpt",
@@ -3319,6 +3339,16 @@
   },
   {
     "site": "claude",
+    "name": "summarize",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/summarize.js"
+  },
+  {
+    "site": "claude",
     "name": "switch",
     "description": "Switch Claude.ai model (opus, sonnet, haiku)",
     "strategy": "cookie",
@@ -3347,6 +3377,16 @@
       "Model",
       "Status"
     ]
+  },
+  {
+    "site": "claude",
+    "name": "translate",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/translate.js"
   },
   {
     "site": "claude",
@@ -5051,6 +5091,16 @@
   },
   {
     "site": "gemini",
+    "name": "summarize",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/summarize.js"
+  },
+  {
+    "site": "gemini",
     "name": "switch",
     "description": "Switch Gemini model (flash, pro, advanced, ultra, exp)",
     "strategy": "cookie",
@@ -5080,6 +5130,16 @@
       "Model",
       "Status"
     ]
+  },
+  {
+    "site": "gemini",
+    "name": "translate",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/translate.js"
   },
   {
     "site": "gemini",
@@ -5986,6 +6046,16 @@
   },
   {
     "site": "grok",
+    "name": "summarize",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/summarize.js"
+  },
+  {
+    "site": "grok",
     "name": "switch",
     "description": "Switch the Grok model (grok-3, grok-3-mini, grok-2, etc.)",
     "strategy": "cookie",
@@ -6045,6 +6115,16 @@
       "Text"
     ],
     "timeout": 600
+  },
+  {
+    "site": "grok",
+    "name": "translate",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/translate.js"
   },
   {
     "site": "grok",
