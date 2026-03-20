@@ -2214,6 +2214,37 @@
   },
   {
     "site": "claude",
+    "name": "switch",
+    "description": "Switch Claude.ai model (opus, sonnet, haiku)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "model",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Model to switch to: opus | sonnet | haiku | opus-4 | sonnet-4",
+        "choices": [
+          "opus",
+          "sonnet",
+          "haiku",
+          "opus-4",
+          "sonnet-4",
+          "claude-4"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/switch.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Model",
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
     "name": "upload",
     "description": "Upload a local file to Claude.ai and optionally send with a message",
     "strategy": "cookie",
@@ -3156,6 +3187,42 @@
   },
   {
     "site": "gemini",
+    "name": "export",
+    "description": "Export the current Gemini conversation to a local file (markdown or JSON)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "output",
+        "type": "str",
+        "default": "./gemini-export.md)",
+        "required": false,
+        "positional": true,
+        "help": "Output file path (default: ./gemini-export.md)"
+      },
+      {
+        "name": "format",
+        "type": "str",
+        "default": "md)",
+        "required": false,
+        "help": "Output format: md | json (default: md)",
+        "choices": [
+          "md",
+          "json"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/export.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "File",
+      "Messages",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "history",
     "description": "Read all messages in the current Gemini conversation",
     "strategy": "cookie",
@@ -3383,6 +3450,42 @@
   },
   {
     "site": "grok",
+    "name": "export",
+    "description": "Export the current Grok conversation to a local file (markdown or JSON)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "output",
+        "type": "str",
+        "default": "./grok-export.md)",
+        "required": false,
+        "positional": true,
+        "help": "Output file path (default: ./grok-export.md)"
+      },
+      {
+        "name": "format",
+        "type": "str",
+        "default": "md)",
+        "required": false,
+        "help": "Output format: md | json (default: md)",
+        "choices": [
+          "md",
+          "json"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/export.js",
+    "domain": "grok.com",
+    "columns": [
+      "File",
+      "Messages",
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
     "name": "history",
     "description": "Read all messages in the current Grok conversation",
     "strategy": "cookie",
@@ -3410,6 +3513,20 @@
       "#",
       "Role",
       "Text"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "new",
+    "description": "Start a new Grok conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/new.js",
+    "domain": "grok.com",
+    "columns": [
+      "Status"
     ]
   },
   {

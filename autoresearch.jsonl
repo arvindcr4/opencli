@@ -2,3 +2,4 @@
 {"run":1,"commit":"90f8404","metric":7,"metrics":{"typecheck_errors":0},"status":"keep","description":"baseline: ask, deepresearch, new, promode, read, send, status","timestamp":1774001278,"segment":0}
 {"run":2,"commit":"7c2dfee","metric":18,"metrics":{"typecheck_errors":0},"status":"keep","description":"add 11 new commands: conversations, history, wait, stop, switch, goto, share, projects, image, upload, poll","timestamp":1774001478,"segment":0}
 {"run":3,"commit":"eebdab5","metric":42,"metrics":{"typecheck_errors":0},"status":"keep","description":"full AI suite: gemini/claude/grok commands + chatgpt search/memory/export/rename/poll","timestamp":1774001798,"segment":0}
+{"run":4,"commit":"a6c5e24","metric":51,"metrics":{"typecheck_errors":0},"status":"keep","description":"gemini deepresearch/conversations/switch + claude research/upload/export + grok research/think/conversations","timestamp":1774002058,"segment":0}
