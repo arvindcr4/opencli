@@ -2030,6 +2030,42 @@
   },
   {
     "site": "claude",
+    "name": "export",
+    "description": "Export the current Claude.ai conversation to a local file (markdown or JSON)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "output",
+        "type": "str",
+        "default": "./claude-export.md)",
+        "required": false,
+        "positional": true,
+        "help": "Output file path (default: ./claude-export.md)"
+      },
+      {
+        "name": "format",
+        "type": "str",
+        "default": "md)",
+        "required": false,
+        "help": "Output format: md | json (default: md)",
+        "choices": [
+          "md",
+          "json"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/export.js",
+    "domain": "claude.ai",
+    "columns": [
+      "File",
+      "Messages",
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
     "name": "history",
     "description": "Read all messages in the current Claude.ai conversation",
     "strategy": "cookie",
@@ -2121,6 +2157,49 @@
   },
   {
     "site": "claude",
+    "name": "research",
+    "description": "Submit a research query to Claude.ai with extended thinking enabled and wait for full report",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Research query"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "1200)",
+        "required": false,
+        "help": "Max seconds to wait (default: 1200)"
+      },
+      {
+        "name": "model",
+        "type": "str",
+        "default": "opus)",
+        "required": false,
+        "help": "Claude model to use: opus | sonnet | haiku (default: opus)",
+        "choices": [
+          "opus",
+          "sonnet",
+          "haiku"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/research.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 3600
+  },
+  {
+    "site": "claude",
     "name": "stop",
     "description": "Stop the current Claude.ai response generation",
     "strategy": "cookie",
@@ -2130,6 +2209,36 @@
     "modulePath": "claude/stop.js",
     "domain": "claude.ai",
     "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "upload",
+    "description": "Upload a local file to Claude.ai and optionally send with a message",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "file",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Path to the local file to upload"
+      },
+      {
+        "name": "message",
+        "type": "str",
+        "default": "",
+        "required": false,
+        "help": "Optional message to send with the file"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/upload.js",
+    "domain": "claude.ai",
+    "columns": [
+      "File",
       "Status"
     ]
   },
@@ -2985,6 +3094,68 @@
   },
   {
     "site": "gemini",
+    "name": "conversations",
+    "description": "List Gemini conversations; optionally navigate to one by index",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "index",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Conversation index to navigate to (1-based)"
+      },
+      {
+        "name": "limit",
+        "type": "str",
+        "default": "20)",
+        "required": false,
+        "help": "Max conversations to show (default: 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/conversations.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "#",
+      "Title",
+      "Active"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "deepresearch",
+    "description": "Submit a Deep Research query to Gemini and wait for the full report",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Research query"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "1800)",
+        "required": false,
+        "help": "Max seconds to wait for report (default: 1800)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/deepresearch.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 3600
+  },
+  {
+    "site": "gemini",
     "name": "history",
     "description": "Read all messages in the current Gemini conversation",
     "strategy": "cookie",
@@ -3059,6 +3230,38 @@
   },
   {
     "site": "gemini",
+    "name": "switch",
+    "description": "Switch Gemini model (flash, pro, advanced, ultra, exp)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "model",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Model to switch to: flash | pro | advanced | ultra | exp | 2.0 | 1.5",
+        "choices": [
+          "flash",
+          "pro",
+          "advanced",
+          "ultra",
+          "exp",
+          "2.0",
+          "1.5"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/switch.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Model",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "wait",
     "description": "Wait for Gemini to finish generating, then return the response",
     "strategy": "cookie",
@@ -3114,6 +3317,37 @@
     "domain": "grok.com",
     "columns": [
       "response"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "conversations",
+    "description": "List Grok conversations; optionally navigate to one by index",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "index",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Conversation index to navigate to (1-based)"
+      },
+      {
+        "name": "limit",
+        "type": "str",
+        "default": "20)",
+        "required": false,
+        "help": "Max conversations to show (default: 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/conversations.js",
+    "domain": "grok.com",
+    "columns": [
+      "#",
+      "Title",
+      "Active"
     ]
   },
   {
@@ -3195,6 +3429,44 @@
   },
   {
     "site": "grok",
+    "name": "research",
+    "description": "Submit a research query to Grok using DeepSearch + Think mode for a comprehensive report",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Research query"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "600)",
+        "required": false,
+        "help": "Max seconds to wait (default: 600)"
+      },
+      {
+        "name": "mode",
+        "type": "str",
+        "default": "both)",
+        "required": false,
+        "help": "Research mode: deepsearch | think | both (default: both)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/research.js",
+    "domain": "grok.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 3600
+  },
+  {
+    "site": "grok",
     "name": "stop",
     "description": "Stop the current Grok generation",
     "strategy": "cookie",
@@ -3206,6 +3478,37 @@
     "columns": [
       "Status"
     ]
+  },
+  {
+    "site": "grok",
+    "name": "think",
+    "description": "Submit a query to Grok using Think/reasoning mode",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Query for Grok Think mode"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "300)",
+        "required": false,
+        "help": "Max seconds to wait (default: 300)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/think.js",
+    "domain": "grok.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 600
   },
   {
     "site": "grok",

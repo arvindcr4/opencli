@@ -31,3 +31,36 @@
 - Add `poll.ts`: return when generation completes + return result (combines wait + read)
 - Add `search.ts`: use ChatGPT web search mode
 - Add `canvas.ts`: open canvas editing mode
+
+### Run 2: 11 new chatgpt commands — feature_count=18 (KEEP)
+- Timestamp: 2026-03-20
+- What changed: conversations, history, wait, stop, switch, goto, share, projects, image, upload, poll
+- Result: 18 features, 0 typecheck errors
+- Insight: CDPBridge import path is ../../browser/cdp.js not ../browser/cdp.js (2 levels up from clis/chatgpt/)
+- Next: expand to gemini, grok, claude
+
+### Run 3: full AI control suite — feature_count=42 (KEEP)
+- Timestamp: 2026-03-20
+- What changed: Added gemini (6), claude (8), grok more commands (5); chatgpt search/memory/export/rename/poll
+- Result: 42 features, 0 typecheck errors, 500% improvement over baseline
+- Insight: All 4 major AI assistants now have core control: ask/read/history/wait/stop
+- Next: add conversations to gemini/grok, promode equivalent for Gemini Advanced/Ultra
+
+### Key Insights (updated)
+- CDPBridge path: ../../browser/cdp.js (from clis/{site}/)
+- isGenerating() pattern works: check for stop button data-testid or text "stop"
+- Gemini DOM: model-response, user-query elements; stop has aria-label
+- Claude DOM: [data-message-author-role], [data-is-streaming="true"]
+- Grok DOM: .message-bubble, div.message-bubble; stop button text-based
+- build-manifest auto-scans all .ts files in clis/* — new commands auto-register
+- Utility ax.ts files are excluded from feature_count metric
+
+### Next Ideas
+- gemini/conversations — list gem conversations from sidebar
+- gemini/switch — switch to Advanced/1.5 Pro/etc.
+- grok/think — use reasoning/think mode
+- grok/conversations — list conversations
+- claude/upload — upload file to claude.ai
+- claude/export — export claude conversation
+- chatgpt/promode: add --model flag to pick o4-mini/o3/o3-pro from CLI
+- Improve chatgpt/ask: add isThinking guard like promode for better stability
