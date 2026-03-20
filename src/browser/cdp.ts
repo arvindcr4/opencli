@@ -122,7 +122,25 @@ class CDPPage implements IPage {
   }
 
   async snapshot(opts?: any): Promise<any> {
-    throw new Error('Method not implemented.');
+    const code = `
+(function() {
+  const sel = 'a, button, input, select, textarea, [contenteditable="true"], [role="button"], [role="textbox"], [role="combobox"], [role="searchbox"], [tabindex]';
+  const elements = document.querySelectorAll(sel);
+  const nodes: any[] = [];
+  elements.forEach(function(el: any, i: number) {
+    const ref = 'snap-' + i;
+    el.setAttribute('data-ref', ref);
+    const tag = el.tagName.toLowerCase();
+    const role = el.getAttribute('role') || (tag === 'a' ? 'link' : tag === 'button' ? 'button' : tag === 'input' ? (el.type === 'checkbox' ? 'checkbox' : el.type === 'radio' ? 'radio' : 'textbox') : tag === 'textarea' ? 'textbox' : el.getAttribute('contenteditable') ? 'textbox' : tag);
+    const id = el.id || '';
+    const name = el.getAttribute('aria-label') || el.getAttribute('name') || el.getAttribute('title') || (el.textContent || '').trim().slice(0, 80) || id || '';
+    const placeholder = el.getAttribute('placeholder') || '';
+    nodes.push({ role, name, placeholder, id, ref });
+  });
+  return JSON.stringify({ nodes });
+})()`;
+    const raw = await this.evaluate(code);
+    try { return JSON.parse(raw); } catch { return { nodes: [] }; }
   }
   async click(ref: string): Promise<void> {
     const safeRef = JSON.stringify(ref);
@@ -141,7 +159,6 @@ class CDPPage implements IPage {
   }
   async typeText(ref: string, text: string): Promise<void> {
     const safeRef = JSON.stringify(ref);
-    const safeText = JSON.stringify(text);
     const code = `
       (() => {
         const ref = ${safeRef};
@@ -149,24 +166,21 @@ class CDPPage implements IPage {
           || document.querySelectorAll('input, textarea, [contenteditable]')[parseInt(ref, 10) || 0];
         if (!el) throw new Error('Element not found: ' + ref);
         el.focus();
-        el.value = ${safeText};
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-        return 'typed';
+        return 'focused';
       })()
     `;
     await this.evaluate(code);
+    // Use CDP Input.insertText for reliable typing into contenteditable/ProseMirror
+    await this.bridge.send('Input.insertText', { text });
   }
   async pressKey(key: string): Promise<void> {
-    const code = `
-      (() => {
-        const el = document.activeElement || document.body;
-        el.dispatchEvent(new KeyboardEvent('keydown', { key: ${JSON.stringify(key)}, bubbles: true }));
-        el.dispatchEvent(new KeyboardEvent('keyup', { key: ${JSON.stringify(key)}, bubbles: true }));
-        return 'pressed';
-      })()
-    `;
-    await this.evaluate(code);
+    // Use CDP Input.dispatchKeyEvent for reliable key dispatch
+    const keyMap: Record<string, any> = {
+      'Return': { key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 },
+    };
+    const k = keyMap[key] || { key, code: key };
+    await this.bridge.send('Input.dispatchKeyEvent', { type: 'keyDown', ...k });
+    await this.bridge.send('Input.dispatchKeyEvent', { type: 'keyUp', ...k });
   }
   async wait(options: any): Promise<void> {
     if (typeof options === 'number') {
