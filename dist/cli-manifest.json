@@ -1284,7 +1284,7 @@
         "help": "Output file path (default: ./chatgpt-export.md)"
       },
       {
-        "name": "format",
+        "name": "file_format",
         "type": "str",
         "default": "md)",
         "required": false,
@@ -2044,7 +2044,7 @@
         "help": "Output file path (default: ./claude-export.md)"
       },
       {
-        "name": "format",
+        "name": "file_format",
         "type": "str",
         "default": "md)",
         "required": false,
@@ -3201,7 +3201,7 @@
         "help": "Output file path (default: ./gemini-export.md)"
       },
       {
-        "name": "format",
+        "name": "file_format",
         "type": "str",
         "default": "md)",
         "required": false,
@@ -3464,7 +3464,7 @@
         "help": "Output file path (default: ./grok-export.md)"
       },
       {
-        "name": "format",
+        "name": "file_format",
         "type": "str",
         "default": "md)",
         "required": false,

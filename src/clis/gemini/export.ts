@@ -14,7 +14,7 @@ export const exportCommand = cli({
   args: [
     { name: 'output', required: false, positional: true, help: 'Output file path (default: ./gemini-export.md)' },
     {
-      name: 'format',
+      name: 'file_format',
       required: false,
       help: 'Output format: md | json (default: md)',
       choices: ['md', 'json'],
@@ -24,7 +24,7 @@ export const exportCommand = cli({
   columns: ['File', 'Messages', 'Status'],
   func: async (page: IPage | null, kwargs: any) => {
     if (!page) throw new Error('Browser page not available');
-    const format = (kwargs.format as string) || 'md';
+    const format = (kwargs.file_format as string) || 'md';
     const defaultName = `gemini-export-${new Date().toISOString().slice(0, 10)}.${format}`;
     const outputPath = path.resolve((kwargs.output as string) || defaultName);
 
