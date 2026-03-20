@@ -1412,6 +1412,28 @@
   },
   {
     "site": "chatgpt",
+    "name": "edit",
+    "description": "Edit the last user message in the current chatgpt conversation",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "New message text to replace with"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/edit.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
     "name": "export",
     "description": "Export the current ChatGPT conversation to a local file (markdown or JSON)",
     "strategy": "public",
@@ -1650,6 +1672,50 @@
     "columns": [
       "Status"
     ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "notes",
+    "description": "View conversation summary or access ChatGPT project notes",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "view)",
+        "required": false,
+        "positional": true,
+        "help": "Action: view | add (default: view)",
+        "choices": [
+          "view",
+          "add"
+        ]
+      },
+      {
+        "name": "content",
+        "type": "str",
+        "required": false,
+        "help": "Note content to add (for add action)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/notes.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Note",
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "pin",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/pin.js"
   },
   {
     "site": "chatgpt",
@@ -1990,6 +2056,49 @@
       "Model",
       "Status"
     ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "think",
+    "description": "Ask ChatGPT o3 (reasoning/thinking model) and wait for the deep analysis",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Prompt requiring deep reasoning"
+      },
+      {
+        "name": "model",
+        "type": "str",
+        "default": "o3)",
+        "required": false,
+        "help": "Reasoning model: o3 | o3-mini | o1 (default: o3)",
+        "choices": [
+          "o3",
+          "o3-mini",
+          "o1"
+        ]
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "1800)",
+        "required": false,
+        "help": "Max seconds to wait (default: 1800)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/think.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 3600
   },
   {
     "site": "chatgpt",
@@ -2436,6 +2545,40 @@
   },
   {
     "site": "claude",
+    "name": "custom_instructions",
+    "description": "View or update Claude system prompt / custom instructions",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "view)",
+        "required": false,
+        "positional": true,
+        "help": "Action: view | set (default: view)",
+        "choices": [
+          "view",
+          "set"
+        ]
+      },
+      {
+        "name": "instructions",
+        "type": "str",
+        "required": false,
+        "help": "Instructions to set (for set action)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/custom_instructions.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Field",
+      "Content"
+    ]
+  },
+  {
+    "site": "claude",
     "name": "delete",
     "description": "Delete the current claude.ai conversation",
     "strategy": "cookie",
@@ -2451,6 +2594,28 @@
     ],
     "type": "ts",
     "modulePath": "claude/delete.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "edit",
+    "description": "Edit the last user message in the current claude conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "New message text to replace with"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/edit.js",
     "domain": "claude.ai",
     "columns": [
       "Status"
@@ -2575,6 +2740,35 @@
     "domain": "claude.ai",
     "columns": [
       "URL",
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "grounding",
+    "description": "Toggle Claude web search / grounding on or off",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "status)",
+        "required": false,
+        "positional": true,
+        "help": "Action: on | off | status (default: status)",
+        "choices": [
+          "on",
+          "off",
+          "status"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/grounding.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Feature",
       "Status"
     ]
   },
@@ -2744,6 +2938,16 @@
       "Note",
       "Status"
     ]
+  },
+  {
+    "site": "claude",
+    "name": "pin",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/pin.js"
   },
   {
     "site": "claude",
@@ -4092,6 +4296,28 @@
   },
   {
     "site": "gemini",
+    "name": "edit",
+    "description": "Edit the last user message in the current gemini conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "New message text to replace with"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/edit.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "export",
     "description": "Export the current Gemini conversation to a local file (markdown or JSON)",
     "strategy": "cookie",
@@ -4394,6 +4620,44 @@
     "columns": [
       "Status"
     ]
+  },
+  {
+    "site": "gemini",
+    "name": "notes",
+    "description": "View or save the current Gemini conversation to Google Keep / Docs",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "view)",
+        "required": false,
+        "positional": true,
+        "help": "Action: view | save (default: view)",
+        "choices": [
+          "view",
+          "save"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/notes.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Action",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "pin",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/pin.js"
   },
   {
     "site": "gemini",
@@ -4961,6 +5225,28 @@
   },
   {
     "site": "grok",
+    "name": "edit",
+    "description": "Edit the last user message in the current grok conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "New message text to replace with"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/edit.js",
+    "domain": "grok.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
     "name": "export",
     "description": "Export the current Grok conversation to a local file (markdown or JSON)",
     "strategy": "cookie",
@@ -5049,6 +5335,35 @@
     "domain": "grok.com",
     "columns": [
       "URL",
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "grounding",
+    "description": "Toggle Grok real-time web search / X search on or off",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "status)",
+        "required": false,
+        "positional": true,
+        "help": "Action: on | off | status (default: status)",
+        "choices": [
+          "on",
+          "off",
+          "status"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/grounding.js",
+    "domain": "grok.com",
+    "columns": [
+      "Feature",
       "Status"
     ]
   },
@@ -5170,6 +5485,44 @@
     "columns": [
       "Status"
     ]
+  },
+  {
+    "site": "grok",
+    "name": "notes",
+    "description": "View conversation summary or save notes from Grok",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "view)",
+        "required": false,
+        "positional": true,
+        "help": "Action: view | save (default: view)",
+        "choices": [
+          "view",
+          "save"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/notes.js",
+    "domain": "grok.com",
+    "columns": [
+      "Action",
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "pin",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/pin.js"
   },
   {
     "site": "grok",

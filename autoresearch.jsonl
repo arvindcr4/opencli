@@ -9,3 +9,4 @@
 {"run":8,"commit":"b1b7c53","metric":106,"metrics":{"typecheck_errors":0},"status":"keep","description":"status for all sites, gems/extensions, voice/custom_instructions","timestamp":1774004283,"segment":0}
 {"run":9,"commit":"1d8f10e","metric":115,"metrics":{"typecheck_errors":0},"status":"keep","description":"archive/restore/models for gemini/claude/grok","timestamp":1774004350,"segment":0}
 {"run":10,"commit":"275693e","metric":124,"metrics":{"typecheck_errors":0},"status":"keep","description":"memory/canvas/image/voice for cross-site, grounding for gemini, extended_thinking for claude","timestamp":1774004453,"segment":0}
+{"run":11,"commit":"da2b5b7","metric":135,"metrics":{"typecheck_errors":0},"status":"keep","description":"copy/settings all sites + grok canvas/custom_instructions + claude notes","timestamp":1774004553,"segment":0}
