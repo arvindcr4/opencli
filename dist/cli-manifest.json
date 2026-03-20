@@ -2307,6 +2307,35 @@
   },
   {
     "site": "claude",
+    "name": "canvas",
+    "description": "Read or interact with Claude artifacts (the canvas/document view)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "read)",
+        "required": false,
+        "positional": true,
+        "help": "Action: read | copy | expand (default: read)",
+        "choices": [
+          "read",
+          "copy",
+          "expand"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/canvas.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Title",
+      "Content"
+    ]
+  },
+  {
+    "site": "claude",
     "name": "conversations",
     "description": "List Claude.ai conversations from sidebar; optionally navigate to one by index",
     "strategy": "cookie",
@@ -2391,6 +2420,35 @@
     "columns": [
       "File",
       "Messages",
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "extended_thinking",
+    "description": "Toggle Claude extended thinking (deep reasoning) on/off",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "status)",
+        "required": false,
+        "positional": true,
+        "help": "Action: on | off | status (default: status)",
+        "choices": [
+          "on",
+          "off",
+          "status"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/extended_thinking.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Feature",
       "Status"
     ]
   },
@@ -2481,6 +2539,44 @@
       "Role",
       "Text"
     ]
+  },
+  {
+    "site": "claude",
+    "name": "image",
+    "description": "Upload an image to Claude for analysis or visual Q&A",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "file",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Path to image file to analyze"
+      },
+      {
+        "name": "prompt",
+        "type": "str",
+        "default": "Describe this image\")",
+        "required": false,
+        "help": "Question or instruction about the image (default: "
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "120)",
+        "required": false,
+        "help": "Max seconds to wait (default: 120)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/image.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 300
   },
   {
     "site": "claude",
@@ -3735,6 +3831,34 @@
   },
   {
     "site": "gemini",
+    "name": "canvas",
+    "description": "View or interact with Gemini canvas (document/code workspace)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "read)",
+        "required": false,
+        "positional": true,
+        "help": "Action: read | expand (default: read)",
+        "choices": [
+          "read",
+          "expand"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/canvas.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Title",
+      "Content"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "conversations",
     "description": "List Gemini conversations; optionally navigate to one by index",
     "strategy": "cookie",
@@ -3976,6 +4100,35 @@
   },
   {
     "site": "gemini",
+    "name": "grounding",
+    "description": "Toggle Google Search grounding on/off for Gemini responses",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "status)",
+        "required": false,
+        "positional": true,
+        "help": "Action: on | off | status (default: status)",
+        "choices": [
+          "on",
+          "off",
+          "status"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/grounding.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Feature",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "history",
     "description": "Read all messages in the current Gemini conversation",
     "strategy": "cookie",
@@ -4035,6 +4188,34 @@
       "Response"
     ],
     "timeout": 300
+  },
+  {
+    "site": "gemini",
+    "name": "memory",
+    "description": "View or clear Gemini memory (saved context)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "view)",
+        "required": false,
+        "positional": true,
+        "help": "Action: view | clear (default: view)",
+        "choices": [
+          "view",
+          "clear"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/memory.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Key",
+      "Value"
+    ]
   },
   {
     "site": "gemini",
@@ -4678,6 +4859,34 @@
   },
   {
     "site": "grok",
+    "name": "memory",
+    "description": "View or clear Grok memory (personalization data)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "view)",
+        "required": false,
+        "positional": true,
+        "help": "Action: view | clear (default: view)",
+        "choices": [
+          "view",
+          "clear"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/memory.js",
+    "domain": "grok.com",
+    "columns": [
+      "Key",
+      "Value"
+    ]
+  },
+  {
+    "site": "grok",
     "name": "models",
     "description": "List available grok models in the model switcher",
     "strategy": "cookie",
@@ -4742,6 +4951,29 @@
       "Text"
     ],
     "timeout": 7200
+  },
+  {
+    "site": "grok",
+    "name": "projects",
+    "description": "List or navigate to Grok conversation groups/projects",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "name",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Project name to navigate to (optional)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/projects.js",
+    "domain": "grok.com",
+    "columns": [
+      "Name",
+      "URL"
+    ]
   },
   {
     "site": "grok",
@@ -5026,6 +5258,35 @@
     "domain": "grok.com",
     "columns": [
       "File",
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "voice",
+    "description": "Start or stop Grok voice mode",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "status)",
+        "required": false,
+        "positional": true,
+        "help": "Action: start | stop | status (default: status)",
+        "choices": [
+          "start",
+          "stop",
+          "status"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/voice.js",
+    "domain": "grok.com",
+    "columns": [
+      "Action",
       "Status"
     ]
   },
