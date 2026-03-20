@@ -1296,6 +1296,29 @@
   },
   {
     "site": "chatgpt",
+    "name": "copy",
+    "description": "Copy the last chatgpt response to clipboard",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "index",
+        "type": "str",
+        "default": "last = -1)",
+        "required": false,
+        "help": "Response index (default: last = -1)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/copy.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Chars",
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
     "name": "custom_instructions",
     "description": "View or update ChatGPT custom instructions",
     "strategy": "public",
@@ -1871,6 +1894,29 @@
   },
   {
     "site": "chatgpt",
+    "name": "settings",
+    "description": "Open chatgpt settings page",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "section",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Settings section to navigate to (optional)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/settings.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "URL",
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
     "name": "share",
     "description": "Get or create a share link for the current ChatGPT conversation",
     "strategy": "public",
@@ -2367,6 +2413,29 @@
   },
   {
     "site": "claude",
+    "name": "copy",
+    "description": "Copy the last claude response to clipboard",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "index",
+        "type": "str",
+        "default": "last = -1)",
+        "required": false,
+        "help": "Response index (default: last = -1)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/copy.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Chars",
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
     "name": "delete",
     "description": "Delete the current claude.ai conversation",
     "strategy": "cookie",
@@ -2644,6 +2713,40 @@
   },
   {
     "site": "claude",
+    "name": "notes",
+    "description": "View or add notes to the current Claude project",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "view)",
+        "required": false,
+        "positional": true,
+        "help": "Action: view | add (default: view)",
+        "choices": [
+          "view",
+          "add"
+        ]
+      },
+      {
+        "name": "content",
+        "type": "str",
+        "required": false,
+        "help": "Note content to add (for add action)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/notes.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Note",
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
     "name": "poll",
     "description": "Poll until Claude finishes generating, then return the full response",
     "strategy": "cookie",
@@ -2858,6 +2961,29 @@
     "modulePath": "claude/send.js",
     "domain": "claude.ai",
     "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "settings",
+    "description": "Open claude settings page",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "section",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Settings section to navigate to (optional)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/settings.js",
+    "domain": "claude.ai",
+    "columns": [
+      "URL",
       "Status"
     ]
   },
@@ -3890,6 +4016,29 @@
   },
   {
     "site": "gemini",
+    "name": "copy",
+    "description": "Copy the last gemini response to clipboard",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "index",
+        "type": "str",
+        "default": "last = -1)",
+        "required": false,
+        "help": "Response index (default: last = -1)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/copy.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Chars",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "deepresearch",
     "description": "Submit a Deep Research query to Gemini and wait for the full report",
     "strategy": "cookie",
@@ -4443,6 +4592,29 @@
   },
   {
     "site": "gemini",
+    "name": "settings",
+    "description": "Open gemini settings page",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "section",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Settings section to navigate to (optional)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/settings.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "URL",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "share",
     "description": "Get or create a share link for the current Gemini conversation",
     "strategy": "cookie",
@@ -4620,6 +4792,34 @@
   },
   {
     "site": "grok",
+    "name": "canvas",
+    "description": "View or interact with Grok canvas/artifact content",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "read)",
+        "required": false,
+        "positional": true,
+        "help": "Action: read | expand (default: read)",
+        "choices": [
+          "read",
+          "expand"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/canvas.js",
+    "domain": "grok.com",
+    "columns": [
+      "Title",
+      "Content"
+    ]
+  },
+  {
+    "site": "grok",
     "name": "conversations",
     "description": "List Grok conversations; optionally navigate to one by index",
     "strategy": "cookie",
@@ -4647,6 +4847,63 @@
       "#",
       "Title",
       "Active"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "copy",
+    "description": "Copy the last grok response to clipboard",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "index",
+        "type": "str",
+        "default": "last = -1)",
+        "required": false,
+        "help": "Response index (default: last = -1)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/copy.js",
+    "domain": "grok.com",
+    "columns": [
+      "Chars",
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "custom_instructions",
+    "description": "View or update Grok custom instructions / system prompt",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "view)",
+        "required": false,
+        "positional": true,
+        "help": "Action: view | set (default: view)",
+        "choices": [
+          "view",
+          "set"
+        ]
+      },
+      {
+        "name": "instructions",
+        "type": "str",
+        "required": false,
+        "help": "Custom instructions to set (for set action)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/custom_instructions.js",
+    "domain": "grok.com",
+    "columns": [
+      "Field",
+      "Content"
     ]
   },
   {
@@ -5124,6 +5381,29 @@
     "modulePath": "grok/send.js",
     "domain": "grok.com",
     "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "settings",
+    "description": "Open grok settings page",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "section",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Settings section to navigate to (optional)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/settings.js",
+    "domain": "grok.com",
+    "columns": [
+      "URL",
       "Status"
     ]
   },

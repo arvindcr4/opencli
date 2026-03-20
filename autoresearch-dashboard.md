@@ -1,8 +1,8 @@
 # Autoresearch Dashboard: chatgpt-control
 
-**Runs:** 6 | **Kept:** 6 | **Discarded:** 0 | **Crashed:** 0
+**Runs:** 10 | **Kept:** 10 | **Discarded:** 0 | **Crashed:** 0
 **Baseline:** feature_count: 7 features (#1)
-**Best:** feature_count: 84 features (#6, +1100%)
+**Best:** feature_count: 124 features (#10, +1671%)
 
 | # | commit | feature_count | typecheck_errors | status | description |
 |---|--------|---------------|-----------------|--------|-------------|
@@ -12,17 +12,21 @@
 | 4 | a6c5e24 | 51 (+629%) | 0 | keep | gemini deepresearch/conversations/switch + claude research/upload/export + grok research/think/conversations |
 | 5 | 55a40de | 55 (+686%) | 0 | keep | grok/new + claude/switch + gemini+grok export — 55 total AI commands |
 | 6 | 897577c | 84 (+1100%) | 0 | keep | +29: gemini/claude/grok/chatgpt missing symmetry commands |
+| 7 | 7b053c2 | 100 (+1328%) | 0 | keep | delete/regenerate/feedback for all sites + canvas/artifacts/extensions/xai |
+| 8 | b1b7c53 | 106 (+1414%) | 0 | keep | status for all sites, gems/extensions, voice/custom_instructions for chatgpt |
+| 9 | 1d8f10e | 115 (+1542%) | 0 | keep | archive/restore/models for gemini/claude/grok |
+| 10 | 275693e | 124 (+1671%) | 0 | keep | memory/canvas/image/voice + grounding/extended_thinking |
 
-## Commands by Site (84 total commands, ax utility files excluded)
+## Commands by Site (124 total)
 
-### ChatGPT (chatgpt.com) — 26 commands
-archive, ask, conversations, deepresearch, export, goto, gpts, history, image, memory, models, new, poll, promode, projects, read, rename, restore, search, send, share, status, stop, switch, upload, wait
+### ChatGPT — 32 commands
+archive, ask, canvas, conversations, custom_instructions, deepresearch, delete, export, feedback, goto, gpts, history, image, memory, models, new, poll, promode, projects, read, regenerate, rename, restore, search, send, share, status, stop, switch, upload, voice, wait
 
-### Gemini (gemini.google.com) — 19 commands
-ask, conversations, deepresearch, export, goto, history, image, new, poll, promode, read, rename, search, send, share, stop, switch, upload, wait
+### Gemini — 31 commands  
+archive, ask, canvas, conversations, deepresearch, delete, export, extensions, feedback, gems, goto, grounding, history, image, memory, models, new, poll, promode, read, regenerate, rename, restore, search, send, share, status, stop, switch, upload, wait
 
-### Claude (claude.ai) — 19 commands
-ask, conversations, export, goto, history, memory, new, poll, projects, read, rename, research, search, send, share, stop, switch, upload, wait
+### Claude — 32 commands
+archive, artifacts, ask, canvas, conversations, delete, export, extended_thinking, feedback, goto, history, image, memory, models, new, poll, projects, read, regenerate, rename, research, restore, search, send, share, status, stop, switch, upload, wait
 
-### Grok (grok.com) — 20 commands
-ask, conversations, deepsearch, export, goto, history, image, new, poll, read, rename, research, search, send, share, stop, switch, think, upload, wait
+### Grok — 29 commands
+archive, ask, conversations, deepsearch, delete, export, feedback, goto, history, image, memory, models, new, poll, projects, read, regenerate, rename, research, restore, search, send, share, status, stop, switch, think, upload, voice, wait, xai
