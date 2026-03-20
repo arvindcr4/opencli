@@ -1232,6 +1232,35 @@
   },
   {
     "site": "chatgpt",
+    "name": "browse",
+    "description": "Toggle ChatGPT web browsing / search mode on or off",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "status)",
+        "required": false,
+        "positional": true,
+        "help": "Action: on | off | status (default: status)",
+        "choices": [
+          "on",
+          "off",
+          "status"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/browse.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Feature",
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
     "name": "canvas",
     "description": "Interact with ChatGPT Canvas — read content, copy, or trigger canvas mode",
     "strategy": "public",
@@ -1646,6 +1675,29 @@
       "Image URL"
     ],
     "timeout": 300
+  },
+  {
+    "site": "chatgpt",
+    "name": "latest",
+    "description": "Navigate to the most recent chatgpt conversation",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "wait",
+        "type": "str",
+        "default": "2)",
+        "required": false,
+        "help": "Seconds to wait after navigation (default: 2)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/latest.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "URL",
+      "Title"
+    ]
   },
   {
     "site": "chatgpt",
@@ -2943,6 +2995,29 @@
       "Text"
     ],
     "timeout": 300
+  },
+  {
+    "site": "claude",
+    "name": "latest",
+    "description": "Navigate to the most recent claude conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "wait",
+        "type": "str",
+        "default": "2)",
+        "required": false,
+        "help": "Seconds to wait after navigation (default: 2)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/latest.js",
+    "domain": "claude.ai",
+    "columns": [
+      "URL",
+      "Title"
+    ]
   },
   {
     "site": "claude",
@@ -4735,6 +4810,29 @@
   },
   {
     "site": "gemini",
+    "name": "latest",
+    "description": "Navigate to the most recent gemini conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "wait",
+        "type": "str",
+        "default": "2)",
+        "required": false,
+        "help": "Seconds to wait after navigation (default: 2)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/latest.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "URL",
+      "Title"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "memory",
     "description": "View or clear Gemini memory (saved context)",
     "strategy": "cookie",
@@ -5133,6 +5231,35 @@
   },
   {
     "site": "gemini",
+    "name": "thinking",
+    "description": "Switch Gemini to Flash Thinking (deep reasoning) mode",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "on)",
+        "required": false,
+        "positional": true,
+        "help": "Action: on | off | status (default: on)",
+        "choices": [
+          "on",
+          "off",
+          "status"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/thinking.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Model",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "translate",
     "description": "",
     "strategy": "cookie",
@@ -5208,6 +5335,37 @@
       "Text"
     ],
     "timeout": 600
+  },
+  {
+    "site": "gemini",
+    "name": "workspace",
+    "description": "Open Gemini for Google Workspace or navigate to connected Workspace features",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "app",
+        "type": "str",
+        "default": "all)",
+        "required": false,
+        "positional": true,
+        "help": "Workspace app: docs | gmail | sheets | drive | all (default: all)",
+        "choices": [
+          "docs",
+          "gmail",
+          "sheets",
+          "drive",
+          "all"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/workspace.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "App",
+      "Status"
+    ]
   },
   {
     "site": "grok",
@@ -5669,6 +5827,29 @@
       "Response"
     ],
     "timeout": 300
+  },
+  {
+    "site": "grok",
+    "name": "latest",
+    "description": "Navigate to the most recent grok conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "wait",
+        "type": "str",
+        "default": "2)",
+        "required": false,
+        "help": "Seconds to wait after navigation (default: 2)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/latest.js",
+    "domain": "grok.com",
+    "columns": [
+      "URL",
+      "Title"
+    ]
   },
   {
     "site": "grok",
