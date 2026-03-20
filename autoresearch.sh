@@ -3,8 +3,8 @@ set -euo pipefail
 
 cd /home/arvind/opencli
 
-# Count non-utility chatgpt command files
-FEATURE_COUNT=$(ls src/clis/chatgpt/*.ts 2>/dev/null | grep -v '/ax\.ts$' | wc -l | tr -d ' ')
+# Count AI assistant command files across chatgpt, gemini, grok, claude
+FEATURE_COUNT=$(ls src/clis/chatgpt/*.ts src/clis/gemini/*.ts src/clis/grok/*.ts src/clis/claude/*.ts 2>/dev/null | grep -v '/ax\.ts$' | wc -l | tr -d ' ')
 
 # Type check
 TYPECHECK_ERRORS=0

@@ -1270,6 +1270,42 @@
   },
   {
     "site": "chatgpt",
+    "name": "export",
+    "description": "Export the current ChatGPT conversation to a local file (markdown or JSON)",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "output",
+        "type": "str",
+        "default": "./chatgpt-export.md)",
+        "required": false,
+        "positional": true,
+        "help": "Output file path (default: ./chatgpt-export.md)"
+      },
+      {
+        "name": "format",
+        "type": "str",
+        "default": "md)",
+        "required": false,
+        "help": "Output format: md | json (default: md)",
+        "choices": [
+          "md",
+          "json"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/export.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "File",
+      "Messages",
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
     "name": "goto",
     "description": "Navigate to a ChatGPT conversation or page by URL or conversation ID",
     "strategy": "public",
@@ -1359,6 +1395,34 @@
       "Image URL"
     ],
     "timeout": 300
+  },
+  {
+    "site": "chatgpt",
+    "name": "memory",
+    "description": "Read ChatGPT\\",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "list",
+        "required": false,
+        "positional": true,
+        "help": "Action: list (default) | clear",
+        "choices": [
+          "list",
+          "clear"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/memory.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "#",
+      "Memory"
+    ]
   },
   {
     "site": "chatgpt",
@@ -1494,6 +1558,60 @@
       "Role",
       "Text"
     ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "rename",
+    "description": "Rename the current ChatGPT conversation",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "New conversation title"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/rename.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Title",
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "search",
+    "description": "Ask ChatGPT a question using web search mode",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search query to send"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "120)",
+        "required": false,
+        "help": "Max seconds to wait (default: 120)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/search.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 300
   },
   {
     "site": "chatgpt",
@@ -1837,6 +1955,207 @@
       "Url",
       "Title"
     ]
+  },
+  {
+    "site": "claude",
+    "name": "ask",
+    "description": "Send a prompt to Claude.ai and wait for the response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Prompt to send"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "120)",
+        "required": false,
+        "help": "Max seconds to wait (default: 120)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/ask.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 300
+  },
+  {
+    "site": "claude",
+    "name": "ax",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/ax.js"
+  },
+  {
+    "site": "claude",
+    "name": "conversations",
+    "description": "List Claude.ai conversations from sidebar; optionally navigate to one by index",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "index",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Conversation index to navigate to (1-based)"
+      },
+      {
+        "name": "limit",
+        "type": "str",
+        "default": "20)",
+        "required": false,
+        "help": "Max conversations to list (default: 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/conversations.js",
+    "domain": "claude.ai",
+    "columns": [
+      "#",
+      "Title",
+      "Active"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "history",
+    "description": "Read all messages in the current Claude.ai conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "role",
+        "type": "str",
+        "default": "all)",
+        "required": false,
+        "help": "Filter by role: user | assistant | all (default: all)"
+      },
+      {
+        "name": "limit",
+        "type": "str",
+        "default": "all)",
+        "required": false,
+        "help": "Max messages to show (default: all)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/history.js",
+    "domain": "claude.ai",
+    "columns": [
+      "#",
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "new",
+    "description": "Start a new Claude.ai conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "project",
+        "type": "str",
+        "required": false,
+        "help": "Project name or ID to open new chat in"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/new.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "projects",
+    "description": "List Claude.ai projects; optionally open one by index",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "index",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Project index to open (1-based)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/projects.js",
+    "domain": "claude.ai",
+    "columns": [
+      "#",
+      "Name",
+      "Active"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "read",
+    "description": "Read the most recent Claude.ai response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/read.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "stop",
+    "description": "Stop the current Claude.ai response generation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/stop.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "wait",
+    "description": "Wait for Claude.ai to finish generating, then return the response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "300)",
+        "required": false,
+        "help": "Max seconds to wait (default: 300)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/wait.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Status",
+      "Text"
+    ],
+    "timeout": 600
   },
   {
     "site": "codex",
@@ -2624,6 +2943,145 @@
     ]
   },
   {
+    "site": "gemini",
+    "name": "ask",
+    "description": "Send a prompt to Gemini and wait for the response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Prompt to send"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "120)",
+        "required": false,
+        "help": "Max seconds to wait (default: 120)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/ask.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 300
+  },
+  {
+    "site": "gemini",
+    "name": "ax",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/ax.js"
+  },
+  {
+    "site": "gemini",
+    "name": "history",
+    "description": "Read all messages in the current Gemini conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "role",
+        "type": "str",
+        "default": "all)",
+        "required": false,
+        "help": "Filter by role: user | assistant | all (default: all)"
+      },
+      {
+        "name": "limit",
+        "type": "str",
+        "default": "all)",
+        "required": false,
+        "help": "Max messages to show (default: all)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/history.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "#",
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "new",
+    "description": "Start a new Gemini conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/new.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "read",
+    "description": "Read the most recent Gemini response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/read.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "stop",
+    "description": "Stop the current Gemini response generation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/stop.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "wait",
+    "description": "Wait for Gemini to finish generating, then return the response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "300)",
+        "required": false,
+        "help": "Max seconds to wait (default: 300)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/wait.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status",
+      "Text"
+    ],
+    "timeout": 600
+  },
+  {
     "site": "grok",
     "name": "ask",
     "description": "Send a message to Grok and get response",
@@ -2657,6 +3115,121 @@
     "columns": [
       "response"
     ]
+  },
+  {
+    "site": "grok",
+    "name": "deepsearch",
+    "description": "Submit a DeepSearch query to Grok and wait for the full report",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "DeepSearch query"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "300)",
+        "required": false,
+        "help": "Max seconds to wait (default: 300)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/deepsearch.js",
+    "domain": "grok.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 600
+  },
+  {
+    "site": "grok",
+    "name": "history",
+    "description": "Read all messages in the current Grok conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "role",
+        "type": "str",
+        "default": "all)",
+        "required": false,
+        "help": "Filter by role: user | assistant | all (default: all)"
+      },
+      {
+        "name": "limit",
+        "type": "str",
+        "default": "all)",
+        "required": false,
+        "help": "Max messages to show (default: all)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/history.js",
+    "domain": "grok.com",
+    "columns": [
+      "#",
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "read",
+    "description": "Read the most recent Grok response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/read.js",
+    "domain": "grok.com",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "stop",
+    "description": "Stop the current Grok generation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/stop.js",
+    "domain": "grok.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "wait",
+    "description": "Wait for Grok to finish generating, then return the response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "300)",
+        "required": false,
+        "help": "Max seconds to wait (default: 300)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/wait.js",
+    "domain": "grok.com",
+    "columns": [
+      "Status",
+      "Text"
+    ],
+    "timeout": 600
   },
   {
     "site": "hackernews",
