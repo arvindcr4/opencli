@@ -1294,6 +1294,20 @@
   },
   {
     "site": "chatgpt",
+    "name": "clear",
+    "description": "Clear the chatgpt input field",
+    "strategy": "public",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/clear.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
     "name": "code_interpreter",
     "description": "Run a code snippet using ChatGPT Code Interpreter and get the output",
     "strategy": "public",
@@ -1689,6 +1703,44 @@
     "columns": [
       "Prompt",
       "Image URL"
+    ],
+    "timeout": 300
+  },
+  {
+    "site": "chatgpt",
+    "name": "insights",
+    "description": "Extract key insights, action items, or decisions from the current ChatGPT conversation",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "type",
+        "type": "str",
+        "default": "insights)",
+        "required": false,
+        "positional": true,
+        "help": "Type: insights | actions | decisions | questions (default: insights)",
+        "choices": [
+          "insights",
+          "actions",
+          "decisions",
+          "questions"
+        ]
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "60)",
+        "required": false,
+        "help": "Max seconds to wait (default: 60)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/insights.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Type",
+      "Items"
     ],
     "timeout": 300
   },
@@ -2103,6 +2155,21 @@
     "columns": [
       "URL",
       "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "sources",
+    "description": "Extract sources and citations from the current ChatGPT conversation",
+    "strategy": "public",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/sources.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Title",
+      "URL"
     ]
   },
   {
@@ -2631,6 +2698,20 @@
     "columns": [
       "Title",
       "Content"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "clear",
+    "description": "Clear the claude input field",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/clear.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Status"
     ]
   },
   {
@@ -3434,6 +3515,21 @@
     "columns": [
       "URL",
       "Status"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "sources",
+    "description": "Extract sources and citations from the current Claude conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/sources.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Title",
+      "URL"
     ]
   },
   {
@@ -4483,6 +4579,20 @@
   },
   {
     "site": "gemini",
+    "name": "clear",
+    "description": "Clear the gemini input field",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/clear.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "code",
     "description": "Execute code or data analysis using Gemini code execution capability",
     "strategy": "cookie",
@@ -5268,6 +5378,21 @@
   },
   {
     "site": "gemini",
+    "name": "sources",
+    "description": "Extract Google Search grounding sources from the current Gemini response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/sources.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Title",
+      "URL"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "status",
     "description": "Check Gemini service reachability and current page state",
     "strategy": "public",
@@ -5621,6 +5746,20 @@
     "columns": [
       "Title",
       "Content"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "clear",
+    "description": "Clear the grok input field",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/clear.js",
+    "domain": "grok.com",
+    "columns": [
+      "Status"
     ]
   },
   {
@@ -6400,6 +6539,21 @@
     "columns": [
       "URL",
       "Status"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "sources",
+    "description": "Extract sources and citations from the current Grok DeepSearch response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/sources.js",
+    "domain": "grok.com",
+    "columns": [
+      "Title",
+      "URL"
     ]
   },
   {
