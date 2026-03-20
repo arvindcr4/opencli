@@ -1265,6 +1265,37 @@
   },
   {
     "site": "chatgpt",
+    "name": "code_interpreter",
+    "description": "Run a code snippet using ChatGPT Code Interpreter and get the output",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Code or data analysis task to run"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "300)",
+        "required": false,
+        "help": "Max seconds to wait (default: 300)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/code_interpreter.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 600
+  },
+  {
+    "site": "chatgpt",
     "name": "conversations",
     "description": "List ChatGPT conversations from sidebar; optionally navigate to one by index",
     "strategy": "public",
@@ -2132,6 +2163,21 @@
   },
   {
     "site": "chatgpt",
+    "name": "url",
+    "description": "Get the current chatgpt conversation URL",
+    "strategy": "public",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/url.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "URL",
+      "Title"
+    ]
+  },
+  {
+    "site": "chatgpt",
     "name": "voice",
     "description": "Start or stop ChatGPT voice mode (Advanced Voice Mode)",
     "strategy": "public",
@@ -2488,6 +2534,43 @@
       "Title",
       "Content"
     ]
+  },
+  {
+    "site": "claude",
+    "name": "code",
+    "description": "Ask Claude to write, review, or debug code and get the response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Code task (write/debug/review)"
+      },
+      {
+        "name": "lang",
+        "type": "str",
+        "required": false,
+        "help": "Programming language hint (optional)"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "180)",
+        "required": false,
+        "help": "Max seconds to wait (default: 180)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/code.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 600
   },
   {
     "site": "claude",
@@ -3293,6 +3376,21 @@
     "columns": [
       "File",
       "Status"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "url",
+    "description": "Get the current claude conversation URL",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/url.js",
+    "domain": "claude.ai",
+    "columns": [
+      "URL",
+      "Title"
     ]
   },
   {
@@ -4189,6 +4287,37 @@
   },
   {
     "site": "gemini",
+    "name": "code",
+    "description": "Execute code or data analysis using Gemini code execution capability",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Code execution prompt or data analysis task"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "120)",
+        "required": false,
+        "help": "Max seconds to wait (default: 120)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/code.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 300
+  },
+  {
+    "site": "gemini",
     "name": "conversations",
     "description": "List Gemini conversations; optionally navigate to one by index",
     "strategy": "cookie",
@@ -4983,6 +5112,21 @@
   },
   {
     "site": "gemini",
+    "name": "url",
+    "description": "Get the current gemini conversation URL",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/url.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "URL",
+      "Title"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "wait",
     "description": "Wait for Gemini to finish generating, then return the response",
     "strategy": "cookie",
@@ -5081,6 +5225,43 @@
       "Title",
       "Content"
     ]
+  },
+  {
+    "site": "grok",
+    "name": "code",
+    "description": "Ask Grok to write, review, or debug code",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Code task to perform"
+      },
+      {
+        "name": "lang",
+        "type": "str",
+        "required": false,
+        "help": "Programming language hint (optional)"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "120)",
+        "required": false,
+        "help": "Max seconds to wait (default: 120)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/code.js",
+    "domain": "grok.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 300
   },
   {
     "site": "grok",
@@ -5892,6 +6073,21 @@
     "columns": [
       "File",
       "Status"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "url",
+    "description": "Get the current grok conversation URL",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/url.js",
+    "domain": "grok.com",
+    "columns": [
+      "URL",
+      "Title"
     ]
   },
   {

@@ -30,3 +30,6 @@ archive, artifacts, ask, canvas, conversations, delete, export, extended_thinkin
 
 ### Grok — 29 commands
 archive, ask, conversations, deepsearch, delete, export, feedback, goto, history, image, memory, models, new, poll, projects, read, regenerate, rename, research, restore, search, send, share, status, stop, switch, think, upload, voice, wait, xai
+
+| 11 | da2b5b7 | 135 (+1828%) | 0 | keep | copy/settings all sites + grok canvas/custom_instructions + claude notes |
+| 12 | TODO | 150 (+2042%) | 0 | keep | pin/edit all sites + think/notes/grounding/custom_instructions |
