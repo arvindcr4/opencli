@@ -1,0 +1,58 @@
+import { cli, Strategy } from '../../registry.js';
+import type { IPage } from '../../types.js';
+
+export const shareCommand = cli({
+  site: 'claude',
+  name: 'share',
+  description: 'Get or create a share link for the current Claude.ai conversation',
+  domain: 'claude.ai',
+  strategy: Strategy.COOKIE,
+  browser: true,
+  args: [],
+  columns: ['URL', 'Status'],
+  func: async (page: IPage | null) => {
+    if (!page) throw new Error('Browser page not available');
+
+    const clicked = await page.evaluate(`
+      (function() {
+        const btns = Array.from(document.querySelectorAll('button, [role="button"]'));
+        const shareBtn = btns.find(b => {
+          const label = (b.getAttribute('aria-label') || b.title || b.textContent || '').toLowerCase();
+          return label.includes('share') || label.includes('publish');
+        });
+        if (shareBtn) { shareBtn.click(); return true; }
+        return false;
+      })()
+    `);
+
+    if (!clicked) return [{ URL: '', Status: 'Share button not found' }];
+
+    await page.wait(2);
+
+    const shareUrl = await page.evaluate(`
+      (function() {
+        const inputs = Array.from(document.querySelectorAll('input[readonly], input[type="text"]'));
+        for (const inp of inputs) {
+          const val = inp.value || '';
+          if (val.includes('claude.ai/share') || val.includes('/share/')) return val;
+        }
+        const links = Array.from(document.querySelectorAll('a[href*="share"], a[href*="/s/"]'));
+        for (const a of links) {
+          const href = a.getAttribute('href') || '';
+          if (href) return href.startsWith('http') ? href : 'https://claude.ai' + href;
+        }
+        return null;
+      })()
+    `);
+
+    await page.evaluate(`
+      (function() {
+        const closeBtn = document.querySelector('[aria-label*="close" i], [data-testid="modal-close"]');
+        if (closeBtn) closeBtn.click();
+      })()
+    `);
+
+    if (!shareUrl) return [{ URL: '', Status: 'Share URL not found in modal' }];
+    return [{ URL: shareUrl as string, Status: 'OK' }];
+  },
+});

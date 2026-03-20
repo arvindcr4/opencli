@@ -1168,6 +1168,30 @@
   },
   {
     "site": "chatgpt",
+    "name": "archive",
+    "description": "Archive the current or specified ChatGPT conversation",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "conversation_id",
+        "type": "str",
+        "default": "current)",
+        "required": false,
+        "positional": true,
+        "help": "Conversation ID to archive (default: current)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/archive.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Conversation",
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
     "name": "ask",
     "description": "Send a prompt and wait for the AI response (send + wait + read)",
     "strategy": "public",
@@ -1336,6 +1360,35 @@
   },
   {
     "site": "chatgpt",
+    "name": "gpts",
+    "description": "Browse or navigate to Custom GPTs on ChatGPT",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Search for a GPT by name (optional)"
+      },
+      {
+        "name": "launch",
+        "type": "str",
+        "required": false,
+        "help": "GPT name or URL fragment to open directly"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/gpts.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Name",
+      "URL"
+    ]
+  },
+  {
+    "site": "chatgpt",
     "name": "history",
     "description": "Read all messages in the current ChatGPT conversation (not just the last)",
     "strategy": "public",
@@ -1422,6 +1475,21 @@
     "columns": [
       "#",
       "Memory"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "models",
+    "description": "List available ChatGPT models in the model switcher",
+    "strategy": "public",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/models.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Model",
+      "Available"
     ]
   },
   {
@@ -1576,6 +1644,36 @@
     ],
     "type": "ts",
     "modulePath": "chatgpt/rename.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Title",
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "restore",
+    "description": "Restore an archived ChatGPT conversation",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Search query to find archived conversation"
+      },
+      {
+        "name": "limit",
+        "type": "str",
+        "default": "10)",
+        "required": false,
+        "help": "Max archived conversations to list (default: 10)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/restore.js",
     "domain": "chatgpt.com",
     "columns": [
       "Title",
@@ -2066,6 +2164,36 @@
   },
   {
     "site": "claude",
+    "name": "goto",
+    "description": "Navigate to a Claude.ai conversation or page by URL or conversation ID",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "target",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Full URL or conversation ID"
+      },
+      {
+        "name": "wait",
+        "type": "str",
+        "default": "2)",
+        "required": false,
+        "help": "Seconds to wait after navigation (default: 2)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/goto.js",
+    "domain": "claude.ai",
+    "columns": [
+      "URL",
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
     "name": "history",
     "description": "Read all messages in the current Claude.ai conversation",
     "strategy": "cookie",
@@ -2097,6 +2225,34 @@
   },
   {
     "site": "claude",
+    "name": "memory",
+    "description": "View or manage Claude memory settings",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "view)",
+        "required": false,
+        "positional": true,
+        "help": "Action: view | clear (default: view)",
+        "choices": [
+          "view",
+          "clear"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/memory.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Key",
+      "Value"
+    ]
+  },
+  {
+    "site": "claude",
     "name": "new",
     "description": "Start a new Claude.ai conversation",
     "strategy": "cookie",
@@ -2115,6 +2271,44 @@
     "columns": [
       "Status"
     ]
+  },
+  {
+    "site": "claude",
+    "name": "poll",
+    "description": "Poll until Claude finishes generating, then return the full response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "3600)",
+        "required": false,
+        "help": "Max seconds to poll (default: 3600)"
+      },
+      {
+        "name": "interval",
+        "type": "str",
+        "default": "3)",
+        "required": false,
+        "help": "Poll interval in seconds (default: 3)"
+      },
+      {
+        "name": "min_length",
+        "type": "str",
+        "default": "10)",
+        "required": false,
+        "help": "Minimum response length to accept (default: 10)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/poll.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 7200
   },
   {
     "site": "claude",
@@ -2153,6 +2347,29 @@
     "columns": [
       "Role",
       "Text"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "rename",
+    "description": "Rename the current Claude.ai conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "New conversation title"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/rename.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Title",
+      "Status"
     ]
   },
   {
@@ -2197,6 +2414,73 @@
       "Text"
     ],
     "timeout": 3600
+  },
+  {
+    "site": "claude",
+    "name": "search",
+    "description": "Search through Claude.ai conversation history",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search query"
+      },
+      {
+        "name": "limit",
+        "type": "str",
+        "default": "10)",
+        "required": false,
+        "help": "Max results (default: 10)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/search.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Title",
+      "URL"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "send",
+    "description": "Send a message to Claude without waiting for the response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Message to send"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/send.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "share",
+    "description": "Get or create a share link for the current Claude.ai conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/share.js",
+    "domain": "claude.ai",
+    "columns": [
+      "URL",
+      "Status"
+    ]
   },
   {
     "site": "claude",
@@ -3223,6 +3507,36 @@
   },
   {
     "site": "gemini",
+    "name": "goto",
+    "description": "Navigate to a Gemini conversation or page by URL or conversation ID",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "target",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Full URL or conversation ID"
+      },
+      {
+        "name": "wait",
+        "type": "str",
+        "default": "2)",
+        "required": false,
+        "help": "Seconds to wait after navigation (default: 2)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/goto.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "URL",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "history",
     "description": "Read all messages in the current Gemini conversation",
     "strategy": "cookie",
@@ -3254,6 +3568,37 @@
   },
   {
     "site": "gemini",
+    "name": "image",
+    "description": "Generate an image with Gemini Imagen or analyze an image URL",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Image generation prompt or image analysis request"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "120)",
+        "required": false,
+        "help": "Max seconds to wait (default: 120)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/image.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status",
+      "Response"
+    ],
+    "timeout": 300
+  },
+  {
+    "site": "gemini",
     "name": "new",
     "description": "Start a new Gemini conversation",
     "strategy": "cookie",
@@ -3268,6 +3613,87 @@
   },
   {
     "site": "gemini",
+    "name": "poll",
+    "description": "Poll until Gemini finishes generating, then return the full response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "3600)",
+        "required": false,
+        "help": "Max seconds to poll (default: 3600)"
+      },
+      {
+        "name": "interval",
+        "type": "str",
+        "default": "3)",
+        "required": false,
+        "help": "Poll interval in seconds (default: 3)"
+      },
+      {
+        "name": "min_length",
+        "type": "str",
+        "default": "10)",
+        "required": false,
+        "help": "Minimum response length to accept (default: 10)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/poll.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 7200
+  },
+  {
+    "site": "gemini",
+    "name": "promode",
+    "description": "Send a prompt to Gemini 2.0 Pro with extended thinking and wait for the full response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Prompt to send"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "1800)",
+        "required": false,
+        "help": "Max seconds to wait (default: 1800)"
+      },
+      {
+        "name": "model",
+        "type": "str",
+        "default": "pro)",
+        "required": false,
+        "help": "Model: pro | flash | ultra (default: pro)",
+        "choices": [
+          "pro",
+          "flash",
+          "ultra"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/promode.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 3600
+  },
+  {
+    "site": "gemini",
     "name": "read",
     "description": "Read the most recent Gemini response",
     "strategy": "cookie",
@@ -3279,6 +3705,96 @@
     "columns": [
       "Role",
       "Text"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "rename",
+    "description": "Rename the current Gemini conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "New conversation title"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/rename.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Title",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "search",
+    "description": "Search through Gemini conversation history",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search query"
+      },
+      {
+        "name": "limit",
+        "type": "str",
+        "default": "10)",
+        "required": false,
+        "help": "Max results (default: 10)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/search.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Title",
+      "URL"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "send",
+    "description": "Send a message to Gemini without waiting for the response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Message to send"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/send.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "share",
+    "description": "Get or create a share link for the current Gemini conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/share.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "URL",
+      "Status"
     ]
   },
   {
@@ -3324,6 +3840,35 @@
     "domain": "gemini.google.com",
     "columns": [
       "Model",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "upload",
+    "description": "Upload a file to the current Gemini conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "file",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Path to file to upload"
+      },
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": false,
+        "help": "Optional message to send with the file"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/upload.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "File",
       "Status"
     ]
   },
@@ -3486,6 +4031,36 @@
   },
   {
     "site": "grok",
+    "name": "goto",
+    "description": "Navigate to a Grok conversation or page by URL or conversation ID",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "target",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Full URL or conversation ID"
+      },
+      {
+        "name": "wait",
+        "type": "str",
+        "default": "2)",
+        "required": false,
+        "help": "Seconds to wait after navigation (default: 2)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/goto.js",
+    "domain": "grok.com",
+    "columns": [
+      "URL",
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
     "name": "history",
     "description": "Read all messages in the current Grok conversation",
     "strategy": "cookie",
@@ -3517,6 +4092,37 @@
   },
   {
     "site": "grok",
+    "name": "image",
+    "description": "Generate an image using Grok Aurora",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Image generation prompt"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "120)",
+        "required": false,
+        "help": "Max seconds to wait (default: 120)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/image.js",
+    "domain": "grok.com",
+    "columns": [
+      "Status",
+      "Response"
+    ],
+    "timeout": 300
+  },
+  {
+    "site": "grok",
     "name": "new",
     "description": "Start a new Grok conversation",
     "strategy": "cookie",
@@ -3531,6 +4137,44 @@
   },
   {
     "site": "grok",
+    "name": "poll",
+    "description": "Poll until Grok finishes generating, then return the full response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "3600)",
+        "required": false,
+        "help": "Max seconds to poll (default: 3600)"
+      },
+      {
+        "name": "interval",
+        "type": "str",
+        "default": "3)",
+        "required": false,
+        "help": "Poll interval in seconds (default: 3)"
+      },
+      {
+        "name": "min_length",
+        "type": "str",
+        "default": "10)",
+        "required": false,
+        "help": "Minimum response length (default: 10)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/poll.js",
+    "domain": "grok.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 7200
+  },
+  {
+    "site": "grok",
     "name": "read",
     "description": "Read the most recent Grok response",
     "strategy": "cookie",
@@ -3542,6 +4186,29 @@
     "columns": [
       "Role",
       "Text"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "rename",
+    "description": "Rename the current Grok conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "New conversation title"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/rename.js",
+    "domain": "grok.com",
+    "columns": [
+      "Title",
+      "Status"
     ]
   },
   {
@@ -3584,6 +4251,73 @@
   },
   {
     "site": "grok",
+    "name": "search",
+    "description": "Search through Grok conversation history",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search query"
+      },
+      {
+        "name": "limit",
+        "type": "str",
+        "default": "10)",
+        "required": false,
+        "help": "Max results (default: 10)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/search.js",
+    "domain": "grok.com",
+    "columns": [
+      "Title",
+      "URL"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "send",
+    "description": "Send a message to Grok without waiting for the response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Message to send"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/send.js",
+    "domain": "grok.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "share",
+    "description": "Get or create a share link for the current Grok conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/share.js",
+    "domain": "grok.com",
+    "columns": [
+      "URL",
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
     "name": "stop",
     "description": "Stop the current Grok generation",
     "strategy": "cookie",
@@ -3593,6 +4327,37 @@
     "modulePath": "grok/stop.js",
     "domain": "grok.com",
     "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "switch",
+    "description": "Switch the Grok model (grok-3, grok-3-mini, grok-2, etc.)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "model",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Model to switch to: grok-3 | grok-3-mini | grok-2 | mini",
+        "choices": [
+          "grok-3",
+          "grok-3-mini",
+          "grok-2",
+          "mini",
+          "3",
+          "2"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/switch.js",
+    "domain": "grok.com",
+    "columns": [
+      "Model",
       "Status"
     ]
   },
@@ -3626,6 +4391,35 @@
       "Text"
     ],
     "timeout": 600
+  },
+  {
+    "site": "grok",
+    "name": "upload",
+    "description": "Upload a file to Grok for analysis",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "file",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Path to file to upload"
+      },
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": false,
+        "help": "Optional message to send with the file"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/upload.js",
+    "domain": "grok.com",
+    "columns": [
+      "File",
+      "Status"
+    ]
   },
   {
     "site": "grok",
