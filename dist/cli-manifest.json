@@ -1296,6 +1296,46 @@
   },
   {
     "site": "chatgpt",
+    "name": "custom_instructions",
+    "description": "View or update ChatGPT custom instructions",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "view)",
+        "required": false,
+        "positional": true,
+        "help": "Action: view | set (default: view)",
+        "choices": [
+          "view",
+          "set"
+        ]
+      },
+      {
+        "name": "about",
+        "type": "str",
+        "required": false,
+        "help": "What to tell ChatGPT about you (for set action)"
+      },
+      {
+        "name": "respond",
+        "type": "str",
+        "required": false,
+        "help": "How ChatGPT should respond (for set action)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/custom_instructions.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Field",
+      "Content"
+    ]
+  },
+  {
+    "site": "chatgpt",
     "name": "deepresearch",
     "description": "Submit a deep research query to ChatGPT and wait for the full report",
     "strategy": "public",
@@ -1932,6 +1972,35 @@
     "domain": "chatgpt.com",
     "columns": [
       "File",
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "voice",
+    "description": "Start or stop ChatGPT voice mode (Advanced Voice Mode)",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "status)",
+        "required": false,
+        "positional": true,
+        "help": "Action: start | stop | status (default: status)",
+        "choices": [
+          "start",
+          "stop",
+          "status"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/voice.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Action",
       "Status"
     ]
   },
@@ -2669,6 +2738,20 @@
     "domain": "claude.ai",
     "columns": [
       "URL",
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "status",
+    "description": "Check Claude.ai service reachability and current page state",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/status.js",
+    "domain": "claude.ai",
+    "columns": [
       "Status"
     ]
   },
@@ -3781,6 +3864,35 @@
   },
   {
     "site": "gemini",
+    "name": "gems",
+    "description": "Browse, list, or launch Gemini Gems (custom AI models)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Search for a Gem by name (optional)"
+      },
+      {
+        "name": "launch",
+        "type": "str",
+        "required": false,
+        "help": "Gem name to launch directly"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/gems.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Name",
+      "Description"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "goto",
     "description": "Navigate to a Gemini conversation or page by URL or conversation ID",
     "strategy": "cookie",
@@ -4082,6 +4194,20 @@
     "domain": "gemini.google.com",
     "columns": [
       "URL",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "status",
+    "description": "Check Gemini service reachability and current page state",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/status.js",
+    "domain": "gemini.google.com",
+    "columns": [
       "Status"
     ]
   },
@@ -4664,6 +4790,20 @@
     "domain": "grok.com",
     "columns": [
       "URL",
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "status",
+    "description": "Check Grok service reachability and current page state",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/status.js",
+    "domain": "grok.com",
+    "columns": [
       "Status"
     ]
   },
