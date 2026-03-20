@@ -1232,6 +1232,39 @@
   },
   {
     "site": "chatgpt",
+    "name": "canvas",
+    "description": "Interact with ChatGPT Canvas — read content, copy, or trigger canvas mode",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "read)",
+        "required": false,
+        "positional": true,
+        "help": "Action: read | new (default: read)",
+        "choices": [
+          "read",
+          "new"
+        ]
+      },
+      {
+        "name": "prompt",
+        "type": "str",
+        "required": false,
+        "help": "Prompt to open canvas with (for new action)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/canvas.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Content"
+    ]
+  },
+  {
+    "site": "chatgpt",
     "name": "conversations",
     "description": "List ChatGPT conversations from sidebar; optionally navigate to one by index",
     "strategy": "public",
@@ -1294,6 +1327,28 @@
   },
   {
     "site": "chatgpt",
+    "name": "delete",
+    "description": "Delete the current chatgpt conversation",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "force",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": "Skip confirmation prompt"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/delete.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
     "name": "export",
     "description": "Export the current ChatGPT conversation to a local file (markdown or JSON)",
     "strategy": "public",
@@ -1325,6 +1380,33 @@
     "columns": [
       "File",
       "Messages",
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "feedback",
+    "description": "Give thumbs up or thumbs down feedback on the last chatgpt response",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "rating",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Rating: up | down",
+        "choices": [
+          "up",
+          "down"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/feedback.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Rating",
       "Status"
     ]
   },
@@ -1625,6 +1707,20 @@
     "columns": [
       "Role",
       "Text"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "regenerate",
+    "description": "Regenerate / retry the last chatgpt response",
+    "strategy": "public",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/regenerate.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Status"
     ]
   },
   {
@@ -2056,6 +2152,37 @@
   },
   {
     "site": "claude",
+    "name": "artifacts",
+    "description": "View or export Claude artifacts (code, documents, etc.) from the current conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "output",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Output file path to save artifacts (optional)"
+      },
+      {
+        "name": "index",
+        "type": "str",
+        "default": "last)",
+        "required": false,
+        "help": "Artifact index to show (default: last)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/artifacts.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Type",
+      "Title",
+      "Content"
+    ]
+  },
+  {
+    "site": "claude",
     "name": "ask",
     "description": "Send a prompt to Claude.ai and wait for the response",
     "strategy": "cookie",
@@ -2128,6 +2255,28 @@
   },
   {
     "site": "claude",
+    "name": "delete",
+    "description": "Delete the current claude.ai conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "force",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": "Skip confirmation prompt"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/delete.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
     "name": "export",
     "description": "Export the current Claude.ai conversation to a local file (markdown or JSON)",
     "strategy": "cookie",
@@ -2159,6 +2308,33 @@
     "columns": [
       "File",
       "Messages",
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "feedback",
+    "description": "Give thumbs up or thumbs down feedback on the last claude.ai response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "rating",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Rating: up | down",
+        "choices": [
+          "up",
+          "down"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "claude/feedback.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Rating",
       "Status"
     ]
   },
@@ -2347,6 +2523,20 @@
     "columns": [
       "Role",
       "Text"
+    ]
+  },
+  {
+    "site": "claude",
+    "name": "regenerate",
+    "description": "Regenerate / retry the last claude.ai response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/regenerate.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Status"
     ]
   },
   {
@@ -3471,6 +3661,28 @@
   },
   {
     "site": "gemini",
+    "name": "delete",
+    "description": "Delete the current gemini conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "force",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": "Skip confirmation prompt"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/delete.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "export",
     "description": "Export the current Gemini conversation to a local file (markdown or JSON)",
     "strategy": "cookie",
@@ -3502,6 +3714,68 @@
     "columns": [
       "File",
       "Messages",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "extensions",
+    "description": "List or toggle Gemini extensions (Google Workspace, YouTube, etc.)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "list)",
+        "required": false,
+        "positional": true,
+        "help": "Action: list | enable | disable (default: list)",
+        "choices": [
+          "list",
+          "enable",
+          "disable"
+        ]
+      },
+      {
+        "name": "name",
+        "type": "str",
+        "required": false,
+        "help": "Extension name to enable/disable"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/extensions.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Extension",
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "feedback",
+    "description": "Give thumbs up or thumbs down feedback on the last gemini response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "rating",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Rating: up | down",
+        "choices": [
+          "up",
+          "down"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/feedback.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Rating",
       "Status"
     ]
   },
@@ -3705,6 +3979,20 @@
     "columns": [
       "Role",
       "Text"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "regenerate",
+    "description": "Regenerate / retry the last gemini response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/regenerate.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status"
     ]
   },
   {
@@ -3995,6 +4283,28 @@
   },
   {
     "site": "grok",
+    "name": "delete",
+    "description": "Delete the current grok conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "force",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": "Skip confirmation prompt"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/delete.js",
+    "domain": "grok.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
     "name": "export",
     "description": "Export the current Grok conversation to a local file (markdown or JSON)",
     "strategy": "cookie",
@@ -4026,6 +4336,33 @@
     "columns": [
       "File",
       "Messages",
+      "Status"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "feedback",
+    "description": "Give thumbs up or thumbs down feedback on the last grok response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "rating",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Rating: up | down",
+        "choices": [
+          "up",
+          "down"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/feedback.js",
+    "domain": "grok.com",
+    "columns": [
+      "Rating",
       "Status"
     ]
   },
@@ -4186,6 +4523,20 @@
     "columns": [
       "Role",
       "Text"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "regenerate",
+    "description": "Regenerate / retry the last grok response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/regenerate.js",
+    "domain": "grok.com",
+    "columns": [
+      "Status"
     ]
   },
   {
@@ -4444,6 +4795,35 @@
       "Text"
     ],
     "timeout": 600
+  },
+  {
+    "site": "grok",
+    "name": "xai",
+    "description": "Get xAI / Grok account info, subscription status, and usage",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "action",
+        "type": "str",
+        "default": "info)",
+        "required": false,
+        "positional": true,
+        "help": "Action: info | usage | subscription (default: info)",
+        "choices": [
+          "info",
+          "usage",
+          "subscription"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/xai.js",
+    "domain": "grok.com",
+    "columns": [
+      "Key",
+      "Value"
+    ]
   },
   {
     "site": "hackernews",
