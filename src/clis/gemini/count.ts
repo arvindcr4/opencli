@@ -1,0 +1,31 @@
+import { cli, Strategy } from '../../registry.js';
+import type { IPage } from '../../types.js';
+
+export const countCommand = cli({
+  site: 'gemini',
+  name: 'count',
+  description: 'Count messages in the current gemini conversation',
+  domain: 'gemini.google.com',
+  strategy: Strategy.COOKIE,
+  browser: true,
+  args: [],
+  columns: ['Total', 'User', 'Assistant'],
+  func: async (page: IPage | null) => {
+    if (!page) throw new Error('Browser page not available');
+
+    const counts = await page.evaluate(`
+      (function() {
+        const all = document.querySelectorAll('model-response,user-query');
+        const user = Array.from(all).filter(el =>
+          el.getAttribute('data-message-author-role') === 'user' ||
+          el.tagName.toLowerCase().includes('user') ||
+          el.classList.contains('user-message') ||
+          el.getAttribute('data-testid') === 'user-message'
+        ).length;
+        return { total: all.length, user, assistant: all.length - user };
+      })()
+    `) as { total: number; user: number; assistant: number };
+
+    return [{ Total: String(counts.total), User: String(counts.user), Assistant: String(counts.assistant) }];
+  },
+});
