@@ -2221,6 +2221,20 @@
   },
   {
     "site": "claude",
+    "name": "archive",
+    "description": "Archive the current claude conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/archive.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "claude",
     "name": "artifacts",
     "description": "View or export Claude artifacts (code, documents, etc.) from the current conversation",
     "strategy": "cookie",
@@ -2498,6 +2512,21 @@
   },
   {
     "site": "claude",
+    "name": "models",
+    "description": "List available claude models in the model switcher",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/models.js",
+    "domain": "claude.ai",
+    "columns": [
+      "Model",
+      "Available"
+    ]
+  },
+  {
+    "site": "claude",
     "name": "new",
     "description": "Start a new Claude.ai conversation",
     "strategy": "cookie",
@@ -2673,6 +2702,16 @@
       "Text"
     ],
     "timeout": 3600
+  },
+  {
+    "site": "claude",
+    "name": "restore",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "claude/restore.js"
   },
   {
     "site": "claude",
@@ -3641,6 +3680,20 @@
   },
   {
     "site": "gemini",
+    "name": "archive",
+    "description": "Archive the current gemini conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/archive.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "ask",
     "description": "Send a prompt to Gemini and wait for the response",
     "strategy": "cookie",
@@ -3985,6 +4038,21 @@
   },
   {
     "site": "gemini",
+    "name": "models",
+    "description": "List available gemini models in the model switcher",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/models.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Model",
+      "Available"
+    ]
+  },
+  {
+    "site": "gemini",
     "name": "new",
     "description": "Start a new Gemini conversation",
     "strategy": "cookie",
@@ -4129,6 +4197,16 @@
       "Title",
       "Status"
     ]
+  },
+  {
+    "site": "gemini",
+    "name": "restore",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/restore.js"
   },
   {
     "site": "gemini",
@@ -4309,6 +4387,20 @@
       "Text"
     ],
     "timeout": 600
+  },
+  {
+    "site": "grok",
+    "name": "archive",
+    "description": "Archive the current grok conversation",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/archive.js",
+    "domain": "grok.com",
+    "columns": [
+      "Status"
+    ]
   },
   {
     "site": "grok",
@@ -4586,6 +4678,21 @@
   },
   {
     "site": "grok",
+    "name": "models",
+    "description": "List available grok models in the model switcher",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/models.js",
+    "domain": "grok.com",
+    "columns": [
+      "Model",
+      "Available"
+    ]
+  },
+  {
+    "site": "grok",
     "name": "new",
     "description": "Start a new Grok conversation",
     "strategy": "cookie",
@@ -4725,6 +4832,16 @@
       "Text"
     ],
     "timeout": 3600
+  },
+  {
+    "site": "grok",
+    "name": "restore",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "grok/restore.js"
   },
   {
     "site": "grok",
