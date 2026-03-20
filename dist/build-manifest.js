@@ -73,7 +73,7 @@ export function parseTsArgsBlock(argsBlock) {
     const args = [];
     let cursor = 0;
     while (cursor < argsBlock.length) {
-        const nameMatch = argsBlock.slice(cursor).match(/\{\s*name\s*:\s*['"`](\w+)['"`]/);
+        const nameMatch = argsBlock.slice(cursor).match(/\{\s*name\s*:\s*['"`]([^'"`]+)['"`]/);
         if (!nameMatch || nameMatch.index === undefined)
             break;
         const objectStart = cursor + nameMatch.index;
@@ -193,7 +193,8 @@ function scanTs(filePath, site) {
         }
         // Extract timeoutSeconds
         const timeoutMatch = src.match(/timeoutSeconds\s*:\s*(\d+)/);
-        if (timeoutMatch) entry.timeout = parseInt(timeoutMatch[1], 10);
+        if (timeoutMatch)
+            entry.timeout = parseInt(timeoutMatch[1], 10);
         // Extract args array items: { name: '...', ... }
         const argsBlock = extractTsArgsBlock(src);
         if (argsBlock) {

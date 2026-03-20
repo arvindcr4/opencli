@@ -1,0 +1,36 @@
+import { cli, Strategy } from '../../registry.js';
+import type { IPage } from '../../types.js';
+
+export const gotoCommand = cli({
+  site: 'chatgpt',
+  name: 'goto',
+  description: 'Navigate to a ChatGPT conversation or page by URL or conversation ID',
+  domain: 'chatgpt.com',
+  strategy: Strategy.PUBLIC,
+  browser: true,
+  args: [
+    { name: 'target', required: true, positional: true, help: 'Full URL or conversation ID (e.g. abc123 → chatgpt.com/c/abc123)' },
+    { name: 'wait', required: false, help: 'Seconds to wait after navigation (default: 2)', default: '2' },
+  ],
+  columns: ['URL', 'Status'],
+  func: async (page: IPage | null, kwargs: any) => {
+    if (!page) throw new Error('Browser page not available');
+    const target = kwargs.target as string;
+    const waitSecs = parseInt(kwargs.wait as string, 10) || 2;
+
+    let url: string;
+    if (target.startsWith('http')) {
+      url = target;
+    } else if (target.startsWith('/')) {
+      url = `https://chatgpt.com${target}`;
+    } else {
+      // Treat as conversation ID
+      url = `https://chatgpt.com/c/${target}`;
+    }
+
+    await page.goto(url);
+    if (waitSecs > 0) await page.wait(waitSecs);
+
+    return [{ URL: url, Status: 'Navigated' }];
+  },
+});
