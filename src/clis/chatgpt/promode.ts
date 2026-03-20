@@ -78,7 +78,7 @@ export const promodeCommand = cli({
   domain: 'chatgpt.com',
   strategy: Strategy.PUBLIC,
   browser: true,
-  timeoutSeconds: 600,
+  timeoutSeconds: 7200,
   args: [
     { name: 'text', required: true, positional: true, help: 'Question or task' },
     { name: 'timeout', required: false, help: 'Max seconds to wait (default: 300)', default: '300' },
@@ -127,18 +127,24 @@ export const promodeCommand = cli({
     });
     await new Promise((r) => setTimeout(r, 200));
 
-    // Primary submit: click send button (reliable with or without file attachments)
-    const sent = await cdpBridge.send('Runtime.evaluate', {
-      expression: `(function() {
-        const btn = document.querySelector('[data-testid="send-button"]')
-          || document.querySelector('button[aria-label*="Send"]');
-        if (!btn) return false;
-        const r = btn.getBoundingClientRect();
-        return JSON.stringify({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
-      })()`,
-      returnByValue: true,
-    });
-    const sendPos = sent?.result?.value ? JSON.parse(sent.result.value) : null;
+    // Primary submit: poll for send button (up to 10s) then click with real mouse events
+    let sendPos: { x: number; y: number } | null = null;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const sent = await cdpBridge.send('Runtime.evaluate', {
+        expression: `(function() {
+          const btn = document.querySelector('[data-testid="send-button"]')
+            || document.querySelector('button[aria-label*="Send"]');
+          if (!btn || btn.disabled) return null;
+          const r = btn.getBoundingClientRect();
+          if (r.width === 0) return null;
+          return JSON.stringify({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+        })()`,
+        returnByValue: true,
+      });
+      const val = sent?.result?.value ? JSON.parse(sent.result.value) : null;
+      if (val) { sendPos = val; break; }
+      await new Promise((r) => setTimeout(r, 500));
+    }
     if (sendPos) {
       await cdpBridge.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: sendPos.x, y: sendPos.y });
       await cdpBridge.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: sendPos.x, y: sendPos.y, button: 'left', clickCount: 1 });
@@ -175,6 +181,7 @@ export const promodeCommand = cli({
               cur.startsWith('Pro thinking') || cur.startsWith('Thinking') ||
               cur.startsWith('Reading') || cur.startsWith('Searching') ||
               cur.startsWith('Analyzing') || cur.startsWith('Writing') ||
+              cur.startsWith("I'm") || cur.startsWith("I am") ||
               /^(Looking|Processing|Generating|Reviewing|Checking)/i.test(cur);
             if (isThinking) { stableCount = 0; prev = cur; continue; }
             if (cur === prev) { stableCount++; if (stableCount >= 3) break; }

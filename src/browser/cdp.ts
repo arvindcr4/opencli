@@ -17,22 +17,26 @@ export class CDPBridge {
   private _ws: WebSocket | null = null;
   private _idCounter = 0;
   private _pending = new Map<number, { resolve: (val: any) => void; reject: (err: Error) => void }>();
+  private _tabId: string | null = null;
+  private _baseEndpoint: string | null = null;
 
   async connect(opts?: { timeout?: number }): Promise<IPage> {
     const endpoint = process.env.OPENCLI_CDP_ENDPOINT;
     if (!endpoint) throw new Error('OPENCLI_CDP_ENDPOINT is not set');
 
-    // If it's a direct ws:// URL, use it. Otherwise, fetch the /json endpoint to find a page.
+    // If it's a direct ws:// URL, use it. Otherwise, create a new isolated tab.
     let wsUrl = endpoint;
     if (endpoint.startsWith('http')) {
-      const res = await fetch(`${endpoint.replace(/\/$/, '')}/json`);
-      if (!res.ok) throw new Error(`Failed to fetch CDP targets: ${res.statusText}`);
-      const targets = await res.json() as CDPTarget[];
-      const target = selectCDPTarget(targets);
-      if (!target || !target.webSocketDebuggerUrl) {
-        throw new Error('No inspectable targets found at CDP endpoint');
-      }
+      const base = endpoint.replace(/\/$/, '');
+      this._baseEndpoint = base;
+      // Create a fresh tab so concurrent opencli processes don't share a tab
+      // Chrome requires PUT for /json/new (GET returns 405)
+      const res = await fetch(`${base}/json/new?url=about:blank`, { method: 'PUT' });
+      if (!res.ok) throw new Error(`Failed to create new CDP tab: ${res.statusText}`);
+      const target = await res.json() as any;
+      if (!target?.webSocketDebuggerUrl) throw new Error('No webSocketDebuggerUrl in new tab response');
       wsUrl = target.webSocketDebuggerUrl;
+      this._tabId = target.id ?? null;
     }
 
     return new Promise((resolve, reject) => {
@@ -78,6 +82,11 @@ export class CDPBridge {
       p.reject(new Error('CDP connection closed'));
     }
     this._pending.clear();
+    // Close the tab we created so Chrome doesn't accumulate orphaned tabs
+    if (this._tabId && this._baseEndpoint) {
+      try { await fetch(`${this._baseEndpoint}/json/close/${this._tabId}`); } catch { /* ignore */ }
+      this._tabId = null;
+    }
   }
 
   async send(method: string, params: any = {}): Promise<any> {

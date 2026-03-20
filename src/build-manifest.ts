@@ -238,6 +238,10 @@ function scanTs(filePath: string, site: string): ManifestEntry {
       entry.columns = colMatch[1].split(',').map(s => s.trim().replace(/^['"`]|['"`]$/g, '')).filter(Boolean);
     }
 
+    // Extract timeoutSeconds
+    const timeoutMatch = src.match(/timeoutSeconds\s*:\s*(\d+)/);
+    if (timeoutMatch) entry.timeout = parseInt(timeoutMatch[1], 10);
+
     // Extract args array items: { name: '...', ... }
     const argsBlock = extractTsArgsBlock(src);
     if (argsBlock) {

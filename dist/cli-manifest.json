@@ -1,0 +1,6094 @@
+[
+  {
+    "site": "antigravity",
+    "name": "dump",
+    "description": "Dump the DOM to help AI understand the UI",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "antigravity/dump.js",
+    "domain": "localhost",
+    "columns": [
+      "htmlFile",
+      "snapFile"
+    ]
+  },
+  {
+    "site": "antigravity",
+    "name": "extract-code",
+    "description": "Extract multi-line code blocks from the current Antigravity conversation",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "antigravity/extract-code.js",
+    "domain": "localhost",
+    "columns": [
+      "code"
+    ]
+  },
+  {
+    "site": "antigravity",
+    "name": "model",
+    "description": "Switch the active LLM model in Antigravity",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "name",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Target model name (e.g. claude, gemini, o1)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "antigravity/model.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "antigravity",
+    "name": "new",
+    "description": "Start a new conversation / clear context in Antigravity",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "antigravity/new.js",
+    "domain": "localhost",
+    "columns": [
+      "status"
+    ]
+  },
+  {
+    "site": "antigravity",
+    "name": "read",
+    "description": "Read the latest chat messages from Antigravity AI",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "last",
+        "type": "str",
+        "required": false,
+        "help": "Number of recent messages to read (not fully implemented due to generic structure, currently returns full history text or latest chunk)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "antigravity/read.js",
+    "domain": "localhost",
+    "columns": [
+      "role",
+      "content"
+    ]
+  },
+  {
+    "site": "antigravity",
+    "name": "send",
+    "description": "Send a message to Antigravity AI via the internal Lexical editor",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "message",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "The message text to send"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "antigravity/send.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Message"
+    ]
+  },
+  {
+    "site": "antigravity",
+    "name": "status",
+    "description": "Check Antigravity CDP connection and get current page state",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "antigravity/status.js",
+    "domain": "localhost",
+    "columns": [
+      "status",
+      "url",
+      "title"
+    ]
+  },
+  {
+    "site": "antigravity",
+    "name": "watch",
+    "description": "Stream new chat messages from Antigravity in real-time",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "antigravity/watch.js",
+    "domain": "localhost",
+    "columns": []
+  },
+  {
+    "site": "apple-podcasts",
+    "name": "episodes",
+    "description": "List recent episodes of an Apple Podcast (use ID from search)",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "id",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Podcast ID (collectionId from search output)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": "Max episodes to show"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "apple-podcasts/episodes.js",
+    "columns": [
+      "title",
+      "duration",
+      "date"
+    ]
+  },
+  {
+    "site": "apple-podcasts",
+    "name": "search",
+    "description": "Search Apple Podcasts",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "keyword",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search keyword"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 10,
+        "required": false,
+        "help": "Max results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "apple-podcasts/search.js",
+    "columns": [
+      "id",
+      "title",
+      "author",
+      "episodes",
+      "genre"
+    ]
+  },
+  {
+    "site": "apple-podcasts",
+    "name": "top",
+    "description": "Top podcasts chart on Apple Podcasts",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of podcasts (max 100)"
+      },
+      {
+        "name": "country",
+        "type": "str",
+        "default": "us",
+        "required": false,
+        "help": "Country code (e.g. us, cn, gb, jp)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "apple-podcasts/top.js",
+    "columns": [
+      "rank",
+      "title",
+      "author",
+      "id"
+    ]
+  },
+  {
+    "site": "apple-podcasts",
+    "name": "utils",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "apple-podcasts/utils.js"
+  },
+  {
+    "site": "apple-podcasts",
+    "name": "utils.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "apple-podcasts/utils.test.js"
+  },
+  {
+    "site": "barchart",
+    "name": "flow",
+    "description": "Barchart unusual options activity / options flow",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "type",
+        "type": "str",
+        "default": "all",
+        "required": false,
+        "help": "Filter: all, call, or put",
+        "choices": [
+          "all",
+          "call",
+          "put"
+        ]
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "barchart/flow.js",
+    "domain": "www.barchart.com",
+    "columns": [
+      "symbol",
+      "type",
+      "strike",
+      "expiration",
+      "last",
+      "volume",
+      "openInterest",
+      "volOiRatio",
+      "iv"
+    ]
+  },
+  {
+    "site": "barchart",
+    "name": "greeks",
+    "description": "Barchart options greeks overview (IV, delta, gamma, theta, vega)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "symbol",
+        "type": "str",
+        "required": true,
+        "help": "Stock ticker (e.g. AAPL)"
+      },
+      {
+        "name": "expiration",
+        "type": "str",
+        "required": false,
+        "help": "Expiration date (YYYY-MM-DD). Defaults to the nearest available expiration."
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 10,
+        "required": false,
+        "help": "Number of near-the-money strikes per type"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "barchart/greeks.js",
+    "domain": "www.barchart.com",
+    "columns": [
+      "type",
+      "strike",
+      "last",
+      "iv",
+      "delta",
+      "gamma",
+      "theta",
+      "vega",
+      "rho",
+      "volume",
+      "openInterest",
+      "expiration"
+    ]
+  },
+  {
+    "site": "barchart",
+    "name": "options",
+    "description": "Barchart options chain with greeks, IV, volume, and open interest",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "symbol",
+        "type": "str",
+        "required": true,
+        "help": "Stock ticker (e.g. AAPL)"
+      },
+      {
+        "name": "type",
+        "type": "str",
+        "default": "Call",
+        "required": false,
+        "help": "Option type: Call or Put",
+        "choices": [
+          "Call",
+          "Put"
+        ]
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Max number of strikes to return"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "barchart/options.js",
+    "domain": "www.barchart.com",
+    "columns": [
+      "strike",
+      "bid",
+      "ask",
+      "last",
+      "change",
+      "volume",
+      "openInterest",
+      "iv",
+      "delta",
+      "gamma",
+      "theta",
+      "vega",
+      "expiration"
+    ]
+  },
+  {
+    "site": "barchart",
+    "name": "quote",
+    "description": "Barchart stock quote with price, volume, and key metrics",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "symbol",
+        "type": "str",
+        "required": true,
+        "help": "Stock ticker (e.g. AAPL, MSFT, TSLA)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "barchart/quote.js",
+    "domain": "www.barchart.com",
+    "columns": [
+      "symbol",
+      "name",
+      "price",
+      "change",
+      "changePct",
+      "open",
+      "high",
+      "low",
+      "prevClose",
+      "volume",
+      "avgVolume",
+      "marketCap",
+      "peRatio",
+      "eps"
+    ]
+  },
+  {
+    "site": "bbc",
+    "name": "news",
+    "description": "BBC News headlines (RSS)",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of headlines (max 50)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bbc/news.js",
+    "domain": "www.bbc.com",
+    "columns": [
+      "rank",
+      "title",
+      "description",
+      "url"
+    ]
+  },
+  {
+    "site": "bilibili",
+    "name": "download",
+    "description": "\u4e0b\u8f7dB\u7ad9\u89c6\u9891\uff08\u9700\u8981 yt-dlp\uff09",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "bvid",
+        "type": "str",
+        "required": true,
+        "help": "Video BV ID (e.g., BV1xxx)"
+      },
+      {
+        "name": "output",
+        "type": "str",
+        "default": "./bilibili-downloads",
+        "required": false,
+        "help": "Output directory"
+      },
+      {
+        "name": "quality",
+        "type": "str",
+        "default": "best",
+        "required": false,
+        "help": "Video quality (best, 1080p, 720p, 480p)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bilibili/download.js",
+    "domain": "www.bilibili.com",
+    "columns": [
+      "bvid",
+      "title",
+      "status",
+      "size"
+    ]
+  },
+  {
+    "site": "bilibili",
+    "name": "dynamic",
+    "description": "Get Bilibili user dynamic feed",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bilibili/dynamic.js",
+    "domain": "www.bilibili.com",
+    "columns": [
+      "id",
+      "author",
+      "text",
+      "likes",
+      "url"
+    ]
+  },
+  {
+    "site": "bilibili",
+    "name": "favorite",
+    "description": "\u6211\u7684\u9ed8\u8ba4\u6536\u85cf\u5939",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of results"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Page number"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bilibili/favorite.js",
+    "domain": "www.bilibili.com",
+    "columns": [
+      "rank",
+      "title",
+      "author",
+      "plays",
+      "url"
+    ]
+  },
+  {
+    "site": "bilibili",
+    "name": "feed",
+    "description": "\u5173\u6ce8\u7684\u4eba\u7684\u52a8\u6001\u65f6\u95f4\u7ebf",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of results"
+      },
+      {
+        "name": "type",
+        "type": "str",
+        "default": "all",
+        "required": false,
+        "help": "Filter: all, video, article"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bilibili/feed.js",
+    "domain": "www.bilibili.com",
+    "columns": [
+      "rank",
+      "author",
+      "title",
+      "type",
+      "url"
+    ]
+  },
+  {
+    "site": "bilibili",
+    "name": "following",
+    "description": "\u83b7\u53d6 Bilibili \u7528\u6237\u7684\u5173\u6ce8\u5217\u8868",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "uid",
+        "type": "str",
+        "required": false,
+        "help": "\u76ee\u6807\u7528\u6237 ID\uff08\u9ed8\u8ba4\u4e3a\u5f53\u524d\u767b\u5f55\u7528\u6237\uff09"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "\u9875\u7801"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 50,
+        "required": false,
+        "help": "\u6bcf\u9875\u6570\u91cf (\u6700\u5927 50)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bilibili/following.js",
+    "columns": [
+      "mid",
+      "name",
+      "sign",
+      "following",
+      "fans"
+    ]
+  },
+  {
+    "site": "bilibili",
+    "name": "history",
+    "description": "\u6211\u7684\u89c2\u770b\u5386\u53f2",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bilibili/history.js",
+    "domain": "www.bilibili.com",
+    "columns": [
+      "rank",
+      "title",
+      "author",
+      "progress",
+      "url"
+    ]
+  },
+  {
+    "site": "bilibili",
+    "name": "hot",
+    "description": "B\u7ad9\u70ed\u95e8\u89c6\u9891",
+    "domain": "www.bilibili.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of videos"
+      }
+    ],
+    "columns": [
+      "rank",
+      "title",
+      "author",
+      "play",
+      "danmaku"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.bilibili.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const res = await fetch('https://api.bilibili.com/x/web-interface/popular?ps=${{ args.limit }}&pn=1', {\n    credentials: 'include'\n  });\n  const data = await res.json();\n  return (data?.data?.list || []).map((item) => ({\n    title: item.title,\n    author: item.owner?.name,\n    play: item.stat?.view,\n    danmaku: item.stat?.danmaku,\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "title": "${{ item.title }}",
+          "author": "${{ item.author }}",
+          "play": "${{ item.play }}",
+          "danmaku": "${{ item.danmaku }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "bilibili",
+    "name": "me",
+    "description": "My Bilibili profile info",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "bilibili/me.js",
+    "domain": "www.bilibili.com",
+    "columns": [
+      "name",
+      "uid",
+      "level",
+      "coins",
+      "followers",
+      "following"
+    ]
+  },
+  {
+    "site": "bilibili",
+    "name": "ranking",
+    "description": "Get Bilibili video ranking board",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bilibili/ranking.js",
+    "domain": "www.bilibili.com",
+    "columns": [
+      "rank",
+      "title",
+      "author",
+      "score",
+      "url"
+    ]
+  },
+  {
+    "site": "bilibili",
+    "name": "search",
+    "description": "Search Bilibili videos or users",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "keyword",
+        "type": "str",
+        "required": true,
+        "help": "Search keyword"
+      },
+      {
+        "name": "type",
+        "type": "str",
+        "default": "video",
+        "required": false,
+        "help": "video or user"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Result page"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bilibili/search.js",
+    "domain": "www.bilibili.com",
+    "columns": [
+      "rank",
+      "title",
+      "author",
+      "score",
+      "url"
+    ]
+  },
+  {
+    "site": "bilibili",
+    "name": "subtitle",
+    "description": "\u83b7\u53d6 Bilibili \u89c6\u9891\u7684\u5b57\u5e55",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "bvid",
+        "type": "str",
+        "required": true,
+        "help": ""
+      },
+      {
+        "name": "lang",
+        "type": "str",
+        "required": false,
+        "help": "\u5b57\u5e55\u8bed\u8a00\u4ee3\u7801 (\u5982 zh-CN, en-US, ai-zh)\uff0c\u9ed8\u8ba4\u53d6\u7b2c\u4e00\u4e2a"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bilibili/subtitle.js",
+    "columns": [
+      "index",
+      "from",
+      "to",
+      "content"
+    ]
+  },
+  {
+    "site": "bilibili",
+    "name": "user-videos",
+    "description": "\u67e5\u770b\u6307\u5b9a\u7528\u6237\u7684\u6295\u7a3f\u89c6\u9891",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "uid",
+        "type": "str",
+        "required": true,
+        "help": "User UID or username"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of results"
+      },
+      {
+        "name": "order",
+        "type": "str",
+        "default": "pubdate",
+        "required": false,
+        "help": "Sort: pubdate, click, stow"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Page number"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bilibili/user-videos.js",
+    "domain": "www.bilibili.com",
+    "columns": [
+      "rank",
+      "title",
+      "plays",
+      "likes",
+      "date",
+      "url"
+    ]
+  },
+  {
+    "site": "boss",
+    "name": "chatlist",
+    "description": "BOSS\u76f4\u8058\u67e5\u770b\u804a\u5929\u5217\u8868\uff08\u62db\u8058\u7aef\uff09",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "page",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Page number"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of results"
+      },
+      {
+        "name": "job_id",
+        "type": "str",
+        "default": "0",
+        "required": false,
+        "help": "Filter by job ID (0=all)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/chatlist.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "name",
+      "job",
+      "last_msg",
+      "last_time",
+      "uid",
+      "security_id"
+    ]
+  },
+  {
+    "site": "boss",
+    "name": "chatmsg",
+    "description": "BOSS\u76f4\u8058\u67e5\u770b\u4e0e\u5019\u9009\u4eba\u7684\u804a\u5929\u6d88\u606f",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "uid",
+        "type": "str",
+        "required": true,
+        "help": "Encrypted UID (from chatlist)"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Page number"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/chatmsg.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "from",
+      "type",
+      "text",
+      "time"
+    ]
+  },
+  {
+    "site": "boss",
+    "name": "detail",
+    "description": "BOSS\u76f4\u8058\u67e5\u770b\u804c\u4f4d\u8be6\u60c5",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "security_id",
+        "type": "str",
+        "required": true,
+        "help": "Security ID from search results (securityId field)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/detail.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "name",
+      "salary",
+      "experience",
+      "degree",
+      "city",
+      "district",
+      "description",
+      "skills",
+      "welfare",
+      "boss_name",
+      "boss_title",
+      "active_time",
+      "company",
+      "industry",
+      "scale",
+      "stage",
+      "address",
+      "url"
+    ]
+  },
+  {
+    "site": "boss",
+    "name": "search",
+    "description": "BOSS\u76f4\u8058\u641c\u7d22\u804c\u4f4d",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "help": "Search keyword (e.g. AI agent, \u524d\u7aef)"
+      },
+      {
+        "name": "city",
+        "type": "str",
+        "default": "\u5317\u4eac",
+        "required": false,
+        "help": "City name or code (e.g. \u676d\u5dde, \u4e0a\u6d77, 101010100)"
+      },
+      {
+        "name": "experience",
+        "type": "str",
+        "default": "",
+        "required": false,
+        "help": "Experience: \u5e94\u5c4a/1\u5e74\u4ee5\u5185/1-3\u5e74/3-5\u5e74/5-10\u5e74/10\u5e74\u4ee5\u4e0a"
+      },
+      {
+        "name": "degree",
+        "type": "str",
+        "default": "",
+        "required": false,
+        "help": "Degree: \u5927\u4e13/\u672c\u79d1/\u7855\u58eb/\u535a\u58eb"
+      },
+      {
+        "name": "salary",
+        "type": "str",
+        "default": "",
+        "required": false,
+        "help": "Salary: 3K\u4ee5\u4e0b/3-5K/5-10K/10-15K/15-20K/20-30K/30-50K/50K\u4ee5\u4e0a"
+      },
+      {
+        "name": "industry",
+        "type": "str",
+        "default": "",
+        "required": false,
+        "help": "Industry code or name (e.g. 100020, \u4e92\u8054\u7f51)"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Page number"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": "Number of results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/search.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "name",
+      "salary",
+      "company",
+      "area",
+      "experience",
+      "degree",
+      "skills",
+      "boss",
+      "security_id",
+      "url"
+    ]
+  },
+  {
+    "site": "boss",
+    "name": "send",
+    "description": "BOSS\u76f4\u8058\u53d1\u9001\u804a\u5929\u6d88\u606f",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "uid",
+        "type": "str",
+        "required": true,
+        "help": "Encrypted UID of the candidate (from chatlist)"
+      },
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "help": "Message text to send"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/send.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "status",
+      "detail"
+    ]
+  },
+  {
+    "site": "chaoxing",
+    "name": "assignments",
+    "description": "\u5b66\u4e60\u901a\u4f5c\u4e1a\u5217\u8868",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "course",
+        "type": "string",
+        "required": false,
+        "help": "\u6309\u8bfe\u7a0b\u540d\u8fc7\u6ee4\uff08\u6a21\u7cca\u5339\u914d\uff09"
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "default": "all",
+        "required": false,
+        "help": "\u6309\u72b6\u6001\u8fc7\u6ee4",
+        "choices": [
+          "all",
+          "pending",
+          "submitted",
+          "graded"
+        ]
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "\u6700\u5927\u8fd4\u56de\u6570\u91cf"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chaoxing/assignments.js",
+    "domain": "mooc2-ans.chaoxing.com",
+    "columns": [
+      "rank",
+      "course",
+      "title",
+      "deadline",
+      "status",
+      "score"
+    ]
+  },
+  {
+    "site": "chaoxing",
+    "name": "exams",
+    "description": "\u5b66\u4e60\u901a\u8003\u8bd5\u5217\u8868",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "course",
+        "type": "string",
+        "required": false,
+        "help": "\u6309\u8bfe\u7a0b\u540d\u8fc7\u6ee4\uff08\u6a21\u7cca\u5339\u914d\uff09"
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "default": "all",
+        "required": false,
+        "help": "\u6309\u72b6\u6001\u8fc7\u6ee4",
+        "choices": [
+          "all",
+          "upcoming",
+          "ongoing",
+          "finished"
+        ]
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "\u6700\u5927\u8fd4\u56de\u6570\u91cf"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chaoxing/exams.js",
+    "domain": "mooc2-ans.chaoxing.com",
+    "columns": [
+      "rank",
+      "course",
+      "title",
+      "start",
+      "end",
+      "status",
+      "score"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "ask",
+    "description": "Send a prompt and wait for the AI response (send + wait + read)",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Prompt to send"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "30)",
+        "required": false,
+        "help": "Max seconds to wait for response (default: 30)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/ask.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "ax",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/ax.js"
+  },
+  {
+    "site": "chatgpt",
+    "name": "new",
+    "description": "Open a new ChatGPT chat (desktop app on macOS, browser on Linux)",
+    "strategy": "public",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/new.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "read",
+    "description": "Read the most recent ChatGPT response (desktop app on macOS, browser on Linux)",
+    "strategy": "public",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/read.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "send",
+    "description": "Send a message to ChatGPT (desktop app on macOS, browser on Linux)",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Message to send"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/send.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "status",
+    "description": "Check ChatGPT status (desktop app on macOS, chatgpt.com reachability on Linux)",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/status.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "deepresearch",
+    "description": "Submit a deep research query to ChatGPT and wait for the full report",
+    "strategy": "public",
+    "browser": true,
+    "timeout": 1800,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Research query"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "900",
+        "required": false,
+        "help": "Max seconds to wait for report (default: 900)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/deepresearch.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "promode",
+    "description": "Ask ChatGPT in Pro mode (Extended Pro / o3-pro with extended thinking)",
+    "strategy": "public",
+    "browser": true,
+    "timeout": 7200,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Question or task"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "300",
+        "required": false,
+        "help": "Max seconds to wait (default: 300)"
+      },
+      {
+        "name": "mode",
+        "type": "str",
+        "default": "pro",
+        "required": false,
+        "help": "Model mode: instant | thinking | pro (default: pro)"
+      },
+      {
+        "name": "file",
+        "type": "str",
+        "required": false,
+        "help": "Absolute path to a file to attach"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/promode.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "chatwise",
+    "name": "ask",
+    "description": "Send a prompt and wait for the AI response (send + wait + read)",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Prompt to send"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "30)",
+        "required": false,
+        "help": "Max seconds to wait (default: 30)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatwise/ask.js",
+    "domain": "localhost",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "chatwise",
+    "name": "export",
+    "description": "Export the current ChatWise conversation to a Markdown file",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "output",
+        "type": "str",
+        "default": "/tmp/chatwise-export.md)",
+        "required": false,
+        "positional": true,
+        "help": "Output file (default: /tmp/chatwise-export.md)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatwise/export.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "File",
+      "Messages"
+    ]
+  },
+  {
+    "site": "chatwise",
+    "name": "history",
+    "description": "List conversation history in ChatWise sidebar",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatwise/history.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Title"
+    ]
+  },
+  {
+    "site": "chatwise",
+    "name": "model",
+    "description": "Get or switch the active AI model in ChatWise",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "model_name",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Model to switch to (e.g. gpt-4, claude-3)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatwise/model.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Model"
+    ]
+  },
+  {
+    "site": "chatwise",
+    "name": "new",
+    "description": "Start a new conversation in ChatWise",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatwise/new.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "chatwise",
+    "name": "read",
+    "description": "Read the current ChatWise conversation history",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatwise/read.js",
+    "domain": "localhost",
+    "columns": [
+      "Content"
+    ]
+  },
+  {
+    "site": "chatwise",
+    "name": "screenshot",
+    "description": "Capture a snapshot of the current ChatWise window (DOM + Accessibility tree)",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "output",
+        "type": "str",
+        "default": "/tmp/chatwise-snapshot)",
+        "required": false,
+        "positional": true,
+        "help": "Output file path (default: /tmp/chatwise-snapshot)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatwise/screenshot.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "File"
+    ]
+  },
+  {
+    "site": "chatwise",
+    "name": "send",
+    "description": "Send a message to the active ChatWise conversation",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Message to send"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatwise/send.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "InjectedText"
+    ]
+  },
+  {
+    "site": "chatwise",
+    "name": "status",
+    "description": "Check active CDP connection to ChatWise Desktop",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatwise/status.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Url",
+      "Title"
+    ]
+  },
+  {
+    "site": "codex",
+    "name": "ask",
+    "description": "Send a prompt and wait for the AI response (send + wait + read)",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Prompt to send"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "60)",
+        "required": false,
+        "help": "Max seconds to wait for response (default: 60)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "codex/ask.js",
+    "domain": "localhost",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "codex",
+    "name": "dump",
+    "description": "Dump the DOM and Accessibility tree of Codex for reverse-engineering",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "codex/dump.js",
+    "domain": "localhost",
+    "columns": [
+      "action",
+      "files"
+    ]
+  },
+  {
+    "site": "codex",
+    "name": "export",
+    "description": "Export the current Codex conversation to a Markdown file",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "output",
+        "type": "str",
+        "default": "/tmp/codex-export.md)",
+        "required": false,
+        "positional": true,
+        "help": "Output file (default: /tmp/codex-export.md)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "codex/export.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "File",
+      "Messages"
+    ]
+  },
+  {
+    "site": "codex",
+    "name": "extract-diff",
+    "description": "Extract visual code review diff patches from Codex",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "codex/extract-diff.js",
+    "domain": "localhost",
+    "columns": [
+      "File",
+      "Diff"
+    ]
+  },
+  {
+    "site": "codex",
+    "name": "history",
+    "description": "List recent conversation threads in Codex",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "codex/history.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Title"
+    ]
+  },
+  {
+    "site": "codex",
+    "name": "model",
+    "description": "Get or switch the currently active AI model in Codex Desktop",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "model_name",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "The ID of the model to switch to (e.g. gpt-4)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "codex/model.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Model"
+    ]
+  },
+  {
+    "site": "codex",
+    "name": "new",
+    "description": "Start a new Codex conversation thread / isolated workspace",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "codex/new.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Action"
+    ]
+  },
+  {
+    "site": "codex",
+    "name": "read",
+    "description": "Read the contents of the current Codex conversation thread",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "codex/read.js",
+    "domain": "localhost",
+    "columns": [
+      "Content"
+    ]
+  },
+  {
+    "site": "codex",
+    "name": "screenshot",
+    "description": "Capture a snapshot of the current Codex window (DOM + Accessibility tree)",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "output",
+        "type": "str",
+        "default": "/tmp/codex-snapshot.txt)",
+        "required": false,
+        "positional": true,
+        "help": "Output file path (default: /tmp/codex-snapshot.txt)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "codex/screenshot.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "File"
+    ]
+  },
+  {
+    "site": "codex",
+    "name": "send",
+    "description": "Send text/commands to the Codex AI composer",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Text, command (e.g. /review), or skill (e.g. $imagegen)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "codex/send.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "InjectedText"
+    ]
+  },
+  {
+    "site": "codex",
+    "name": "status",
+    "description": "Check active CDP connection to OpenAI Codex App",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "codex/status.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Url",
+      "Title"
+    ]
+  },
+  {
+    "site": "coupang",
+    "name": "add-to-cart",
+    "description": "Add a Coupang product to cart using logged-in browser session",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "productId",
+        "type": "str",
+        "required": false,
+        "help": "Coupang product ID"
+      },
+      {
+        "name": "url",
+        "type": "str",
+        "required": false,
+        "help": "Canonical product URL"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "coupang/add-to-cart.js",
+    "domain": "www.coupang.com",
+    "columns": [
+      "ok",
+      "product_id",
+      "url",
+      "message"
+    ]
+  },
+  {
+    "site": "coupang",
+    "name": "search",
+    "description": "Search Coupang products with logged-in browser session",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "help": "Search keyword"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Search result page number"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Max results (max 50)"
+      },
+      {
+        "name": "filter",
+        "type": "str",
+        "required": false,
+        "help": "Optional search filter (currently supports: rocket)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "coupang/search.js",
+    "domain": "www.coupang.com",
+    "columns": [
+      "rank",
+      "title",
+      "price",
+      "unit_price",
+      "rating",
+      "review_count",
+      "rocket",
+      "delivery_type",
+      "delivery_promise",
+      "url"
+    ]
+  },
+  {
+    "site": "ctrip",
+    "name": "search",
+    "description": "\u643a\u7a0b\u65c5\u884c\u641c\u7d22",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "help": "Search keyword (city or attraction)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": "Number of results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "ctrip/search.js",
+    "domain": "www.ctrip.com",
+    "columns": [
+      "rank",
+      "name",
+      "type",
+      "score",
+      "price",
+      "url"
+    ]
+  },
+  {
+    "site": "cursor",
+    "name": "ask",
+    "description": "Send a prompt and wait for the AI response (send + wait + read)",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Prompt to send"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "30)",
+        "required": false,
+        "help": "Max seconds to wait for response (default: 30)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "cursor/ask.js",
+    "domain": "localhost",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "cursor",
+    "name": "composer",
+    "description": "Send a prompt directly into Cursor Composer (Cmd+I shortcut)",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Text to send into Composer"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "cursor/composer.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "InjectedText"
+    ]
+  },
+  {
+    "site": "cursor",
+    "name": "dump",
+    "description": "Dump the DOM and Accessibility tree of Cursor for reverse-engineering",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "cursor/dump.js",
+    "domain": "localhost",
+    "columns": [
+      "action",
+      "files"
+    ]
+  },
+  {
+    "site": "cursor",
+    "name": "export",
+    "description": "Export the current ${site} conversation to a Markdown file",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "output",
+        "type": "str",
+        "default": "/tmp/${site",
+        "required": false,
+        "positional": true,
+        "help": "Output file (default: /tmp/${site}-export.md)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "cursor/export.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "File",
+      "Messages"
+    ]
+  },
+  {
+    "site": "cursor",
+    "name": "extract-code",
+    "description": "Extract multi-line code blocks from the current Cursor conversation",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "cursor/extract-code.js",
+    "domain": "localhost",
+    "columns": [
+      "Code"
+    ]
+  },
+  {
+    "site": "cursor",
+    "name": "history",
+    "description": "List recent chat sessions from the Cursor sidebar",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "cursor/history.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Title"
+    ]
+  },
+  {
+    "site": "cursor",
+    "name": "model",
+    "description": "Get or switch the currently active AI model in Cursor",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "model_name",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "The ID of the model to switch to (e.g. claude-3.5-sonnet)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "cursor/model.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Model"
+    ]
+  },
+  {
+    "site": "cursor",
+    "name": "new",
+    "description": "Start a new Cursor chat or Composer session",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "cursor/new.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "cursor",
+    "name": "read",
+    "description": "Read the current Cursor chat/composer conversation history",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "cursor/read.js",
+    "domain": "localhost",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "cursor",
+    "name": "screenshot",
+    "description": "Capture a snapshot of the current ${site} window (DOM + Accessibility tree)",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "output",
+        "type": "str",
+        "default": "/tmp/${site",
+        "required": false,
+        "positional": true,
+        "help": "Output file path (default: /tmp/${site}-snapshot.txt)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "cursor/screenshot.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "File"
+    ]
+  },
+  {
+    "site": "cursor",
+    "name": "send",
+    "description": "Send a prompt directly into Cursor Composer/Chat",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Text to send into Cursor"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "cursor/send.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "InjectedText"
+    ]
+  },
+  {
+    "site": "cursor",
+    "name": "status",
+    "description": "Check active CDP connection to Cursor AI Editor",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "cursor/status.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Url",
+      "Title"
+    ]
+  },
+  {
+    "site": "discord-app",
+    "name": "channels",
+    "description": "List channels in the current Discord server",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "discord-app/channels.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Channel",
+      "Type"
+    ]
+  },
+  {
+    "site": "discord-app",
+    "name": "members",
+    "description": "List online members in the current Discord channel",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "discord-app/members.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Name",
+      "Status"
+    ]
+  },
+  {
+    "site": "discord-app",
+    "name": "read",
+    "description": "Read recent messages from the active Discord channel",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "count",
+        "type": "str",
+        "default": "20)",
+        "required": false,
+        "help": "Number of messages to read (default: 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "discord-app/read.js",
+    "domain": "localhost",
+    "columns": [
+      "Author",
+      "Time",
+      "Message"
+    ]
+  },
+  {
+    "site": "discord-app",
+    "name": "search",
+    "description": "Search messages in the current Discord server/channel (Cmd+F)",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search query"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "discord-app/search.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Author",
+      "Message"
+    ]
+  },
+  {
+    "site": "discord-app",
+    "name": "send",
+    "description": "Send a message in the active Discord channel",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Message to send"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "discord-app/send.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "discord-app",
+    "name": "servers",
+    "description": "List all Discord servers (guilds) in the sidebar",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "discord-app/servers.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Server"
+    ]
+  },
+  {
+    "site": "discord-app",
+    "name": "status",
+    "description": "Check active CDP connection to Discord Desktop",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "discord-app/status.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Url",
+      "Title"
+    ]
+  },
+  {
+    "site": "feishu",
+    "name": "new",
+    "description": "Create a new message or document in Feishu",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "feishu/new.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "feishu",
+    "name": "read",
+    "description": "Read the current chat content by selecting all and copying",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "feishu/read.js",
+    "domain": "localhost",
+    "columns": [
+      "Content"
+    ]
+  },
+  {
+    "site": "feishu",
+    "name": "search",
+    "description": "Open Feishu global search and type a query (Cmd+K)",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search query"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "feishu/search.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "feishu",
+    "name": "send",
+    "description": "Send a message in the active Feishu (Lark) conversation",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Message to send"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "feishu/send.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "feishu",
+    "name": "status",
+    "description": "Check if Feishu (Lark) Desktop is running on macOS",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "feishu/status.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Detail"
+    ]
+  },
+  {
+    "site": "grok",
+    "name": "ask",
+    "description": "Send a message to Grok and get response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "string",
+        "required": true,
+        "help": ""
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "default": 120,
+        "required": false,
+        "help": ""
+      },
+      {
+        "name": "new",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "grok/ask.js",
+    "domain": "grok.com",
+    "columns": [
+      "response"
+    ]
+  },
+  {
+    "site": "hackernews",
+    "name": "top",
+    "description": "Hacker News top stories",
+    "domain": "news.ycombinator.com",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of stories"
+      }
+    ],
+    "columns": [
+      "rank",
+      "title",
+      "score",
+      "author",
+      "comments"
+    ],
+    "pipeline": [
+      {
+        "fetch": {
+          "url": "https://hacker-news.firebaseio.com/v0/topstories.json"
+        }
+      },
+      {
+        "limit": 30
+      },
+      {
+        "map": {
+          "id": "${{ item }}"
+        }
+      },
+      {
+        "fetch": {
+          "url": "https://hacker-news.firebaseio.com/v0/item/${{ item.id }}.json"
+        }
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "title": "${{ item.title }}",
+          "score": "${{ item.score }}",
+          "author": "${{ item.by }}",
+          "comments": "${{ item.descendants }}",
+          "url": "${{ item.url }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "jimeng",
+    "name": "generate",
+    "description": "\u5373\u68a6AI \u6587\u751f\u56fe \u2014 \u8f93\u5165 prompt \u751f\u6210\u56fe\u7247",
+    "domain": "jimeng.jianying.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "string",
+        "required": true,
+        "help": "\u56fe\u7247\u63cf\u8ff0 prompt"
+      },
+      {
+        "name": "model",
+        "type": "string",
+        "default": "high_aes_general_v50",
+        "required": false,
+        "help": "\u6a21\u578b: high_aes_general_v50 (5.0 Lite), high_aes_general_v42 (4.6), high_aes_general_v40 (4.0)"
+      },
+      {
+        "name": "wait",
+        "type": "int",
+        "default": 40,
+        "required": false,
+        "help": "\u7b49\u5f85\u751f\u6210\u5b8c\u6210\u7684\u79d2\u6570"
+      }
+    ],
+    "columns": [
+      "status",
+      "prompt",
+      "image_count",
+      "image_urls"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://jimeng.jianying.com/ai-tool/generate?type=image&workspace=0"
+      },
+      {
+        "wait": 3
+      },
+      {
+        "evaluate": "(async () => {\n  const prompt = ${{ args.prompt | json }};\n  const waitSec = ${{ args.wait }};\n  \n  // Step 1: Count existing images before generation\n  const beforeImgs = document.querySelectorAll('img[src*=\"dreamina-sign\"], img[src*=\"tb4s082cfz\"]').length;\n  \n  // Step 2: Clear and set prompt\n  const editors = document.querySelectorAll('[contenteditable=\"true\"]');\n  const editor = editors[0];\n  if (!editor) return [{ status: 'failed', prompt: prompt, image_count: 0, image_urls: 'Editor not found' }];\n  \n  editor.focus();\n  await new Promise(r => setTimeout(r, 200));\n  document.execCommand('selectAll');\n  await new Promise(r => setTimeout(r, 100));\n  document.execCommand('delete');\n  await new Promise(r => setTimeout(r, 200));\n  document.execCommand('insertText', false, prompt);\n  await new Promise(r => setTimeout(r, 500));\n  \n  // Step 3: Click generate\n  const btn = document.querySelector('.lv-btn.lv-btn-primary[class*=\"circle\"]');\n  if (!btn) return [{ status: 'failed', prompt: prompt, image_count: 0, image_urls: 'Generate button not found' }];\n  btn.click();\n  \n  // Step 4: Wait for new images to appear\n  let newImgs = [];\n  for (let i = 0; i < waitSec; i++) {\n    await new Promise(r => setTimeout(r, 1000));\n    const allImgs = document.querySelectorAll('img[src*=\"dreamina-sign\"], img[src*=\"tb4s082cfz\"]');\n    if (allImgs.length > beforeImgs) {\n      // New images appeared \u2014 generation complete\n      newImgs = Array.from(allImgs).slice(0, allImgs.length - beforeImgs);\n      break;\n    }\n  }\n  \n  if (newImgs.length === 0) {\n    return [{ status: 'timeout', prompt: prompt, image_count: 0, image_urls: 'Generation may still be in progress' }];\n  }\n  \n  // Step 5: Extract image URLs (use thumbnail URLs which are accessible)\n  const urls = newImgs.map(img => img.src);\n  \n  return [{ \n    status: 'success', \n    prompt: prompt.substring(0, 80), \n    image_count: urls.length, \n    image_urls: urls.join('\\n')\n  }];\n})()\n"
+      },
+      {
+        "map": {
+          "status": "${{ item.status }}",
+          "prompt": "${{ item.prompt }}",
+          "image_count": "${{ item.image_count }}",
+          "image_urls": "${{ item.image_urls }}"
+        }
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "jimeng",
+    "name": "history",
+    "description": "\u5373\u68a6AI \u67e5\u770b\u6700\u8fd1\u751f\u6210\u7684\u4f5c\u54c1",
+    "domain": "jimeng.jianying.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 5,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "columns": [
+      "prompt",
+      "model",
+      "status",
+      "image_url",
+      "created_at"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://jimeng.jianying.com/ai-tool/generate?type=image&workspace=0"
+      },
+      {
+        "wait": 3
+      },
+      {
+        "evaluate": "(async () => {\n  const limit = ${{ args.limit }};\n  const res = await fetch('/mweb/v1/get_history?aid=513695&device_platform=web&region=cn&da_version=3.3.11&web_version=7.5.0&aigc_features=app_lip_sync', {\n    method: 'POST',\n    credentials: 'include',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ cursor: '', count: limit, need_page_item: true, need_aigc_data: true, aigc_mode_list: ['workbench'] })\n  });\n  const data = await res.json();\n  const items = data?.data?.history_list || [];\n  return items.slice(0, limit).map(item => {\n    const params = item.aigc_image_params?.text2image_params || {};\n    const images = item.image?.large_images || [];\n    return {\n      prompt: params.prompt || item.common_attr?.title || 'N/A',\n      model: params.model_config?.model_name || 'unknown',\n      status: item.common_attr?.status === 102 ? 'completed' : 'pending',\n      image_url: images[0]?.image_url || '',\n      created_at: new Date((item.common_attr?.create_time || 0) * 1000).toLocaleString('zh-CN'),\n    };\n  });\n})()\n"
+      },
+      {
+        "map": {
+          "prompt": "${{ item.prompt }}",
+          "model": "${{ item.model }}",
+          "status": "${{ item.status }}",
+          "image_url": "${{ item.image_url }}",
+          "created_at": "${{ item.created_at }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "linkedin",
+    "name": "search",
+    "description": "",
+    "strategy": "header",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "string",
+        "required": true,
+        "help": "Job search keywords"
+      },
+      {
+        "name": "location",
+        "type": "string",
+        "required": false,
+        "help": "Location text such as San Francisco Bay Area"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 10,
+        "required": false,
+        "help": "Number of jobs to return (max 100)"
+      },
+      {
+        "name": "start",
+        "type": "int",
+        "default": 0,
+        "required": false,
+        "help": "Result offset for pagination"
+      },
+      {
+        "name": "details",
+        "type": "bool",
+        "default": false,
+        "required": false,
+        "help": "Include full job description and apply URL (slower)"
+      },
+      {
+        "name": "company",
+        "type": "string",
+        "required": false,
+        "help": "Comma-separated company names or LinkedIn company IDs"
+      },
+      {
+        "name": "experience_level",
+        "type": "string",
+        "required": false,
+        "help": "Comma-separated: internship, entry, associate, mid-senior, director, executive"
+      },
+      {
+        "name": "job_type",
+        "type": "string",
+        "required": false,
+        "help": "Comma-separated: full-time, part-time, contract, temporary, volunteer, internship, other"
+      },
+      {
+        "name": "date_posted",
+        "type": "string",
+        "required": false,
+        "help": "One of: any, month, week, 24h"
+      },
+      {
+        "name": "remote",
+        "type": "string",
+        "required": false,
+        "help": "Comma-separated: on-site, hybrid, remote"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "linkedin/search.js",
+    "domain": "www.linkedin.com",
+    "columns": [
+      "rank",
+      "title",
+      "company",
+      "location",
+      "listed",
+      "salary",
+      "url"
+    ]
+  },
+  {
+    "site": "linux-do",
+    "name": "categories",
+    "description": "linux.do \u5206\u7c7b\u5217\u8868",
+    "domain": "linux.do",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of categories"
+      }
+    ],
+    "columns": [
+      "name",
+      "slug",
+      "id",
+      "topics",
+      "description"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://linux.do"
+      },
+      {
+        "evaluate": "(async () => {\n  const res = await fetch('/categories.json', { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - \u8bf7\u5148\u767b\u5f55 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('\u54cd\u5e94\u4e0d\u662f\u6709\u6548 JSON - \u8bf7\u5148\u767b\u5f55 linux.do'); }\n  const cats = data?.category_list?.categories || [];\n  return cats.slice(0, ${{ args.limit }}).map(c => ({\n    name: c.name,\n    slug: c.slug,\n    id: c.id,\n    topics: c.topic_count,\n    description: (c.description_text || '').slice(0, 80),\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "name": "${{ item.name }}",
+          "slug": "${{ item.slug }}",
+          "id": "${{ item.id }}",
+          "topics": "${{ item.topics }}",
+          "description": "${{ item.description }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "linux-do",
+    "name": "category",
+    "description": "linux.do \u5206\u7c7b\u5185\u8bdd\u9898",
+    "domain": "linux.do",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "slug",
+        "type": "str",
+        "required": true,
+        "help": "Category slug (use 'categories' command to find)"
+      },
+      {
+        "name": "id",
+        "type": "int",
+        "required": true,
+        "help": "Category ID (use 'categories' command to find)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of topics"
+      }
+    ],
+    "columns": [
+      "rank",
+      "title",
+      "replies",
+      "views",
+      "likes"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://linux.do"
+      },
+      {
+        "evaluate": "(async () => {\n  const slug = ${{ args.slug | json }};\n  const res = await fetch('/c/' + encodeURIComponent(slug) + '/${{ args.id }}.json', { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - \u8bf7\u5148\u767b\u5f55 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('\u54cd\u5e94\u4e0d\u662f\u6709\u6548 JSON - \u8bf7\u5148\u767b\u5f55 linux.do'); }\n  const topics = data?.topic_list?.topics || [];\n  return topics.slice(0, ${{ args.limit }}).map(t => ({\n    title: t.title,\n    replies: (t.posts_count || 1) - 1,\n    views: t.views,\n    likes: t.like_count,\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "title": "${{ item.title }}",
+          "replies": "${{ item.replies }}",
+          "views": "${{ item.views }}",
+          "likes": "${{ item.likes }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "linux-do",
+    "name": "hot",
+    "description": "linux.do \u70ed\u95e8\u8bdd\u9898",
+    "domain": "linux.do",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of topics"
+      },
+      {
+        "name": "period",
+        "type": "str",
+        "default": "weekly",
+        "required": false,
+        "help": "Time period",
+        "choices": [
+          "all",
+          "daily",
+          "weekly",
+          "monthly",
+          "yearly"
+        ]
+      }
+    ],
+    "columns": [
+      "rank",
+      "title",
+      "replies",
+      "views",
+      "likes",
+      "category"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://linux.do"
+      },
+      {
+        "evaluate": "(async () => {\n  const period = ${{ args.period | json }};\n  const res = await fetch('/top.json?period=' + encodeURIComponent(period), { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - \u8bf7\u5148\u767b\u5f55 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('\u54cd\u5e94\u4e0d\u662f\u6709\u6548 JSON - \u8bf7\u5148\u767b\u5f55 linux.do'); }\n  const topics = data?.topic_list?.topics || [];\n  const cats = data?.topic_list?.categories || data?.categories || [];\n  const catMap = Object.fromEntries(cats.map(c => [c.id, c.name]));\n  return topics.slice(0, ${{ args.limit }}).map(t => ({\n    title: t.title,\n    replies: (t.posts_count || 1) - 1,\n    views: t.views,\n    likes: t.like_count,\n    category: catMap[t.category_id] || String(t.category_id),\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "title": "${{ item.title }}",
+          "replies": "${{ item.replies }}",
+          "views": "${{ item.views }}",
+          "likes": "${{ item.likes }}",
+          "category": "${{ item.category }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "linux-do",
+    "name": "latest",
+    "description": "linux.do \u6700\u65b0\u8bdd\u9898",
+    "domain": "linux.do",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of topics"
+      }
+    ],
+    "columns": [
+      "rank",
+      "title",
+      "replies",
+      "views",
+      "likes"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://linux.do"
+      },
+      {
+        "evaluate": "(async () => {\n  const res = await fetch('/latest.json', { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - \u8bf7\u5148\u767b\u5f55 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('\u54cd\u5e94\u4e0d\u662f\u6709\u6548 JSON - \u8bf7\u5148\u767b\u5f55 linux.do'); }\n  const topics = data?.topic_list?.topics || [];\n  return topics.slice(0, ${{ args.limit }}).map(t => ({\n    title: t.title,\n    replies: (t.posts_count || 1) - 1,\n    views: t.views,\n    likes: t.like_count,\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "title": "${{ item.title }}",
+          "replies": "${{ item.replies }}",
+          "views": "${{ item.views }}",
+          "likes": "${{ item.likes }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "linux-do",
+    "name": "search",
+    "description": "\u641c\u7d22 linux.do",
+    "domain": "linux.do",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "keyword",
+        "type": "str",
+        "required": true,
+        "help": "Search keyword"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of results"
+      }
+    ],
+    "columns": [
+      "rank",
+      "title",
+      "views",
+      "likes",
+      "replies"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://linux.do"
+      },
+      {
+        "evaluate": "(async () => {\n  const keyword = ${{ args.keyword | json }};\n  const res = await fetch('/search.json?q=' + encodeURIComponent(keyword), { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - \u8bf7\u5148\u767b\u5f55 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('\u54cd\u5e94\u4e0d\u662f\u6709\u6548 JSON - \u8bf7\u5148\u767b\u5f55 linux.do'); }\n  const topics = data?.topics || [];\n  return topics.slice(0, ${{ args.limit }}).map(t => ({\n    title: t.title,\n    views: t.views,\n    likes: t.like_count,\n    replies: (t.posts_count || 1) - 1,\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "title": "${{ item.title }}",
+          "views": "${{ item.views }}",
+          "likes": "${{ item.likes }}",
+          "replies": "${{ item.replies }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "linux-do",
+    "name": "topic",
+    "description": "linux.do \u5e16\u5b50\u8be6\u60c5\u548c\u56de\u590d\uff08\u9996\u9875\uff09",
+    "domain": "linux.do",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "id",
+        "type": "int",
+        "required": true,
+        "help": "Topic ID"
+      }
+    ],
+    "columns": [
+      "author",
+      "content",
+      "likes",
+      "created_at"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://linux.do"
+      },
+      {
+        "evaluate": "(async () => {\n  const res = await fetch('/t/${{ args.id }}.json', { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - \u8bf7\u5148\u767b\u5f55 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('\u54cd\u5e94\u4e0d\u662f\u6709\u6548 JSON - \u8bf7\u5148\u767b\u5f55 linux.do'); }\n  const strip = (html) => (html || '').replace(/<br\\s*\\/?>/gi, ' ').replace(/<\\/(p|div|li|blockquote|h[1-6])>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '\"').replace(/&#(?:(\\d+)|x([0-9a-fA-F]+));/g, (_, dec, hex) => { try { return String.fromCodePoint(dec !== undefined ? Number(dec) : parseInt(hex, 16)); } catch { return ''; } }).replace(/\\s+/g, ' ').trim();\n  const posts = data?.post_stream?.posts || [];\n  return posts.map(p => ({\n    author: p.username,\n    content: strip(p.cooked).slice(0, 200),\n    likes: p.like_count,\n    created_at: p.created_at,\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "author": "${{ item.author }}",
+          "content": "${{ item.content }}",
+          "likes": "${{ item.likes }}",
+          "created_at": "${{ item.created_at }}"
+        }
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "neteasemusic",
+    "name": "like",
+    "description": "Like/unlike the currently playing song",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "neteasemusic/like.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "neteasemusic",
+    "name": "lyrics",
+    "description": "Get the lyrics of the currently playing song",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "neteasemusic/lyrics.js",
+    "domain": "localhost",
+    "columns": [
+      "Line"
+    ]
+  },
+  {
+    "site": "neteasemusic",
+    "name": "next",
+    "description": "Skip to the next song",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "neteasemusic/next.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "neteasemusic",
+    "name": "play",
+    "description": "Toggle play/pause for the current song",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "neteasemusic/play.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "neteasemusic",
+    "name": "playing",
+    "description": "Get the currently playing song info",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "neteasemusic/playing.js",
+    "domain": "localhost",
+    "columns": [
+      "Title",
+      "Artist",
+      "Album",
+      "Duration",
+      "Progress"
+    ]
+  },
+  {
+    "site": "neteasemusic",
+    "name": "playlist",
+    "description": "Show the current playback queue / playlist",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "neteasemusic/playlist.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Title",
+      "Artist"
+    ]
+  },
+  {
+    "site": "neteasemusic",
+    "name": "prev",
+    "description": "Go back to the previous song",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "neteasemusic/prev.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "neteasemusic",
+    "name": "search",
+    "description": "Search for songs, artists, albums, or playlists",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search query"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "neteasemusic/search.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Title",
+      "Artist"
+    ]
+  },
+  {
+    "site": "neteasemusic",
+    "name": "status",
+    "description": "Check CDP connection to NeteaseMusic Desktop",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "neteasemusic/status.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Url",
+      "Title"
+    ]
+  },
+  {
+    "site": "neteasemusic",
+    "name": "volume",
+    "description": "Get or set the volume level (0-100)",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "level",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Volume level 0-100 (omit to read current)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "neteasemusic/volume.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Volume"
+    ]
+  },
+  {
+    "site": "notion",
+    "name": "export",
+    "description": "Export the current Notion page as Markdown",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "output",
+        "type": "str",
+        "default": "/tmp/notion-export.md)",
+        "required": false,
+        "positional": true,
+        "help": "Output file (default: /tmp/notion-export.md)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "notion/export.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "File"
+    ]
+  },
+  {
+    "site": "notion",
+    "name": "favorites",
+    "description": "List pages from the Notion Favorites section in the sidebar",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "notion/favorites.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Title",
+      "Icon"
+    ]
+  },
+  {
+    "site": "notion",
+    "name": "new",
+    "description": "Create a new page in Notion",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "title",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Page title (optional)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "notion/new.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "notion",
+    "name": "read",
+    "description": "Read the content of the currently open Notion page",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "notion/read.js",
+    "domain": "localhost",
+    "columns": [
+      "Title",
+      "Content"
+    ]
+  },
+  {
+    "site": "notion",
+    "name": "search",
+    "description": "Search pages and databases in Notion via Quick Find (Cmd+P)",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search query"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "notion/search.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Title"
+    ]
+  },
+  {
+    "site": "notion",
+    "name": "sidebar",
+    "description": "List pages and databases from the Notion sidebar",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "notion/sidebar.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Title"
+    ]
+  },
+  {
+    "site": "notion",
+    "name": "status",
+    "description": "Check active CDP connection to Notion Desktop",
+    "strategy": "ui",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "notion/status.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Url",
+      "Title"
+    ]
+  },
+  {
+    "site": "notion",
+    "name": "write",
+    "description": "Append text content to the currently open Notion page",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Text to append to the page"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "notion/write.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "reddit",
+    "name": "comment",
+    "description": "Post a comment on a Reddit post",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "post_id",
+        "type": "string",
+        "required": true,
+        "help": "Post ID (e.g. 1abc123) or fullname (t3_xxx)"
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "help": "Comment text"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "reddit/comment.js",
+    "domain": "reddit.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "reddit",
+    "name": "frontpage",
+    "description": "Reddit Frontpage / r/all",
+    "domain": "reddit.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "columns": [
+      "title",
+      "subreddit",
+      "author",
+      "upvotes",
+      "comments",
+      "url"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.reddit.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const res = await fetch('/r/all.json?limit=${{ args.limit }}', { credentials: 'include' });\n  const j = await res.json();\n  return j?.data?.children || [];\n})()\n"
+      },
+      {
+        "map": {
+          "title": "${{ item.data.title }}",
+          "subreddit": "${{ item.data.subreddit_name_prefixed }}",
+          "author": "${{ item.data.author }}",
+          "upvotes": "${{ item.data.score }}",
+          "comments": "${{ item.data.num_comments }}",
+          "url": "https://www.reddit.com${{ item.data.permalink }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "reddit",
+    "name": "hot",
+    "description": "Reddit \u70ed\u95e8\u5e16\u5b50",
+    "domain": "www.reddit.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "subreddit",
+        "type": "str",
+        "default": "",
+        "required": false,
+        "help": "Subreddit name (e.g. programming). Empty for frontpage"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of posts"
+      }
+    ],
+    "columns": [
+      "rank",
+      "title",
+      "subreddit",
+      "score",
+      "comments"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.reddit.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const sub = ${{ args.subreddit | json }};\n  const path = sub ? '/r/' + sub + '/hot.json' : '/hot.json';\n  const limit = ${{ args.limit }};\n  const res = await fetch(path + '?limit=' + limit + '&raw_json=1', {\n    credentials: 'include'\n  });\n  const d = await res.json();\n  return (d?.data?.children || []).map(c => ({\n    title: c.data.title,\n    subreddit: c.data.subreddit_name_prefixed,\n    score: c.data.score,\n    comments: c.data.num_comments,\n    author: c.data.author,\n    url: 'https://www.reddit.com' + c.data.permalink,\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "title": "${{ item.title }}",
+          "subreddit": "${{ item.subreddit }}",
+          "score": "${{ item.score }}",
+          "comments": "${{ item.comments }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "reddit",
+    "name": "popular",
+    "description": "Reddit Popular posts (/r/popular)",
+    "domain": "reddit.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "columns": [
+      "rank",
+      "title",
+      "subreddit",
+      "score",
+      "comments",
+      "url"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.reddit.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const limit = ${{ args.limit }};\n  const res = await fetch('/r/popular.json?limit=' + limit + '&raw_json=1', {\n    credentials: 'include'\n  });\n  const d = await res.json();\n  return (d?.data?.children || []).map(c => ({\n    title: c.data.title,\n    subreddit: c.data.subreddit_name_prefixed,\n    score: c.data.score,\n    comments: c.data.num_comments,\n    author: c.data.author,\n    url: 'https://www.reddit.com' + c.data.permalink,\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "title": "${{ item.title }}",
+          "subreddit": "${{ item.subreddit }}",
+          "score": "${{ item.score }}",
+          "comments": "${{ item.comments }}",
+          "url": "${{ item.url }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "reddit",
+    "name": "read",
+    "description": "Read a Reddit post and its comments",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "post_id",
+        "type": "str",
+        "required": true,
+        "help": "Post ID (e.g. 1abc123) or full URL"
+      },
+      {
+        "name": "sort",
+        "type": "str",
+        "default": "best",
+        "required": false,
+        "help": "Comment sort: best, top, new, controversial, old, qa"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 25,
+        "required": false,
+        "help": "Number of top-level comments"
+      },
+      {
+        "name": "depth",
+        "type": "int",
+        "default": 2,
+        "required": false,
+        "help": "Max reply depth (1=no replies, 2=one level of replies, etc.)"
+      },
+      {
+        "name": "replies",
+        "type": "int",
+        "default": 5,
+        "required": false,
+        "help": "Max replies shown per comment at each level (sorted by score)"
+      },
+      {
+        "name": "max_length",
+        "type": "int",
+        "default": 2000,
+        "required": false,
+        "help": "Max characters per comment body (min 100)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "reddit/read.js",
+    "domain": "reddit.com",
+    "columns": [
+      "type",
+      "author",
+      "score",
+      "text"
+    ]
+  },
+  {
+    "site": "reddit",
+    "name": "save",
+    "description": "Save or unsave a Reddit post",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "post_id",
+        "type": "string",
+        "required": true,
+        "help": "Post ID (e.g. 1abc123) or fullname (t3_xxx)"
+      },
+      {
+        "name": "undo",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": "Unsave instead of save"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "reddit/save.js",
+    "domain": "reddit.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "reddit",
+    "name": "saved",
+    "description": "Browse your saved Reddit posts",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "reddit/saved.js",
+    "domain": "reddit.com",
+    "columns": [
+      "title",
+      "subreddit",
+      "score",
+      "comments",
+      "url"
+    ]
+  },
+  {
+    "site": "reddit",
+    "name": "search",
+    "description": "Search Reddit Posts",
+    "domain": "reddit.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "string",
+        "required": true,
+        "help": ""
+      },
+      {
+        "name": "subreddit",
+        "type": "string",
+        "default": "",
+        "required": false,
+        "help": "Search within a specific subreddit"
+      },
+      {
+        "name": "sort",
+        "type": "string",
+        "default": "relevance",
+        "required": false,
+        "help": "Sort order: relevance, hot, top, new, comments"
+      },
+      {
+        "name": "time",
+        "type": "string",
+        "default": "all",
+        "required": false,
+        "help": "Time filter: hour, day, week, month, year, all"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "columns": [
+      "title",
+      "subreddit",
+      "author",
+      "score",
+      "comments",
+      "url"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.reddit.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const q = encodeURIComponent(${{ args.query | json }});\n  const sub = ${{ args.subreddit | json }};\n  const sort = ${{ args.sort | json }};\n  const time = ${{ args.time | json }};\n  const limit = ${{ args.limit }};\n  const basePath = sub ? '/r/' + sub + '/search.json' : '/search.json';\n  const params = 'q=' + q + '&sort=' + sort + '&t=' + time + '&limit=' + limit\n    + '&restrict_sr=' + (sub ? 'on' : 'off') + '&raw_json=1';\n  const res = await fetch(basePath + '?' + params, { credentials: 'include' });\n  const d = await res.json();\n  return (d?.data?.children || []).map(c => ({\n    title: c.data.title,\n    subreddit: c.data.subreddit_name_prefixed,\n    author: c.data.author,\n    score: c.data.score,\n    comments: c.data.num_comments,\n    url: 'https://www.reddit.com' + c.data.permalink,\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "title": "${{ item.title }}",
+          "subreddit": "${{ item.subreddit }}",
+          "author": "${{ item.author }}",
+          "score": "${{ item.score }}",
+          "comments": "${{ item.comments }}",
+          "url": "${{ item.url }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "reddit",
+    "name": "subreddit",
+    "description": "Get posts from a specific Subreddit",
+    "domain": "reddit.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "help": ""
+      },
+      {
+        "name": "sort",
+        "type": "string",
+        "default": "hot",
+        "required": false,
+        "help": "Sorting method: hot, new, top, rising, controversial"
+      },
+      {
+        "name": "time",
+        "type": "string",
+        "default": "all",
+        "required": false,
+        "help": "Time filter for top/controversial: hour, day, week, month, year, all"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "columns": [
+      "title",
+      "author",
+      "upvotes",
+      "comments",
+      "url"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.reddit.com"
+      },
+      {
+        "evaluate": "(async () => {\n  let sub = ${{ args.name | json }};\n  if (sub.startsWith('r/')) sub = sub.slice(2);\n  const sort = ${{ args.sort | json }};\n  const time = ${{ args.time | json }};\n  const limit = ${{ args.limit }};\n  let url = '/r/' + sub + '/' + sort + '.json?limit=' + limit + '&raw_json=1';\n  if ((sort === 'top' || sort === 'controversial') && time) {\n    url += '&t=' + time;\n  }\n  const res = await fetch(url, { credentials: 'include' });\n  const j = await res.json();\n  return j?.data?.children || [];\n})()\n"
+      },
+      {
+        "map": {
+          "title": "${{ item.data.title }}",
+          "author": "${{ item.data.author }}",
+          "upvotes": "${{ item.data.score }}",
+          "comments": "${{ item.data.num_comments }}",
+          "url": "https://www.reddit.com${{ item.data.permalink }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "reddit",
+    "name": "subscribe",
+    "description": "Subscribe or unsubscribe to a subreddit",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "subreddit",
+        "type": "string",
+        "required": true,
+        "help": "Subreddit name (e.g. python)"
+      },
+      {
+        "name": "undo",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": "Unsubscribe instead of subscribe"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "reddit/subscribe.js",
+    "domain": "reddit.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "reddit",
+    "name": "upvote",
+    "description": "Upvote or downvote a Reddit post",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "post_id",
+        "type": "string",
+        "required": true,
+        "help": "Post ID (e.g. 1abc123) or fullname (t3_xxx)"
+      },
+      {
+        "name": "direction",
+        "type": "string",
+        "default": "up",
+        "required": false,
+        "help": "Vote direction: up, down, none"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "reddit/upvote.js",
+    "domain": "reddit.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "reddit",
+    "name": "upvoted",
+    "description": "Browse your upvoted Reddit posts",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "reddit/upvoted.js",
+    "domain": "reddit.com",
+    "columns": [
+      "title",
+      "subreddit",
+      "score",
+      "comments",
+      "url"
+    ]
+  },
+  {
+    "site": "reddit",
+    "name": "user-comments",
+    "description": "View a Reddit user's comment history",
+    "domain": "reddit.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "username",
+        "type": "string",
+        "required": true,
+        "help": ""
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "columns": [
+      "subreddit",
+      "score",
+      "body",
+      "url"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.reddit.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const username = ${{ args.username | json }};\n  const name = username.startsWith('u/') ? username.slice(2) : username;\n  const limit = ${{ args.limit }};\n  const res = await fetch('/user/' + name + '/comments.json?limit=' + limit + '&raw_json=1', {\n    credentials: 'include'\n  });\n  const d = await res.json();\n  return (d?.data?.children || []).map(c => {\n    let body = c.data.body || '';\n    if (body.length > 300) body = body.slice(0, 300) + '...';\n    return {\n      subreddit: c.data.subreddit_name_prefixed,\n      score: c.data.score,\n      body: body,\n      url: 'https://www.reddit.com' + c.data.permalink,\n    };\n  });\n})()\n"
+      },
+      {
+        "map": {
+          "subreddit": "${{ item.subreddit }}",
+          "score": "${{ item.score }}",
+          "body": "${{ item.body }}",
+          "url": "${{ item.url }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "reddit",
+    "name": "user-posts",
+    "description": "View a Reddit user's submitted posts",
+    "domain": "reddit.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "username",
+        "type": "string",
+        "required": true,
+        "help": ""
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "columns": [
+      "title",
+      "subreddit",
+      "score",
+      "comments",
+      "url"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.reddit.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const username = ${{ args.username | json }};\n  const name = username.startsWith('u/') ? username.slice(2) : username;\n  const limit = ${{ args.limit }};\n  const res = await fetch('/user/' + name + '/submitted.json?limit=' + limit + '&raw_json=1', {\n    credentials: 'include'\n  });\n  const d = await res.json();\n  return (d?.data?.children || []).map(c => ({\n    title: c.data.title,\n    subreddit: c.data.subreddit_name_prefixed,\n    score: c.data.score,\n    comments: c.data.num_comments,\n    url: 'https://www.reddit.com' + c.data.permalink,\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "title": "${{ item.title }}",
+          "subreddit": "${{ item.subreddit }}",
+          "score": "${{ item.score }}",
+          "comments": "${{ item.comments }}",
+          "url": "${{ item.url }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "reddit",
+    "name": "user",
+    "description": "View a Reddit user profile",
+    "domain": "reddit.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "username",
+        "type": "string",
+        "required": true,
+        "help": ""
+      }
+    ],
+    "columns": [
+      "field",
+      "value"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.reddit.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const username = ${{ args.username | json }};\n  const name = username.startsWith('u/') ? username.slice(2) : username;\n  const res = await fetch('/user/' + name + '/about.json?raw_json=1', {\n    credentials: 'include'\n  });\n  const d = await res.json();\n  const u = d?.data || d || {};\n  const created = u.created_utc ? new Date(u.created_utc * 1000).toISOString().split('T')[0] : '-';\n  return [\n    { field: 'Username', value: 'u/' + (u.name || name) },\n    { field: 'Post Karma', value: String(u.link_karma || 0) },\n    { field: 'Comment Karma', value: String(u.comment_karma || 0) },\n    { field: 'Total Karma', value: String(u.total_karma || (u.link_karma||0) + (u.comment_karma||0)) },\n    { field: 'Account Created', value: created },\n    { field: 'Gold', value: u.is_gold ? '\u2b50 Yes' : 'No' },\n    { field: 'Verified', value: u.verified ? '\u2705 Yes' : 'No' },\n  ];\n})()\n"
+      },
+      {
+        "map": {
+          "field": "${{ item.field }}",
+          "value": "${{ item.value }}"
+        }
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "reuters",
+    "name": "search",
+    "description": "Reuters \u8def\u900f\u793e\u65b0\u95fb\u641c\u7d22",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "help": "Search query"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 10,
+        "required": false,
+        "help": "Number of results (max 40)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "reuters/search.js",
+    "domain": "www.reuters.com",
+    "columns": [
+      "rank",
+      "title",
+      "date",
+      "section",
+      "url"
+    ]
+  },
+  {
+    "site": "smzdm",
+    "name": "search",
+    "description": "\u4ec0\u4e48\u503c\u5f97\u4e70\u641c\u7d22\u597d\u4ef7",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "keyword",
+        "type": "str",
+        "required": true,
+        "help": "Search keyword"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "smzdm/search.js",
+    "domain": "www.smzdm.com",
+    "columns": [
+      "rank",
+      "title",
+      "price",
+      "mall",
+      "comments",
+      "url"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "accept",
+    "description": "Auto-accept DM requests containing specific keywords",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "keyword",
+        "type": "string",
+        "required": true,
+        "help": "Keywords to match (comma-separated for OR, e.g. "
+      },
+      {
+        "name": "max",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Maximum number of requests to accept (default: 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/accept.js",
+    "domain": "x.com",
+    "columns": [
+      "index",
+      "status",
+      "user",
+      "message"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "article",
+    "description": "Fetch a Twitter Article (long-form content) and export as Markdown",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "tweet_id",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "Tweet ID or URL containing the article"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/article.js",
+    "domain": "x.com",
+    "columns": [
+      "title",
+      "author",
+      "content",
+      "url"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "bookmark",
+    "description": "Bookmark a tweet",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "url",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "Tweet URL to bookmark"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/bookmark.js",
+    "domain": "x.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "bookmarks",
+    "description": "Fetch Twitter/X bookmarks",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/bookmarks.js",
+    "domain": "x.com",
+    "columns": [
+      "author",
+      "text",
+      "likes",
+      "url"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "delete",
+    "description": "Delete a specific tweet by URL",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "url",
+        "type": "string",
+        "required": true,
+        "help": "The URL of the tweet to delete"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/delete.js",
+    "domain": "x.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "download",
+    "description": "\u4e0b\u8f7d Twitter/X \u5a92\u4f53\uff08\u56fe\u7247\u548c\u89c6\u9891\uff09",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "username",
+        "type": "str",
+        "required": false,
+        "help": "Twitter username (downloads from media tab)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 10,
+        "required": false,
+        "help": "Number of tweets to scan"
+      },
+      {
+        "name": "output",
+        "type": "str",
+        "default": "./twitter-downloads",
+        "required": false,
+        "help": "Output directory"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/download.js",
+    "domain": "x.com",
+    "columns": [
+      "index",
+      "type",
+      "status",
+      "size"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "follow",
+    "description": "Follow a Twitter user",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "username",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "Twitter screen name (without @)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/follow.js",
+    "domain": "x.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "followers",
+    "description": "Get accounts following a Twitter/X user",
+    "strategy": "intercept",
+    "browser": true,
+    "args": [
+      {
+        "name": "user",
+        "type": "string",
+        "required": false,
+        "help": ""
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 50,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/followers.js",
+    "domain": "x.com",
+    "columns": [
+      "screen_name",
+      "name",
+      "bio",
+      "followers"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "following",
+    "description": "Get accounts a Twitter/X user is following",
+    "strategy": "intercept",
+    "browser": true,
+    "args": [
+      {
+        "name": "user",
+        "type": "string",
+        "required": false,
+        "help": ""
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 50,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/following.js",
+    "domain": "x.com",
+    "columns": [
+      "screen_name",
+      "name",
+      "bio",
+      "followers"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "like",
+    "description": "Like a specific tweet",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "url",
+        "type": "string",
+        "required": true,
+        "help": "The URL of the tweet to like"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/like.js",
+    "domain": "x.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "notifications",
+    "description": "Get Twitter/X notifications",
+    "strategy": "intercept",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/notifications.js",
+    "domain": "x.com",
+    "columns": [
+      "id",
+      "action",
+      "author",
+      "text",
+      "url"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "post",
+    "description": "Post a new tweet/thread",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "help": "The text content of the tweet"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/post.js",
+    "domain": "x.com",
+    "columns": [
+      "status",
+      "message",
+      "text"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "profile",
+    "description": "Fetch a Twitter user profile (bio, stats, etc.)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "username",
+        "type": "string",
+        "required": false,
+        "positional": true,
+        "help": "Twitter screen name (without @). Defaults to logged-in user."
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/profile.js",
+    "domain": "x.com",
+    "columns": [
+      "screen_name",
+      "name",
+      "bio",
+      "location",
+      "url",
+      "followers",
+      "following",
+      "tweets",
+      "likes",
+      "verified",
+      "created_at"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "reply-dm",
+    "description": "Send a message to recent DM conversations",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "help": "Message text to send (e.g. "
+      },
+      {
+        "name": "max",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Maximum number of conversations to reply to (default: 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/reply-dm.js",
+    "domain": "x.com",
+    "columns": [
+      "index",
+      "status",
+      "user",
+      "message"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "reply",
+    "description": "Reply to a specific tweet",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "url",
+        "type": "string",
+        "required": true,
+        "help": "The URL of the tweet to reply to"
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "help": "The text content of your reply"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/reply.js",
+    "domain": "x.com",
+    "columns": [
+      "status",
+      "message",
+      "text"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "search",
+    "description": "Search Twitter/X for tweets",
+    "strategy": "intercept",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "string",
+        "required": true,
+        "help": ""
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/search.js",
+    "domain": "x.com",
+    "columns": [
+      "id",
+      "author",
+      "text",
+      "likes",
+      "views",
+      "url"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "thread",
+    "description": "Get a tweet thread (original + all replies)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "tweet_id",
+        "type": "string",
+        "required": true,
+        "help": ""
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 50,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/thread.js",
+    "domain": "x.com",
+    "columns": [
+      "id",
+      "author",
+      "text",
+      "likes",
+      "retweets",
+      "url"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "timeline",
+    "description": "Fetch Twitter Home Timeline",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/timeline.js",
+    "domain": "x.com",
+    "columns": [
+      "id",
+      "author",
+      "text",
+      "likes",
+      "retweets",
+      "replies",
+      "views",
+      "created_at",
+      "url"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "trending",
+    "description": "Twitter/X trending topics",
+    "domain": "x.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of trends to show"
+      }
+    ],
+    "columns": [
+      "rank",
+      "topic",
+      "tweets"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://x.com/explore/tabs/trending"
+      },
+      {
+        "evaluate": "(async () => {\n  const cookies = document.cookie.split(';').reduce((acc, c) => {\n    const [k, v] = c.trim().split('=');\n    acc[k] = v;\n    return acc;\n  }, {});\n  const csrfToken = cookies['ct0'] || '';\n  const bearerToken = 'AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA';\n  const res = await fetch('/i/api/2/guide.json?include_page_configuration=true', {\n    credentials: 'include',\n    headers: { 'x-twitter-active-user': 'yes', 'x-csrf-token': csrfToken, 'authorization': 'Bearer ' + bearerToken }\n  });\n  if (!res.ok) throw new Error('HTTP ' + res.status + '. Hint: trending endpoint may require login or API shape changed.');\n  const data = await res.json();\n  const instructions = data?.timeline?.instructions || [];\n  const entries = instructions.flatMap(inst => inst?.addEntries?.entries || inst?.entries || []);\n  return entries\n    .filter(e => e.content?.timelineModule)\n    .flatMap(e => e.content.timelineModule.items || [])\n    .map(t => t?.item?.content?.trend)\n    .filter(Boolean);\n})()\n"
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "topic": "${{ item.name }}",
+          "tweets": "${{ item.tweetCount || 'N/A' }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "twitter",
+    "name": "unbookmark",
+    "description": "Remove a tweet from bookmarks",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "url",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "Tweet URL to unbookmark"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/unbookmark.js",
+    "domain": "x.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "unfollow",
+    "description": "Unfollow a Twitter user",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "username",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "Twitter screen name (without @)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/unfollow.js",
+    "domain": "x.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "v2ex",
+    "name": "daily",
+    "description": "V2EX \u6bcf\u65e5\u7b7e\u5230\u5e76\u9886\u53d6\u94dc\u5e01",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "v2ex/daily.js",
+    "domain": "www.v2ex.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "v2ex",
+    "name": "hot",
+    "description": "V2EX \u70ed\u95e8\u8bdd\u9898",
+    "domain": "www.v2ex.com",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of topics"
+      }
+    ],
+    "columns": [
+      "rank",
+      "title",
+      "replies"
+    ],
+    "pipeline": [
+      {
+        "fetch": {
+          "url": "https://www.v2ex.com/api/topics/hot.json"
+        }
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "title": "${{ item.title }}",
+          "replies": "${{ item.replies }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "v2ex",
+    "name": "latest",
+    "description": "V2EX \u6700\u65b0\u8bdd\u9898",
+    "domain": "www.v2ex.com",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of topics"
+      }
+    ],
+    "columns": [
+      "rank",
+      "title",
+      "replies"
+    ],
+    "pipeline": [
+      {
+        "fetch": {
+          "url": "https://www.v2ex.com/api/topics/latest.json"
+        }
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "title": "${{ item.title }}",
+          "replies": "${{ item.replies }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "v2ex",
+    "name": "me",
+    "description": "V2EX \u83b7\u53d6\u4e2a\u4eba\u8d44\u6599 (\u4f59\u989d/\u672a\u8bfb\u63d0\u9192)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "v2ex/me.js",
+    "domain": "www.v2ex.com",
+    "columns": [
+      "username",
+      "balance",
+      "unread_notifications",
+      "daily_reward_ready"
+    ]
+  },
+  {
+    "site": "v2ex",
+    "name": "notifications",
+    "description": "V2EX \u83b7\u53d6\u63d0\u9192 (\u56de\u590d/\u7531\u4e8e)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of notifications"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "v2ex/notifications.js",
+    "domain": "www.v2ex.com",
+    "columns": [
+      "type",
+      "content",
+      "time"
+    ]
+  },
+  {
+    "site": "v2ex",
+    "name": "topic",
+    "description": "V2EX \u4e3b\u9898\u8be6\u60c5\u548c\u56de\u590d",
+    "domain": "www.v2ex.com",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "id",
+        "type": "str",
+        "required": true,
+        "help": "Topic ID"
+      }
+    ],
+    "columns": [
+      "title",
+      "replies",
+      "url"
+    ],
+    "pipeline": [
+      {
+        "fetch": {
+          "url": "https://www.v2ex.com/api/topics/show.json",
+          "params": {
+            "id": "${{ args.id }}"
+          }
+        }
+      },
+      {
+        "map": {
+          "title": "${{ item.title }}",
+          "replies": "${{ item.replies }}",
+          "url": "${{ item.url }}"
+        }
+      },
+      {
+        "limit": 1
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "wechat",
+    "name": "chats",
+    "description": "Open the WeChat chats panel (conversation list)",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "wechat/chats.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "wechat",
+    "name": "contacts",
+    "description": "Open the WeChat contacts panel",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "wechat/contacts.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "wechat",
+    "name": "read",
+    "description": "Read the current chat content by selecting all and copying",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "wechat/read.js",
+    "domain": "localhost",
+    "columns": [
+      "Content"
+    ]
+  },
+  {
+    "site": "wechat",
+    "name": "search",
+    "description": "Open WeChat search and type a query (find contacts or messages)",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search query (contact name or keyword)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "wechat/search.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "wechat",
+    "name": "send",
+    "description": "Send a message in the active WeChat conversation via clipboard paste",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Message to send"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "wechat/send.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "wechat",
+    "name": "status",
+    "description": "Check if WeChat Desktop is running on macOS",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "wechat/status.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Detail"
+    ]
+  },
+  {
+    "site": "weibo",
+    "name": "hot",
+    "description": "\u5fae\u535a\u70ed\u641c",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 30,
+        "required": false,
+        "help": "Number of items (max 50)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "weibo/hot.js",
+    "domain": "weibo.com",
+    "columns": [
+      "rank",
+      "word",
+      "hot_value",
+      "category",
+      "label",
+      "url"
+    ]
+  },
+  {
+    "site": "weread",
+    "name": "book",
+    "description": "View book details on WeRead",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "bookId",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Book ID (numeric, from search or shelf results)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "weread/book.js",
+    "domain": "weread.qq.com",
+    "columns": [
+      "title",
+      "author",
+      "publisher",
+      "intro",
+      "category",
+      "rating"
+    ]
+  },
+  {
+    "site": "weread",
+    "name": "highlights",
+    "description": "List your highlights (underlines) in a book",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "bookId",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Book ID (from shelf or search results)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Max results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "weread/highlights.js",
+    "domain": "weread.qq.com",
+    "columns": [
+      "chapter",
+      "text",
+      "createTime"
+    ]
+  },
+  {
+    "site": "weread",
+    "name": "notebooks",
+    "description": "List books that have highlights or notes",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "weread/notebooks.js",
+    "domain": "weread.qq.com",
+    "columns": [
+      "title",
+      "author",
+      "noteCount",
+      "bookId"
+    ]
+  },
+  {
+    "site": "weread",
+    "name": "notes",
+    "description": "List your notes (thoughts) on a book",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "bookId",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Book ID (from shelf or search results)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Max results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "weread/notes.js",
+    "domain": "weread.qq.com",
+    "columns": [
+      "chapter",
+      "text",
+      "review",
+      "createTime"
+    ]
+  },
+  {
+    "site": "weread",
+    "name": "ranking",
+    "description": "WeRead book rankings by category",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "category",
+        "type": "str",
+        "default": "all",
+        "required": false,
+        "positional": true,
+        "help": "Category: all (default), rising, or numeric category ID"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Max results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "weread/ranking.js",
+    "domain": "weread.qq.com",
+    "columns": [
+      "rank",
+      "title",
+      "author",
+      "category",
+      "readingCount",
+      "bookId"
+    ]
+  },
+  {
+    "site": "weread",
+    "name": "search",
+    "description": "Search books on WeRead",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "keyword",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search keyword"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 10,
+        "required": false,
+        "help": "Max results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "weread/search.js",
+    "domain": "weread.qq.com",
+    "columns": [
+      "rank",
+      "title",
+      "author",
+      "bookId"
+    ]
+  },
+  {
+    "site": "weread",
+    "name": "shelf",
+    "description": "List books on your WeRead bookshelf",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Max results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "weread/shelf.js",
+    "domain": "weread.qq.com",
+    "columns": [
+      "title",
+      "author",
+      "progress",
+      "bookId"
+    ]
+  },
+  {
+    "site": "weread",
+    "name": "utils",
+    "description": "",
+    "strategy": "cookie",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "weread/utils.js"
+  },
+  {
+    "site": "weread",
+    "name": "utils.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "weread/utils.test.js"
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "creator-note-detail",
+    "description": "\u5c0f\u7ea2\u4e66\u5355\u7bc7\u7b14\u8bb0\u8be6\u7ec6\u6570\u636e (\u9605\u8bfb/\u4e92\u52a8/\u70b9\u8d5e/\u6536\u85cf/\u8bc4\u8bba/\u5206\u4eab\uff0c\u533a\u5206\u81ea\u7136\u6d41\u91cf/\u63a8\u5e7f/\u89c6\u9891)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "note_id",
+        "type": "string",
+        "required": true,
+        "help": "Note ID (from note URL or creator-notes command)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "xiaohongshu/creator-note-detail.js",
+    "domain": "creator.xiaohongshu.com",
+    "columns": [
+      "channel",
+      "reads",
+      "engagement",
+      "likes",
+      "collects",
+      "comments",
+      "shares"
+    ]
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "creator-notes",
+    "description": "\u5c0f\u7ea2\u4e66\u521b\u4f5c\u8005\u7b14\u8bb0\u5217\u8868 + \u6bcf\u7bc7\u6570\u636e (\u6807\u9898/\u65e5\u671f/\u89c2\u770b/\u70b9\u8d5e/\u6536\u85cf/\u8bc4\u8bba)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of notes to return"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "xiaohongshu/creator-notes.js",
+    "domain": "creator.xiaohongshu.com",
+    "columns": [
+      "rank",
+      "id",
+      "title",
+      "date",
+      "views",
+      "likes",
+      "collects",
+      "comments",
+      "url"
+    ]
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "creator-profile",
+    "description": "\u5c0f\u7ea2\u4e66\u521b\u4f5c\u8005\u8d26\u53f7\u4fe1\u606f (\u7c89\u4e1d/\u5173\u6ce8/\u83b7\u8d5e/\u6210\u957f\u7b49\u7ea7)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "xiaohongshu/creator-profile.js",
+    "domain": "creator.xiaohongshu.com",
+    "columns": [
+      "field",
+      "value"
+    ]
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "creator-stats",
+    "description": "\u5c0f\u7ea2\u4e66\u521b\u4f5c\u8005\u6570\u636e\u603b\u89c8 (\u89c2\u770b/\u70b9\u8d5e/\u6536\u85cf/\u8bc4\u8bba/\u5206\u4eab/\u6da8\u7c89\uff0c\u542b\u6bcf\u65e5\u8d8b\u52bf)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "period",
+        "type": "string",
+        "default": "seven",
+        "required": false,
+        "help": "Stats period: seven or thirty",
+        "choices": [
+          "seven",
+          "thirty"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "xiaohongshu/creator-stats.js",
+    "domain": "creator.xiaohongshu.com",
+    "columns": [
+      "metric",
+      "total",
+      "trend"
+    ]
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "download",
+    "description": "\u4e0b\u8f7d\u5c0f\u7ea2\u4e66\u7b14\u8bb0\u4e2d\u7684\u56fe\u7247\u548c\u89c6\u9891",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "note_id",
+        "type": "str",
+        "required": true,
+        "help": "Note ID (from URL)"
+      },
+      {
+        "name": "output",
+        "type": "str",
+        "default": "./xiaohongshu-downloads",
+        "required": false,
+        "help": "Output directory"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "xiaohongshu/download.js",
+    "domain": "www.xiaohongshu.com",
+    "columns": [
+      "index",
+      "type",
+      "status",
+      "size"
+    ]
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "feed",
+    "description": "\u5c0f\u7ea2\u4e66\u9996\u9875\u63a8\u8350 Feed (via Pinia Store Action)",
+    "domain": "www.xiaohongshu.com",
+    "strategy": "intercept",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of items to return"
+      }
+    ],
+    "columns": [
+      "title",
+      "author",
+      "likes",
+      "type",
+      "url"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.xiaohongshu.com/explore"
+      },
+      {
+        "wait": 3
+      },
+      {
+        "tap": {
+          "store": "feed",
+          "action": "fetchFeeds",
+          "capture": "homefeed",
+          "select": "data.items",
+          "timeout": 8
+        }
+      },
+      {
+        "map": {
+          "id": "${{ item.id }}",
+          "title": "${{ item.note_card.display_title }}",
+          "type": "${{ item.note_card.type }}",
+          "author": "${{ item.note_card.user.nickname }}",
+          "likes": "${{ item.note_card.interact_info.liked_count }}",
+          "url": "https://www.xiaohongshu.com/explore/${{ item.id }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit | default(20) }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "notifications",
+    "description": "\u5c0f\u7ea2\u4e66\u901a\u77e5 (mentions/likes/connections)",
+    "domain": "www.xiaohongshu.com",
+    "strategy": "intercept",
+    "browser": true,
+    "args": [
+      {
+        "name": "type",
+        "type": "str",
+        "default": "mentions",
+        "required": false,
+        "help": "Notification type: mentions, likes, or connections"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of notifications to return"
+      }
+    ],
+    "columns": [
+      "rank",
+      "user",
+      "action",
+      "content",
+      "note",
+      "time"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.xiaohongshu.com/notification"
+      },
+      {
+        "wait": 3
+      },
+      {
+        "tap": {
+          "store": "notification",
+          "action": "getNotification",
+          "args": [
+            "${{ args.type | default('mentions') }}"
+          ],
+          "capture": "/you/",
+          "select": "data.message_list",
+          "timeout": 8
+        }
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "user": "${{ item.user_info.nickname }}",
+          "action": "${{ item.title }}",
+          "content": "${{ item.comment_info.content }}",
+          "note": "${{ item.item_info.content }}",
+          "time": "${{ item.time }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit | default(20) }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "search",
+    "description": "\u641c\u7d22\u5c0f\u7ea2\u4e66\u7b14\u8bb0",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "keyword",
+        "type": "str",
+        "required": true,
+        "help": "Search keyword"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of results"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "xiaohongshu/search.js",
+    "domain": "www.xiaohongshu.com",
+    "columns": [
+      "rank",
+      "title",
+      "author",
+      "likes"
+    ]
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "user-helpers",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "xiaohongshu/user-helpers.js"
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "user-helpers.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "xiaohongshu/user-helpers.test.js"
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "user",
+    "description": "Get public notes from a Xiaohongshu user profile",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "help": "User id or profile URL"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": "Number of notes to return"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "xiaohongshu/user.js",
+    "domain": "www.xiaohongshu.com",
+    "columns": [
+      "id",
+      "title",
+      "type",
+      "likes",
+      "url"
+    ]
+  },
+  {
+    "site": "xiaoyuzhou",
+    "name": "episode",
+    "description": "View details of a Xiaoyuzhou podcast episode",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "id",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Episode ID (eid from podcast-episodes output)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "xiaoyuzhou/episode.js",
+    "domain": "www.xiaoyuzhoufm.com",
+    "columns": [
+      "title",
+      "podcast",
+      "duration",
+      "plays",
+      "comments",
+      "likes",
+      "date"
+    ]
+  },
+  {
+    "site": "xiaoyuzhou",
+    "name": "podcast-episodes",
+    "description": "List recent episodes of a Xiaoyuzhou podcast (up to 15, SSR limit)",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "id",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Podcast ID (from xiaoyuzhoufm.com URL)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 15,
+        "required": false,
+        "help": "Max episodes to show (up to 15, SSR limit)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "xiaoyuzhou/podcast-episodes.js",
+    "domain": "www.xiaoyuzhoufm.com",
+    "columns": [
+      "eid",
+      "title",
+      "duration",
+      "plays",
+      "date"
+    ]
+  },
+  {
+    "site": "xiaoyuzhou",
+    "name": "podcast",
+    "description": "View a Xiaoyuzhou podcast profile",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "id",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Podcast ID (from xiaoyuzhoufm.com URL)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "xiaoyuzhou/podcast.js",
+    "domain": "www.xiaoyuzhoufm.com",
+    "columns": [
+      "title",
+      "author",
+      "description",
+      "subscribers",
+      "episodes",
+      "updated"
+    ]
+  },
+  {
+    "site": "xiaoyuzhou",
+    "name": "utils",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "xiaoyuzhou/utils.js"
+  },
+  {
+    "site": "xiaoyuzhou",
+    "name": "utils.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "xiaoyuzhou/utils.test.js"
+  },
+  {
+    "site": "xueqiu",
+    "name": "feed",
+    "description": "\u83b7\u53d6\u96ea\u7403\u9996\u9875\u65f6\u95f4\u7ebf\uff08\u5173\u6ce8\u7528\u6237\u7684\u52a8\u6001\uff09",
+    "domain": "xueqiu.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "page",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "\u9875\u7801\uff0c\u9ed8\u8ba4 1"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "\u6bcf\u9875\u6570\u91cf\uff0c\u9ed8\u8ba4 20"
+      }
+    ],
+    "columns": [
+      "author",
+      "text",
+      "likes",
+      "replies",
+      "url"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://xueqiu.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const page = ${{ args.page }};\n  const count = ${{ args.limit }};\n  const resp = await fetch(`https://xueqiu.com/v4/statuses/home_timeline.json?page=${page}&count=${count}`, {credentials: 'include'});\n  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' Hint: Not logged in?');\n  const d = await resp.json();\n  \n  const strip = (html) => (html || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();\n  const list = d.home_timeline || d.list || [];\n  return list.map(item => {\n    const user = item.user || {};\n    return {\n      id: item.id,\n      text: strip(item.description).substring(0, 200),\n      url: 'https://xueqiu.com/' + user.id + '/' + item.id,\n      author: user.screen_name,\n      likes: item.fav_count,\n      retweets: item.retweet_count,\n      replies: item.reply_count,\n      created_at: item.created_at ? new Date(item.created_at).toISOString() : null\n    };\n  });\n})()\n"
+      },
+      {
+        "map": {
+          "author": "${{ item.author }}",
+          "text": "${{ item.text }}",
+          "likes": "${{ item.likes }}",
+          "replies": "${{ item.replies }}",
+          "url": "${{ item.url }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "xueqiu",
+    "name": "hot-stock",
+    "description": "\u83b7\u53d6\u96ea\u7403\u70ed\u95e8\u80a1\u7968\u699c",
+    "domain": "xueqiu.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "\u8fd4\u56de\u6570\u91cf\uff0c\u9ed8\u8ba4 20\uff0c\u6700\u5927 50"
+      },
+      {
+        "name": "type",
+        "type": "str",
+        "default": "10",
+        "required": false,
+        "help": "\u699c\u5355\u7c7b\u578b 10=\u4eba\u6c14\u699c(\u9ed8\u8ba4) 12=\u5173\u6ce8\u699c"
+      }
+    ],
+    "columns": [
+      "rank",
+      "symbol",
+      "name",
+      "price",
+      "changePercent",
+      "heat"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://xueqiu.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const count = ${{ args.limit }};\n  const type = ${{ args.type | json }};\n  const resp = await fetch(`https://stock.xueqiu.com/v5/stock/hot_stock/list.json?size=${count}&type=${type}`, {credentials: 'include'});\n  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' Hint: Not logged in?');\n  const d = await resp.json();\n  if (!d.data || !d.data.items) throw new Error('\u83b7\u53d6\u5931\u8d25');\n  return d.data.items.map((s, i) => ({\n    rank: i + 1,\n    symbol: s.symbol,\n    name: s.name,\n    price: s.current,\n    changePercent: s.percent != null ? s.percent.toFixed(2) + '%' : null,\n    heat: s.value,\n    rank_change: s.rank_change,\n    url: 'https://xueqiu.com/S/' + s.symbol\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "rank": "${{ item.rank }}",
+          "symbol": "${{ item.symbol }}",
+          "name": "${{ item.name }}",
+          "price": "${{ item.price }}",
+          "changePercent": "${{ item.changePercent }}",
+          "heat": "${{ item.heat }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "xueqiu",
+    "name": "hot",
+    "description": "\u83b7\u53d6\u96ea\u7403\u70ed\u95e8\u52a8\u6001",
+    "domain": "xueqiu.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "\u8fd4\u56de\u6570\u91cf\uff0c\u9ed8\u8ba4 20\uff0c\u6700\u5927 50"
+      }
+    ],
+    "columns": [
+      "rank",
+      "author",
+      "text",
+      "likes",
+      "url"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://xueqiu.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const resp = await fetch('https://xueqiu.com/statuses/hot/listV3.json?source=hot&page=1', {credentials: 'include'});\n  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' Hint: Not logged in?');\n  const d = await resp.json();\n  const list = d.list || [];\n  \n  const strip = (html) => (html || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();\n  return list.map((item, i) => {\n    const user = item.user || {};\n    return {\n      rank: i + 1,\n      text: strip(item.description).substring(0, 200),\n      url: 'https://xueqiu.com/' + user.id + '/' + item.id,\n      author: user.screen_name,\n      likes: item.fav_count,\n      retweets: item.retweet_count,\n      replies: item.reply_count\n    };\n  });\n})()\n"
+      },
+      {
+        "map": {
+          "rank": "${{ item.rank }}",
+          "author": "${{ item.author }}",
+          "text": "${{ item.text }}",
+          "likes": "${{ item.likes }}",
+          "url": "${{ item.url }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "xueqiu",
+    "name": "search",
+    "description": "\u641c\u7d22\u96ea\u7403\u80a1\u7968\uff08\u4ee3\u7801\u6216\u540d\u79f0\uff09",
+    "domain": "xueqiu.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": false,
+        "help": "\u641c\u7d22\u5173\u952e\u8bcd\uff0c\u5982 \u8305\u53f0\u3001AAPL\u3001\u817e\u8baf"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 10,
+        "required": false,
+        "help": "\u8fd4\u56de\u6570\u91cf\uff0c\u9ed8\u8ba4 10"
+      }
+    ],
+    "columns": [
+      "symbol",
+      "name",
+      "exchange",
+      "price",
+      "changePercent"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://xueqiu.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const query = ${{ args.query | json }};\n  const count = ${{ args.limit }};\n  if (!query) throw new Error('Missing argument: query');\n  const resp = await fetch(`https://xueqiu.com/stock/search.json?code=${encodeURIComponent(query)}&size=${count}`, {credentials: 'include'});\n  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' Hint: Not logged in?');\n  const d = await resp.json();\n  return (d.stocks || []).map(s => {\n    let symbol = '';\n    if (s.exchange === 'SH' || s.exchange === 'SZ' || s.exchange === 'BJ') {\n      symbol = s.code.startsWith(s.exchange) ? s.code : s.exchange + s.code;\n    } else {\n      symbol = s.code;\n    }\n    return {\n      symbol: symbol,\n      name: s.name,\n      exchange: s.exchange,\n      price: s.current,\n      changePercent: s.percentage != null ? s.percentage.toFixed(2) + '%' : null,\n      url: 'https://xueqiu.com/S/' + symbol\n    };\n  });\n})()\n"
+      },
+      {
+        "map": {
+          "symbol": "${{ item.symbol }}",
+          "name": "${{ item.name }}",
+          "exchange": "${{ item.exchange }}",
+          "price": "${{ item.price }}",
+          "changePercent": "${{ item.changePercent }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "xueqiu",
+    "name": "stock",
+    "description": "\u83b7\u53d6\u96ea\u7403\u80a1\u7968\u5b9e\u65f6\u884c\u60c5",
+    "domain": "xueqiu.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "symbol",
+        "type": "str",
+        "required": false,
+        "help": "\u80a1\u7968\u4ee3\u7801\uff0c\u5982 SH600519\u3001SZ000858\u3001AAPL\u300100700"
+      }
+    ],
+    "columns": [
+      "name",
+      "symbol",
+      "price",
+      "changePercent",
+      "marketCap"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://xueqiu.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const symbol = (${{ args.symbol | json }} || '').toUpperCase();\n  if (!symbol) throw new Error('Missing argument: symbol');\n  const resp = await fetch(`https://stock.xueqiu.com/v5/stock/batch/quote.json?symbol=${encodeURIComponent(symbol)}`, {credentials: 'include'});\n  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' Hint: Not logged in?');\n  const d = await resp.json();\n  if (!d.data || !d.data.items || d.data.items.length === 0) throw new Error('\u672a\u627e\u5230\u80a1\u7968: ' + symbol);\n  \n  function fmtAmount(v) {\n    if (v == null) return null;\n    if (Math.abs(v) >= 1e12) return (v / 1e12).toFixed(2) + '\u4e07\u4ebf';\n    if (Math.abs(v) >= 1e8) return (v / 1e8).toFixed(2) + '\u4ebf';\n    if (Math.abs(v) >= 1e4) return (v / 1e4).toFixed(2) + '\u4e07';\n    return v.toString();\n  }\n  \n  const item = d.data.items[0];\n  const q = item.quote || {};\n  const m = item.market || {};\n  \n  return [{\n    name: q.name,\n    symbol: q.symbol,\n    exchange: q.exchange,\n    currency: q.currency,\n    price: q.current,\n    change: q.chg,\n    changePercent: q.percent != null ? q.percent.toFixed(2) + '%' : null,\n    open: q.open,\n    high: q.high,\n    low: q.low,\n    prevClose: q.last_close,\n    amplitude: q.amplitude != null ? q.amplitude.toFixed(2) + '%' : null,\n    volume: q.volume,\n    amount: fmtAmount(q.amount),\n    turnover_rate: q.turnover_rate != null ? q.turnover_rate.toFixed(2) + '%' : null,\n    marketCap: fmtAmount(q.market_capital),\n    floatMarketCap: fmtAmount(q.float_market_capital),\n    ytdPercent: q.current_year_percent != null ? q.current_year_percent.toFixed(2) + '%' : null,\n    market_status: m.status || null,\n    time: q.timestamp ? new Date(q.timestamp).toISOString() : null,\n    url: 'https://xueqiu.com/S/' + q.symbol\n  }];\n})()\n"
+      },
+      {
+        "map": {
+          "name": "${{ item.name }}",
+          "symbol": "${{ item.symbol }}",
+          "price": "${{ item.price }}",
+          "changePercent": "${{ item.changePercent }}",
+          "marketCap": "${{ item.marketCap }}"
+        }
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "xueqiu",
+    "name": "watchlist",
+    "description": "\u83b7\u53d6\u96ea\u7403\u81ea\u9009\u80a1\u5217\u8868",
+    "domain": "xueqiu.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "category",
+        "type": "str",
+        "default": "1",
+        "required": false,
+        "help": "\u5206\u7c7b\uff1a1=\u81ea\u9009(\u9ed8\u8ba4) 2=\u6301\u4ed3 3=\u5173\u6ce8"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 100,
+        "required": false,
+        "help": "\u9ed8\u8ba4 100"
+      }
+    ],
+    "columns": [
+      "symbol",
+      "name",
+      "price",
+      "changePercent"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://xueqiu.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const category = parseInt(${{ args.category | json }}) || 1;\n  const resp = await fetch(`https://stock.xueqiu.com/v5/stock/portfolio/stock/list.json?size=100&category=${category}&pid=-1`, {credentials: 'include'});\n  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' Hint: Not logged in?');\n  const d = await resp.json();\n  if (!d.data || !d.data.stocks) throw new Error('\u83b7\u53d6\u5931\u8d25\uff0c\u53ef\u80fd\u672a\u767b\u5f55');\n  \n  return d.data.stocks.map(s => ({\n    symbol: s.symbol,\n    name: s.name,\n    price: s.current,\n    change: s.chg,\n    changePercent: s.percent != null ? s.percent.toFixed(2) + '%' : null,\n    volume: s.volume,\n    url: 'https://xueqiu.com/S/' + s.symbol\n  }));\n})()\n"
+      },
+      {
+        "map": {
+          "symbol": "${{ item.symbol }}",
+          "name": "${{ item.name }}",
+          "price": "${{ item.price }}",
+          "changePercent": "${{ item.changePercent }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "yahoo-finance",
+    "name": "quote",
+    "description": "Yahoo Finance \u80a1\u7968\u884c\u60c5",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "symbol",
+        "type": "str",
+        "required": true,
+        "help": "Stock ticker (e.g. AAPL, MSFT, TSLA)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "yahoo-finance/quote.js",
+    "domain": "finance.yahoo.com",
+    "columns": [
+      "symbol",
+      "name",
+      "price",
+      "change",
+      "changePercent",
+      "open",
+      "high",
+      "low",
+      "volume",
+      "marketCap"
+    ]
+  },
+  {
+    "site": "youtube",
+    "name": "search",
+    "description": "Search YouTube videos",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "help": "Search query"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Max results (max 50)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "youtube/search.js",
+    "domain": "www.youtube.com",
+    "columns": [
+      "rank",
+      "title",
+      "channel",
+      "views",
+      "duration",
+      "url"
+    ]
+  },
+  {
+    "site": "youtube",
+    "name": "transcript-group",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "youtube/transcript-group.js"
+  },
+  {
+    "site": "youtube",
+    "name": "transcript-group.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "youtube/transcript-group.test.js"
+  },
+  {
+    "site": "youtube",
+    "name": "transcript",
+    "description": "Get YouTube video transcript/subtitles",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "url",
+        "type": "str",
+        "required": true,
+        "help": "YouTube video URL or video ID"
+      },
+      {
+        "name": "lang",
+        "type": "str",
+        "required": false,
+        "help": "Language code (e.g. en, zh-Hans). Omit to auto-select"
+      },
+      {
+        "name": "mode",
+        "type": "str",
+        "default": "grouped",
+        "required": false,
+        "help": "Output mode: grouped (readable paragraphs) or raw (every segment)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "youtube/transcript.js",
+    "domain": "www.youtube.com"
+  },
+  {
+    "site": "youtube",
+    "name": "utils",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "youtube/utils.js"
+  },
+  {
+    "site": "youtube",
+    "name": "video",
+    "description": "Get YouTube video metadata (title, views, description, etc.)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "url",
+        "type": "str",
+        "required": true,
+        "help": "YouTube video URL or video ID"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "youtube/video.js",
+    "domain": "www.youtube.com",
+    "columns": [
+      "field",
+      "value"
+    ]
+  },
+  {
+    "site": "zhihu",
+    "name": "download",
+    "description": "\u5bfc\u51fa\u77e5\u4e4e\u6587\u7ae0\u4e3a Markdown \u683c\u5f0f",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "url",
+        "type": "str",
+        "required": true,
+        "help": "Article URL (zhuanlan.zhihu.com/p/xxx)"
+      },
+      {
+        "name": "output",
+        "type": "str",
+        "default": "./zhihu-articles",
+        "required": false,
+        "help": "Output directory"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "zhihu/download.js",
+    "domain": "zhuanlan.zhihu.com",
+    "columns": [
+      "title",
+      "author",
+      "status",
+      "size"
+    ]
+  },
+  {
+    "site": "zhihu",
+    "name": "download.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "zhihu/download.test.js"
+  },
+  {
+    "site": "zhihu",
+    "name": "hot",
+    "description": "\u77e5\u4e4e\u70ed\u699c",
+    "domain": "www.zhihu.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of items to return"
+      }
+    ],
+    "columns": [
+      "rank",
+      "title",
+      "heat",
+      "answers"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.zhihu.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const res = await fetch('https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total?limit=50', {\n    credentials: 'include'\n  });\n  const text = await res.text();\n  const d = JSON.parse(\n    text.replace(/(\"id\"\\s*:\\s*)(\\d{16,})/g, '$1\"$2\"')\n  );\n  return (d?.data || []).map((item) => {\n    const t = item.target || {};\n    const questionId = t.id == null ? '' : String(t.id);\n    return {\n      title: t.title,\n      url: 'https://www.zhihu.com/question/' + questionId,\n      answer_count: t.answer_count,\n      follower_count: t.follower_count,\n      heat: item.detail_text || '',\n    };\n  });\n})()\n"
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "title": "${{ item.title }}",
+          "heat": "${{ item.heat }}",
+          "answers": "${{ item.answer_count }}",
+          "url": "${{ item.url }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  },
+  {
+    "site": "zhihu",
+    "name": "question",
+    "description": "\u77e5\u4e4e\u95ee\u9898\u8be6\u60c5\u548c\u56de\u7b54",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "id",
+        "type": "str",
+        "required": true,
+        "help": "Question ID (numeric)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 5,
+        "required": false,
+        "help": "Number of answers"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "zhihu/question.js",
+    "domain": "www.zhihu.com",
+    "columns": [
+      "rank",
+      "author",
+      "votes",
+      "content"
+    ]
+  },
+  {
+    "site": "zhihu",
+    "name": "search",
+    "description": "\u77e5\u4e4e\u641c\u7d22",
+    "domain": "www.zhihu.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "keyword",
+        "type": "str",
+        "required": true,
+        "help": "Search keyword"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 10,
+        "required": false,
+        "help": "Number of results"
+      }
+    ],
+    "columns": [
+      "rank",
+      "title",
+      "type",
+      "author",
+      "votes"
+    ],
+    "pipeline": [
+      {
+        "navigate": "https://www.zhihu.com"
+      },
+      {
+        "evaluate": "(async () => {\n  const strip = (html) => (html || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/<em>/g, '').replace(/<\\/em>/g, '').trim();\n  const keyword = ${{ args.keyword | json }};\n  const limit = ${{ args.limit }};\n  const res = await fetch('https://www.zhihu.com/api/v4/search_v3?q=' + encodeURIComponent(keyword) + '&t=general&offset=0&limit=' + limit, {\n    credentials: 'include'\n  });\n  const d = await res.json();\n  return (d?.data || [])\n    .filter(item => item.type === 'search_result')\n    .map(item => {\n      const obj = item.object || {};\n      const q = obj.question || {};\n      return {\n        type: obj.type,\n        title: strip(obj.title || q.name || ''),\n        excerpt: strip(obj.excerpt || '').substring(0, 100),\n        author: obj.author?.name || '',\n        votes: obj.voteup_count || 0,\n        url: obj.type === 'answer'\n          ? 'https://www.zhihu.com/question/' + q.id + '/answer/' + obj.id\n          : obj.type === 'article'\n          ? 'https://zhuanlan.zhihu.com/p/' + obj.id\n          : 'https://www.zhihu.com/question/' + obj.id,\n      };\n    });\n})()\n"
+      },
+      {
+        "map": {
+          "rank": "${{ index + 1 }}",
+          "title": "${{ item.title }}",
+          "type": "${{ item.type }}",
+          "author": "${{ item.author }}",
+          "votes": "${{ item.votes }}"
+        }
+      },
+      {
+        "limit": "${{ args.limit }}"
+      }
+    ],
+    "type": "yaml"
+  }
+]
