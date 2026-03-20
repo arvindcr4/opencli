@@ -104,27 +104,33 @@ export const promodeCommand = cli({
     await page.click(inputRef);
     await page.typeText(inputRef, text);
 
-    // Re-focus text area before submitting (file attachment can steal focus)
+    // Re-focus text area before submitting
     await cdpBridge.send('Runtime.evaluate', {
       expression: `document.getElementById('prompt-textarea')?.focus()`,
       returnByValue: true,
     });
     await new Promise((r) => setTimeout(r, 200));
-    await page.pressKey('Return');
 
-    // If Enter didn't submit (file attachment edge case), click send button
-    await new Promise((r) => setTimeout(r, 800));
-    const stillHasText = await cdpBridge.send('Runtime.evaluate', {
-      expression: `(document.getElementById('prompt-textarea')?.innerText || '').trim().length > 0`,
+    // Primary submit: click send button (reliable with or without file attachments)
+    const sent = await cdpBridge.send('Runtime.evaluate', {
+      expression: `(function() {
+        const btn = document.querySelector('[data-testid="send-button"]')
+          || document.querySelector('button[aria-label*="Send"]');
+        if (!btn) return false;
+        const r = btn.getBoundingClientRect();
+        return JSON.stringify({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+      })()`,
       returnByValue: true,
     });
-    if (stillHasText?.result?.value) {
-      await cdpBridge.send('Runtime.evaluate', {
-        expression: `document.querySelector('[data-testid="send-button"]')?.click()`,
-        returnByValue: true,
-      });
-      await new Promise((r) => setTimeout(r, 300));
+    const sendPos = sent?.result?.value ? JSON.parse(sent.result.value) : null;
+    if (sendPos) {
+      await cdpBridge.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: sendPos.x, y: sendPos.y });
+      await cdpBridge.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: sendPos.x, y: sendPos.y, button: 'left', clickCount: 1 });
+      await cdpBridge.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: sendPos.x, y: sendPos.y, button: 'left', clickCount: 1 });
+    } else {
+      await page.pressKey('Return'); // fallback
     }
+    await new Promise((r) => setTimeout(r, 500));
 
     const deadline = Date.now() + timeout * 1000;
     let response = '';
