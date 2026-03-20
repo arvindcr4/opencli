@@ -12,6 +12,9 @@ export const sendCommand = cli({
   args: [{ name: 'text', required: true, positional: true, help: 'Message to send' }],
   columns: ['Status'],
   func: async (page: IPage | null, kwargs: any) => {
+    if (process.platform !== 'darwin') {
+      return [{ Status: 'Not supported on Linux — this command requires the macOS desktop app.' }];
+    }
     const text = kwargs.text as string;
     try {
       // Backup clipboard

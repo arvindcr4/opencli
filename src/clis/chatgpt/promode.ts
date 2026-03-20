@@ -55,6 +55,22 @@ async function attachFile(bridge: any, filePath: string): Promise<void> {
   await new Promise((r) => setTimeout(r, 1500));
 }
 
+/**
+ * Returns true if ChatGPT is still generating (stop button visible).
+ */
+async function isGenerating(page: IPage): Promise<boolean> {
+  const result = await page.evaluate(`
+    (function() {
+      if (document.querySelector('[data-testid="stop-button"]')) return true;
+      const buttons = Array.from(document.querySelectorAll('button'));
+      if (buttons.some((b: any) => (b.getAttribute('aria-label') || '').toLowerCase().includes('stop streaming') ||
+                                    (b.getAttribute('data-testid') || '').includes('stop'))) return true;
+      return false;
+    })()
+  `);
+  return !!result;
+}
+
 export const promodeCommand = cli({
   site: 'chatgpt',
   name: 'promode',
@@ -142,21 +158,26 @@ export const promodeCommand = cli({
         const candidate = [...messagesNow.slice(messagesBefore.length)]
           .reverse()
           .find((m) => m !== text);
-        if (candidate && candidate.length > 5) {
+        if (candidate && candidate.length > 50) {
           let prev = candidate;
           let stableCount = 0;
-          for (let i = 0; i < 120; i++) {
+          for (let i = 0; i < 720; i++) { // up to 1 hour after first response
             await page.wait(5);
+            if (await isGenerating(page)) {
+              stableCount = 0;
+              const latest = await getVisibleChatMessagesFromPage(page);
+              prev = [...latest.slice(messagesBefore.length)].reverse().find((m) => m !== text) || prev;
+              continue;
+            }
             const latest = await getVisibleChatMessagesFromPage(page);
             const cur = [...latest.slice(messagesBefore.length)].reverse().find((m) => m !== text) || prev;
-            // Skip intermediate thinking/generation states
             const isThinking =
               cur.startsWith('Pro thinking') || cur.startsWith('Thinking') ||
               cur.startsWith('Reading') || cur.startsWith('Searching') ||
               cur.startsWith('Analyzing') || cur.startsWith('Writing') ||
               /^(Looking|Processing|Generating|Reviewing|Checking)/i.test(cur);
             if (isThinking) { stableCount = 0; prev = cur; continue; }
-            if (cur === prev) { stableCount++; if (stableCount >= 2) break; }
+            if (cur === prev) { stableCount++; if (stableCount >= 3) break; }
             else { stableCount = 0; prev = cur; }
           }
           response = prev;

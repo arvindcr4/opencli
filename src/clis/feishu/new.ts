@@ -12,6 +12,9 @@ export const newCommand = cli({
   args: [],
   columns: ['Status'],
   func: async (page: IPage | null) => {
+    if (process.platform !== 'darwin') {
+      return [{ Status: 'Not supported on Linux — this command requires the macOS desktop app.' }];
+    }
     try {
       execSync("osascript -e 'tell application \"Lark\" to activate'");
       execSync("osascript -e 'delay 0.3'");

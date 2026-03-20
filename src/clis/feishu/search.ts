@@ -12,6 +12,9 @@ export const searchCommand = cli({
   args: [{ name: 'query', required: true, positional: true, help: 'Search query' }],
   columns: ['Status'],
   func: async (page: IPage | null, kwargs: any) => {
+    if (process.platform !== 'darwin') {
+      return [{ Status: 'Not supported on Linux — this command requires the macOS desktop app.' }];
+    }
     const query = kwargs.query as string;
     try {
       execSync("osascript -e 'tell application \"Lark\" to activate'");

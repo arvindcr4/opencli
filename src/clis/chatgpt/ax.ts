@@ -62,6 +62,7 @@ let data = try! JSONSerialization.data(withJSONObject: best, options: [])
 print(String(data: data, encoding: .utf8)!)
 `;
 
+/** macOS: read messages from ChatGPT desktop app via Swift Accessibility API */
 export function getVisibleChatMessages(): string[] {
   const output = execFileSync('swift', ['-'], {
     input: AX_READ_SCRIPT,
@@ -75,6 +76,34 @@ export function getVisibleChatMessages(): string[] {
   if (!Array.isArray(parsed)) return [];
 
   return parsed
+    .filter((item): item is string => typeof item === 'string')
+    .map((item) => item.replace(/[\uFFFC\u200B-\u200D\uFEFF]/g, '').trim())
+    .filter((item) => item.length > 0);
+}
+
+/**
+ * Linux: extract assistant messages from chatgpt.com DOM.
+ * Requires the page to already be on chatgpt.com.
+ */
+export async function getVisibleChatMessagesFromPage(page: { evaluate: (js: string) => Promise<any> }): Promise<string[]> {
+  const result = await page.evaluate(`
+    (function() {
+      const selectors = [
+        '[data-message-author-role="assistant"]',
+        '.agent-turn',
+        '[class*="assistant"]'
+      ];
+      for (const sel of selectors) {
+        const els = Array.from(document.querySelectorAll(sel));
+        if (els.length > 0) {
+          return els.map(el => el.innerText || el.textContent || '').filter(t => t.trim());
+        }
+      }
+      return [];
+    })()
+  `);
+  if (!Array.isArray(result)) return [];
+  return result
     .filter((item): item is string => typeof item === 'string')
     .map((item) => item.replace(/[\uFFFC\u200B-\u200D\uFEFF]/g, '').trim())
     .filter((item) => item.length > 0);

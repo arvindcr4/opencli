@@ -12,6 +12,9 @@ export const statusCommand = cli({
   args: [],
   columns: ['Status', 'Detail'],
   func: async (page: IPage | null) => {
+    if (process.platform !== 'darwin') {
+      return [{ Status: 'Not supported on Linux — this command requires the macOS desktop app.' }];
+    }
     try {
       const running = execSync("osascript -e 'application \"WeChat\" is running'", { encoding: 'utf-8' }).trim();
       if (running !== 'true') {

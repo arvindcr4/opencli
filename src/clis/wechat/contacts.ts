@@ -12,6 +12,9 @@ export const contactsCommand = cli({
   args: [],
   columns: ['Status'],
   func: async (page: IPage | null) => {
+    if (process.platform !== 'darwin') {
+      return [{ Status: 'Not supported on Linux — this command requires the macOS desktop app.' }];
+    }
     try {
       // Activate WeChat
       execSync("osascript -e 'tell application \"WeChat\" to activate'");
