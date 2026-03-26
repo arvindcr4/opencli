@@ -2,7 +2,12 @@ import { execSync } from 'node:child_process';
 import { cli, Strategy } from '../../registry.js';
 import type { IPage } from '../../types.js';
 import { getVisibleChatMessages, getVisibleChatMessagesFromPage } from './ax.js';
-import { clipRead, clipWrite } from '../../utils/clipboard.js';
+import {
+  CHATGPT_MODEL_CHOICES,
+  activateChatGpt,
+  pasteAndSubmitToChatGpt,
+  switchChatGptModel,
+} from './shared.js';
 
 export const askCommand = cli({
   site: 'chatgpt',
@@ -14,28 +19,28 @@ export const askCommand = cli({
   args: [
     { name: 'text', required: true, positional: true, help: 'Prompt to send' },
     { name: 'timeout', required: false, help: 'Max seconds to wait for response (default: 30)', default: '30' },
+    {
+      name: 'model',
+      required: false,
+      help: 'Model/mode to choose before sending (e.g. pro, thinking, instant, auto)',
+      choices: [...CHATGPT_MODEL_CHOICES],
+    },
   ],
   columns: ['Role', 'Text'],
   func: async (page: IPage | null, kwargs: any) => {
     const text = kwargs.text as string;
     const timeout = parseInt(kwargs.timeout as string, 10) || 30;
+    const desiredModel = kwargs.model as string | undefined;
 
     if (process.platform === 'darwin') {
-      // macOS: use ChatGPT desktop app via clipboard + AppleScript
-      let clipBackup = '';
-      try { clipBackup = clipRead(); } catch {}
-      const messagesBefore = getVisibleChatMessages();
+      if (desiredModel) {
+        switchChatGptModel(desiredModel);
+      } else {
+        activateChatGpt();
+      }
 
-      clipWrite(text);
-      execSync("osascript -e 'tell application \"ChatGPT\" to activate'");
-      execSync("osascript -e 'delay 0.5'");
-      execSync("osascript " +
-        "-e 'tell application \"System Events\"' " +
-        "-e 'keystroke \"v\" using command down' " +
-        "-e 'delay 0.2' " +
-        "-e 'keystroke return' " +
-        "-e 'end tell'");
-      if (clipBackup) clipWrite(clipBackup);
+      const messagesBefore = getVisibleChatMessages();
+      pasteAndSubmitToChatGpt(text);
 
       const pollInterval = 1;
       const maxPolls = Math.ceil(timeout / pollInterval);
@@ -47,7 +52,10 @@ export const askCommand = cli({
         const messagesNow = getVisibleChatMessages();
         if (messagesNow.length <= messagesBefore.length) continue;
         const candidate = [...messagesNow.slice(messagesBefore.length)].reverse().find((m) => m !== text);
-        if (candidate) { response = candidate; break; }
+        if (candidate) {
+          response = candidate;
+          break;
+        }
       }
       if (!response) {
         return [
@@ -58,12 +66,14 @@ export const askCommand = cli({
       return [{ Role: 'User', Text: text }, { Role: 'Assistant', Text: response }];
     }
 
-    // Linux: interact with chatgpt.com via browser
+    if (desiredModel) {
+      throw new Error('--model is currently only supported by the macOS ChatGPT desktop app');
+    }
+
     if (!page) throw new Error('Browser page not available');
 
     const messagesBefore = await getVisibleChatMessagesFromPage(page);
 
-    // Find and fill the input
     const snapshot = await page.snapshot({ interactive: true });
     const inputRef = snapshot?.nodes?.find((n: any) => n.role === 'textbox' && n.id?.includes('prompt'))?.ref
       ?? snapshot?.nodes?.find((n: any) =>
@@ -75,7 +85,6 @@ export const askCommand = cli({
     await page.typeText(inputRef, text);
     await page.pressKey('Return');
 
-    // Poll for response
     const deadline = Date.now() + timeout * 1000;
     let response = '';
     while (Date.now() < deadline) {
@@ -84,7 +93,6 @@ export const askCommand = cli({
       if (messagesNow.length > messagesBefore.length) {
         const candidate = [...messagesNow.slice(messagesBefore.length)].reverse().find((m) => m !== text);
         if (candidate) {
-          // Wait for streaming to finish: poll until text stabilizes
           let prev = candidate;
           for (let i = 0; i < 8; i++) {
             await page.wait(1);

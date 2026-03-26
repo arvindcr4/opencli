@@ -13,8 +13,12 @@ The current built-in commands use native AppleScript automation — no extra lau
 ### Commands
 - `opencli chatgpt status`: Check if the ChatGPT app is currently running.
 - `opencli chatgpt new`: Activate ChatGPT and press `Cmd+N` to start a new conversation.
+- `opencli chatgpt model`: Read the currently active ChatGPT model/mode from the desktop app.
+- `opencli chatgpt model pro`: Open the model picker and switch to `Pro`.
 - `opencli chatgpt send "message"`: Copy your message to clipboard, activate ChatGPT, paste, and submit.
-- `opencli chatgpt read`: Copy the last AI response via `Cmd+Shift+C` and return it as text.
+- `opencli chatgpt send "message" --model pro`: Switch models first, then send the message.
+- `opencli chatgpt ask "message" --model pro`: Switch to `Pro`, send the prompt, wait, and read the response.
+- `opencli chatgpt read`: Read the last visible message from the focused ChatGPT window via the Accessibility tree.
 
 ## Approach 2: CDP (Advanced, Electron Debug Mode)
 
@@ -30,15 +34,15 @@ Then set the endpoint:
 export OPENCLI_CDP_ENDPOINT="http://127.0.0.1:9224"
 ```
 
-> **Note**: The CDP approach enables future advanced commands like DOM inspection, model switching, and code extraction — similar to the Cursor and Codex adapters.
+> **Note**: The CDP approach still enables future advanced commands like DOM inspection and code extraction. Model switching is now handled by the built-in Accessibility flow.
 
 ## How It Works
 
-- **AppleScript mode**: Uses `osascript` and `pbcopy`/`pbpaste` for clipboard-based text transfer. No remote debugging port needed.
+- **AppleScript mode**: Uses `osascript` to control ChatGPT, `pbcopy`/`pbpaste` to paste prompts, and the macOS Accessibility tree to read visible chat messages and switch the built-in model picker.
 - **CDP mode**: Connects via Chrome DevTools Protocol to the Electron renderer process for direct DOM manipulation.
 
 ## Limitations
 
 - macOS only (AppleScript dependency)
 - AppleScript mode requires Accessibility permissions
-- `read` command copies the last response — earlier messages need manual scroll
+- `read` returns the last visible message in the focused ChatGPT window — scroll first if the message you want is not visible

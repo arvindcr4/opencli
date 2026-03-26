@@ -1,7 +1,11 @@
-import { execSync } from 'node:child_process';
 import { cli, Strategy } from '../../registry.js';
 import type { IPage } from '../../types.js';
-import { clipRead, clipWrite } from '../../utils/clipboard.js';
+import {
+  CHATGPT_MODEL_CHOICES,
+  activateChatGpt,
+  pasteAndSubmitToChatGpt,
+  switchChatGptModel,
+} from './shared.js';
 
 export const sendCommand = cli({
   site: 'chatgpt',
@@ -10,26 +14,34 @@ export const sendCommand = cli({
   domain: 'chatgpt.com',
   strategy: Strategy.PUBLIC,
   browser: process.platform !== 'darwin',
-  args: [{ name: 'text', required: true, positional: true, help: 'Message to send' }],
+  args: [
+    { name: 'text', required: true, positional: true, help: 'Message to send' },
+    {
+      name: 'model',
+      required: false,
+      help: 'Model/mode to choose before sending (e.g. pro, thinking, instant, auto)',
+      choices: [...CHATGPT_MODEL_CHOICES],
+    },
+  ],
   columns: ['Status'],
   func: async (page: IPage | null, kwargs: any) => {
     const text = kwargs.text as string;
+    const desiredModel = kwargs.model as string | undefined;
+
     try {
       if (process.platform === 'darwin') {
-        let clipBackup = '';
-        try { clipBackup = clipRead(); } catch {}
-        clipWrite(text);
-        execSync("osascript -e 'tell application \"ChatGPT\" to activate'");
-        execSync("osascript -e 'delay 0.5'");
-        execSync("osascript " +
-          "-e 'tell application \"System Events\"' " +
-          "-e 'keystroke \"v\" using command down' " +
-          "-e 'delay 0.2' " +
-          "-e 'keystroke return' " +
-          "-e 'end tell'");
-        if (clipBackup) clipWrite(clipBackup);
+        if (desiredModel) {
+          switchChatGptModel(desiredModel);
+        } else {
+          activateChatGpt();
+        }
+
+        pasteAndSubmitToChatGpt(text);
       } else {
-        // Linux: interact with chatgpt.com in browser
+        if (desiredModel) {
+          throw new Error('--model is currently only supported by the macOS ChatGPT desktop app');
+        }
+
         if (!page) throw new Error('Browser page not available');
         const snapshot = await page.snapshot({ interactive: true });
         const inputRef = snapshot?.nodes?.find((n: any) =>
@@ -43,7 +55,7 @@ export const sendCommand = cli({
       }
       return [{ Status: 'Success' }];
     } catch (err: any) {
-      return [{ Status: "Error: " + err.message }];
+      return [{ Status: 'Error: ' + err.message }];
     }
   },
 });

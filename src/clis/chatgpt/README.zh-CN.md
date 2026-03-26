@@ -13,8 +13,12 @@
 ### 命令
 - `opencli chatgpt status`：检查 ChatGPT 应用是否在运行。
 - `opencli chatgpt new`：激活 ChatGPT 并按 `Cmd+N` 开始新对话。
+- `opencli chatgpt model`：读取当前激活的模型/模式。
+- `opencli chatgpt model pro`：打开模型选择器并切换到 `Pro`。
 - `opencli chatgpt send "消息"`：将消息复制到剪贴板，激活 ChatGPT，粘贴并提交。
-- `opencli chatgpt read`：通过 `Cmd+Shift+C` 复制最后一条 AI 回复并返回文本。
+- `opencli chatgpt send "消息" --model pro`：先切换到 `Pro`，再发送消息。
+- `opencli chatgpt ask "问题" --model pro`：先切换到 `Pro`，再发送并等待回答。
+- `opencli chatgpt read`：通过当前聚焦 ChatGPT 窗口的辅助功能树读取最后一条可见消息并返回文本。
 
 ## 方式二：CDP（高级，Electron 调试模式）
 
@@ -30,15 +34,15 @@ ChatGPT Desktop 同样是 Electron 应用，可以通过远程调试端口启动
 export OPENCLI_CDP_ENDPOINT="http://127.0.0.1:9224"
 ```
 
-> **注意**：CDP 模式支持未来的高级命令（如 DOM 检查、模型切换、代码提取等），与 Cursor 和 Codex 适配器类似。
+> **注意**：CDP 模式仍适合未来更深入的 DOM 检查、代码提取等高级能力；模型切换现在已经支持走内置辅助功能流程。
 
 ## 工作原理
 
-- **AppleScript 模式**：使用 `osascript` 和 `pbcopy`/`pbpaste` 进行剪贴板文本传输，无需远程调试端口。
+- **AppleScript 模式**：使用 `osascript` 控制 ChatGPT，发送消息时借助 `pbcopy`/`pbpaste` 粘贴文本，读取消息时通过 macOS 辅助功能树获取当前可见聊天内容，也能直接操作模型选择器。
 - **CDP 模式**：通过 Chrome DevTools Protocol 连接到 Electron 渲染进程，直接操作 DOM。
 
 ## 限制
 
 - 仅支持 macOS（AppleScript 依赖）
 - AppleScript 模式需要辅助功能权限
-- `read` 命令复制最后一条回复，更早的消息需手动滚动
+- `read` 命令返回当前窗口中最后一条可见消息；若目标消息不在视口内，需要先手动滚动
