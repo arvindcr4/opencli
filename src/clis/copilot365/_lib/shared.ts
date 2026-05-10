@@ -321,3 +321,140 @@ export async function copilotDomSend(
   `);
   return result || { ok: false, msg: 'page.evaluate returned null' };
 }
+
+import { readFileSync } from 'node:fs';
+import * as path from 'node:path';
+
+const MIME_BY_EXT: Record<string, string> = {
+  pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xls: 'application/vnd.ms-excel',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  txt: 'text/plain',
+  md: 'text/markdown',
+  csv: 'text/csv',
+  json: 'application/json',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+  html: 'text/html',
+  htm: 'text/html',
+};
+
+export function guessMime(filename: string): string {
+  const ext = (filename.split('.').pop() || '').toLowerCase();
+  return MIME_BY_EXT[ext] || 'application/octet-stream';
+}
+
+/**
+ * Attach a local file to the current Copilot 365 chat by:
+ *  1. clicking the attach affordance to surface a hidden file input,
+ *  2. setting the File via DataTransfer (the standard programmatic-upload trick),
+ *  3. firing a `change` event so React's controlled-input handler picks it up.
+ *
+ * The file bytes are read in Node, base64-encoded, and injected into
+ * page.evaluate. This caps practical sizes at ~50 MB (base64 expands ~33%
+ * and the bridge has to ferry it as a JSON string).
+ */
+export async function copilotDomAttach(
+  page: IPage,
+  filePath: string,
+  mimeType?: string,
+): Promise<{ ok: boolean; msg: string }> {
+  const buf = readFileSync(filePath);
+  const sizeMb = buf.length / 1024 / 1024;
+  if (sizeMb > 50) {
+    throw new Error(`File too large: ${sizeMb.toFixed(1)} MB (limit: 50 MB). Attach via the M365 web UI directly.`);
+  }
+  if (sizeMb > 25) {
+    console.warn(`[copilot365] attaching ${sizeMb.toFixed(1)} MB; the bridge may stall on files this large`);
+  }
+  const filename = path.basename(filePath);
+  const mime = mimeType || guessMime(filename);
+  const base64 = buf.toString('base64');
+
+  const result = await page.evaluate(`
+    (async () => {
+      try {
+        function _b64ToU8(b64) {
+          const bin = atob(b64);
+          const arr = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+          return arr;
+        }
+
+        // Step 1: try to surface a file input by clicking the attach affordance.
+        // Copilot 365 hides the <input type="file"> until the user opens the
+        // attach menu, so we click the most likely buttons first.
+        const attachBtnSelectors = [
+          'button[data-tid*="attach" i]',
+          'button[data-testid*="attach" i]',
+          'button[aria-label*="ttach" i]',
+          'button[aria-label*="dd files" i]',
+          'button[aria-label*="dd content" i]',
+          'button[aria-label*="upload" i]',
+          'button[aria-label*="ttachment" i]',
+        ];
+        for (const sel of attachBtnSelectors) {
+          const btn = document.querySelector(sel);
+          if (btn && btn.offsetParent !== null && !btn.disabled) {
+            btn.click();
+            await new Promise(r => setTimeout(r, 400));
+            break;
+          }
+        }
+
+        // Step 2: if a menu opened, click the "device upload" option.
+        const optionSelectors = [
+          'button[role="menuitem"][aria-label*="device" i]',
+          'button[role="menuitem"][aria-label*="this device" i]',
+          'button[role="menuitem"][aria-label*="omputer" i]',
+          'button[role="menuitem"][aria-label*="upload" i]',
+          'div[role="menuitem"][aria-label*="device" i]',
+        ];
+        for (const sel of optionSelectors) {
+          const opt = document.querySelector(sel);
+          if (opt && opt.offsetParent !== null) {
+            opt.click();
+            await new Promise(r => setTimeout(r, 400));
+            break;
+          }
+        }
+
+        // Step 3: locate the file input. Prefer one accepting our mime, fall
+        // back to any visible-or-hidden <input type="file">.
+        let input = null;
+        const allInputs = Array.from(document.querySelectorAll('input[type="file"]'));
+        input = allInputs.find(el => {
+          const accept = (el.getAttribute('accept') || '').toLowerCase();
+          return !accept || accept.includes('*') || accept.includes(${JSON.stringify(mime)}) || accept.includes(${JSON.stringify('.' + (filename.split('.').pop() || ''))});
+        }) || allInputs[0] || null;
+        if (!input) return { ok: false, msg: 'No <input type="file"> found after clicking attach affordance' };
+
+        // Step 4: build the File and set it.
+        const bytes = _b64ToU8(${JSON.stringify(base64)});
+        const file = new File([bytes], ${JSON.stringify(filename)}, { type: ${JSON.stringify(mime)} });
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        try {
+          input.files = dt.files;
+        } catch (e) {
+          // Some browsers reject direct .files assignment in privileged contexts;
+          // dispatch a synthetic drop on the input as a fallback.
+          input.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt }));
+        }
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        return { ok: true, msg: 'attached ' + ${JSON.stringify(filename)} + ' (' + ${JSON.stringify(mime)} + ', ' + (file.size) + ' bytes)' };
+      } catch (e) {
+        return { ok: false, msg: String((e && e.message) || e) };
+      }
+    })()
+  `);
+  return result || { ok: false, msg: 'page.evaluate returned null' };
+}
