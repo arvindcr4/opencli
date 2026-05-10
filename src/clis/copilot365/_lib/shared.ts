@@ -17,6 +17,10 @@
  *   https://github.com/AzureAD/microsoft-authentication-library-for-js (MIT, Microsoft).
  */
 
+import { readFileSync } from 'node:fs';
+import * as path from 'node:path';
+import type { IPage } from '../../../types.js';
+
 export const COPILOT365_URL = 'https://m365.cloud.microsoft/chat';
 
 export const COPILOT365_HOSTS = [
@@ -232,8 +236,6 @@ async function copilotFetch(path, init) {
 
 // ──────────────── TS-side helpers (run in Node, not page) ────────────────
 
-import type { IPage } from '../../../types.js';
-
 /**
  * Parse a substrate.office.com Copilot conversation payload into uniform
  * { Role, Text } rows. Handles both the plain `text` field and the
@@ -322,9 +324,6 @@ export async function copilotDomSend(
   return result || { ok: false, msg: 'page.evaluate returned null' };
 }
 
-import { readFileSync } from 'node:fs';
-import * as path from 'node:path';
-
 const MIME_BY_EXT: Record<string, string> = {
   pdf: 'application/pdf',
   doc: 'application/msword',
@@ -367,10 +366,18 @@ export async function copilotDomAttach(
   filePath: string,
   mimeType?: string,
 ): Promise<{ ok: boolean; msg: string }> {
-  const buf = readFileSync(filePath);
+  let buf: Buffer;
+  try {
+    buf = readFileSync(filePath);
+  } catch (e: any) {
+    return { ok: false, msg: `Cannot read file ${filePath}: ${e?.message || e}` };
+  }
   const sizeMb = buf.length / 1024 / 1024;
   if (sizeMb > 50) {
-    throw new Error(`File too large: ${sizeMb.toFixed(1)} MB (limit: 50 MB). Attach via the M365 web UI directly.`);
+    return {
+      ok: false,
+      msg: `File too large: ${sizeMb.toFixed(1)} MB (limit: 50 MB). Attach via the M365 web UI directly.`,
+    };
   }
   if (sizeMb > 25) {
     console.warn(`[copilot365] attaching ${sizeMb.toFixed(1)} MB; the bridge may stall on files this large`);
