@@ -229,3 +229,95 @@ async function copilotFetch(path, init) {
   return res.json();
 }
 `;
+
+// ──────────────── TS-side helpers (run in Node, not page) ────────────────
+
+import type { IPage } from '../../../types.js';
+
+/**
+ * Parse a substrate.office.com Copilot conversation payload into uniform
+ * { Role, Text } rows. Handles both the plain `text` field and the
+ * `adaptiveCards[].body[].text` shape that bot turns sometimes use.
+ *
+ * Used by `read.ts` and (via a Turn-numbering wrapper) `get-chat.ts` so
+ * payload-shape changes only need updating in one place.
+ */
+export function extractApiMessages(apiData: any): Array<{ Role: string; Text: string }> {
+  const out: Array<{ Role: string; Text: string }> = [];
+  const candidates: any[] =
+    apiData?.messages
+    || apiData?.conversation?.messages
+    || apiData?.value
+    || (Array.isArray(apiData) ? apiData : []);
+  for (const m of candidates) {
+    if (!m) continue;
+    const role = (m.author || m.role || '').toLowerCase();
+    let text: string = m.text || '';
+    if (!text && Array.isArray(m.adaptiveCards)) {
+      for (const card of m.adaptiveCards) {
+        if (Array.isArray(card?.body)) {
+          for (const b of card.body) if (typeof b?.text === 'string') text += (text ? '\n' : '') + b.text;
+        }
+      }
+    }
+    text = (text || '').trim();
+    if (!text) continue;
+    out.push({ Role: role === 'user' ? 'User' : 'Copilot', Text: text.slice(0, 4000) });
+  }
+  return out;
+}
+
+/**
+ * Inject the prompt into the Copilot 365 chat input via the page bridge.
+ * Used by `chat.ts`, `send.ts`, `send-prompt.ts` so the (fragile) input/send
+ * selector logic only lives in one place.
+ *
+ * Caller is responsible for navigating the page to a Copilot URL beforehand
+ * if needed — this helper trusts that the chat input is already mounted.
+ */
+export async function copilotDomSend(
+  page: IPage,
+  text: string,
+): Promise<{ ok: boolean; msg: string }> {
+  const promptJson = JSON.stringify(text);
+  const result = await page.evaluate(`
+    (async () => {
+      try {
+        ${FIND_INPUT_JS}
+        ${FIND_SEND_BUTTON_JS}
+        const editor = findCopilotInput();
+        if (!editor) return { ok: false, msg: 'no Copilot input found' };
+
+        editor.focus();
+        if (editor.tagName === 'TEXTAREA' || editor.tagName === 'INPUT') {
+          editor.value = ${promptJson};
+          editor.dispatchEvent(new Event('input', { bubbles: true }));
+        } else {
+          const sel = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(editor);
+          sel.removeAllRanges();
+          sel.addRange(range);
+          document.execCommand('insertText', false, ${promptJson});
+          editor.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        await new Promise(r => setTimeout(r, 600));
+
+        const sendBtn = findCopilotSendButton();
+        if (sendBtn && !sendBtn.disabled) {
+          sendBtn.click();
+          return { ok: true, msg: 'clicked-send' };
+        }
+
+        editor.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
+        editor.dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter', code: 'Enter', bubbles: true }));
+        editor.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }));
+        return { ok: true, msg: 'enter-key-fallback' };
+      } catch (e) {
+        return { ok: false, msg: String(e) };
+      }
+    })()
+  `);
+  return result || { ok: false, msg: 'page.evaluate returned null' };
+}
