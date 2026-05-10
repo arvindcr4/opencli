@@ -1,6 +1,11 @@
 import { cli, Strategy } from '../../registry.js';
 import type { IPage } from '../../types.js';
-import { COPILOT365_API_JS, COPILOT365_URL, isCopilot365Url } from './_lib/shared.js';
+import {
+  COPILOT365_API_JS,
+  COPILOT365_URL,
+  extractApiMessages,
+  isCopilot365Url,
+} from './_lib/shared.js';
 
 export const getChatCommand = cli({
   site: 'copilot365',
@@ -55,36 +60,11 @@ export const getChatCommand = cli({
       return [{ Turn: 0, Role: 'System', Text: '[ERROR] ' + (result?.msg || 'unknown') }];
     }
 
-    const messages: Array<{ Turn: number; Role: string; Text: string }> = [];
-    const candidates: any[] =
-      result.data?.messages
-      || result.data?.conversation?.messages
-      || result.data?.value
-      || [];
-    let turn = 0;
-    for (const m of candidates) {
-      if (!m) continue;
-      const role = (m.author || m.role || '').toLowerCase();
-      let text: string = m.text || '';
-      if (!text && Array.isArray(m.adaptiveCards)) {
-        for (const card of m.adaptiveCards) {
-          if (Array.isArray(card?.body)) {
-            for (const b of card.body) if (typeof b?.text === 'string') text += (text ? '\n' : '') + b.text;
-          }
-        }
-      }
-      text = (text || '').trim();
-      if (!text) continue;
-      turn += 1;
-      messages.push({
-        Turn: turn,
-        Role: role === 'user' ? 'User' : 'Copilot',
-        Text: text.slice(0, 4000),
-      });
-    }
-    if (messages.length === 0) {
+    const base = extractApiMessages(result.data);
+    if (base.length === 0) {
       return [{ Turn: 0, Role: 'System', Text: 'Conversation has no readable messages' }];
     }
-    return last > 0 ? messages.slice(-last) : messages;
+    const numbered = base.map((m, i) => ({ Turn: i + 1, Role: m.Role, Text: m.Text }));
+    return last > 0 ? numbered.slice(-last) : numbered;
   },
 });

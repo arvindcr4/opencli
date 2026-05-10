@@ -4,6 +4,7 @@ import {
   COPILOT365_API_JS,
   COPILOT365_URL,
   MESSAGE_SELECTORS,
+  extractApiMessages,
   isCopilot365Url,
 } from './_lib/shared.js';
 
@@ -53,7 +54,7 @@ export const readCommand = cli({
       `);
 
       if (apiResult && apiResult.ok) {
-        const messages = extractMessages(apiResult.data);
+        const messages = extractApiMessages(apiResult.data);
         if (messages.length > 0) {
           return last > 0 ? messages.slice(-last) : messages;
         }
@@ -96,28 +97,3 @@ export const readCommand = cli({
     return last > 0 ? messages.slice(-last) : messages;
   },
 });
-
-function extractMessages(apiData: any): Array<{ Role: string; Text: string }> {
-  const out: Array<{ Role: string; Text: string }> = [];
-  const candidates: any[] =
-    apiData?.messages
-    || apiData?.conversation?.messages
-    || apiData?.value
-    || (Array.isArray(apiData) ? apiData : []);
-  for (const m of candidates) {
-    if (!m) continue;
-    const role = (m.author || m.role || '').toLowerCase();
-    let text: string = m.text || '';
-    if (!text && Array.isArray(m.adaptiveCards)) {
-      for (const card of m.adaptiveCards) {
-        if (Array.isArray(card?.body)) {
-          for (const b of card.body) if (typeof b?.text === 'string') text += (text ? '\n' : '') + b.text;
-        }
-      }
-    }
-    text = (text || '').trim();
-    if (!text) continue;
-    out.push({ Role: role === 'user' ? 'User' : 'Copilot', Text: text.slice(0, 4000) });
-  }
-  return out;
-}

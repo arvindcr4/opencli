@@ -3,9 +3,8 @@ import { cli, Strategy } from '../../registry.js';
 import type { IPage } from '../../types.js';
 import {
   COPILOT365_URL,
-  FIND_INPUT_JS,
-  FIND_SEND_BUTTON_JS,
   MESSAGE_SELECTORS,
+  copilotDomSend,
   isCopilot365Url,
 } from './_lib/shared.js';
 
@@ -33,7 +32,6 @@ export const chatCommand = cli({
     }
     const timeoutMs = ((kwargs.timeout as number) || 120) * 1000;
     const newChat = Boolean(kwargs.new);
-    const promptJson = JSON.stringify(text);
 
     const currentUrl = await page.evaluate(`() => window.location.href`);
     if (!isCopilot365Url(currentUrl) || newChat) {
@@ -47,47 +45,8 @@ export const chatCommand = cli({
       () => document.querySelectorAll(${JSON.stringify(MESSAGE_SELECTORS)}).length
     `);
 
-    const sendResult = await page.evaluate(`
-      (async () => {
-        try {
-          ${FIND_INPUT_JS}
-          ${FIND_SEND_BUTTON_JS}
-          const editor = findCopilotInput();
-          if (!editor) return { ok: false, msg: 'no Copilot input found' };
-
-          editor.focus();
-          if (editor.tagName === 'TEXTAREA' || editor.tagName === 'INPUT') {
-            editor.value = ${promptJson};
-            editor.dispatchEvent(new Event('input', { bubbles: true }));
-          } else {
-            const sel = window.getSelection();
-            const range = document.createRange();
-            range.selectNodeContents(editor);
-            sel.removeAllRanges();
-            sel.addRange(range);
-            document.execCommand('insertText', false, ${promptJson});
-            editor.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-
-          await new Promise(r => setTimeout(r, 600));
-
-          const sendBtn = findCopilotSendButton();
-          if (sendBtn && !sendBtn.disabled) {
-            sendBtn.click();
-            return { ok: true, msg: 'clicked-send' };
-          }
-
-          editor.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
-          editor.dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter', code: 'Enter', bubbles: true }));
-          editor.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }));
-          return { ok: true, msg: 'enter-key-fallback' };
-        } catch (e) {
-          return { ok: false, msg: String(e) };
-        }
-      })()
-    `);
-
-    if (!sendResult || !sendResult.ok) {
+    const sendResult = await copilotDomSend(page, text);
+    if (!sendResult.ok) {
       return [
         { Role: 'User', Text: text },
         { Role: 'System', Text: '[SEND FAILED] ' + JSON.stringify(sendResult) },
@@ -100,6 +59,10 @@ export const chatCommand = cli({
     while (Date.now() - startTime < timeoutMs) {
       await page.wait(3);
 
+      // Find the newest non-user turn after our send. The `isUser` filter is
+      // the real guard against echoing the prompt; an earlier `text !== promptJson`
+      // check was dead code (promptJson is JSON-encoded so it never equalled
+      // the raw DOM text — flagged by Sourcery).
       const candidate = await page.evaluate(`
         () => {
           const turns = document.querySelectorAll(${JSON.stringify(MESSAGE_SELECTORS)});
@@ -112,7 +75,7 @@ export const chatCommand = cli({
             const isUser = role === 'user' || role.includes('user');
             if (isUser) continue;
             const text = (node.innerText || node.textContent || '').trim();
-            if (text && text.length > 1 && text !== ${promptJson}) return text;
+            if (text && text.length > 1) return text;
           }
           return '';
         }
