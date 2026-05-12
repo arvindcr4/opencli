@@ -42,6 +42,7 @@ async function isResearching(page) {
 const deepresearchCommand = cli({
   site: "chatgpt",
   name: "deepresearch",
+  access: "write",
   description: "Submit a deep research query to ChatGPT and wait for the full report",
   domain: "chatgpt.com",
   strategy: Strategy.PUBLIC,

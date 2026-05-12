@@ -3,6 +3,7 @@ import { COPILOT365_URL, copilotDomAttach, isCopilot365Url } from "./_lib/shared
 const attachCommand = cli({
   site: "copilot365",
   name: "attach",
+  access: "write",
   description: "Attach a local file to the current Microsoft 365 Copilot chat",
   domain: "m365.cloud.microsoft",
   strategy: Strategy.COOKIE,

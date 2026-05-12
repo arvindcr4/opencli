@@ -3,6 +3,7 @@ import { COPILOT365_API_JS, COPILOT365_URL, isCopilot365Url } from "./_lib/share
 const listChatsCommand = cli({
   site: "copilot365",
   name: "list-chats",
+  access: "read",
   description: "List recent Microsoft 365 Copilot chats via the substrate.office.com API",
   domain: "m365.cloud.microsoft",
   strategy: Strategy.COOKIE,

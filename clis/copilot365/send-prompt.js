@@ -4,6 +4,7 @@ import { COPILOT365_URL, copilotDomSend, isCopilot365Url } from "./_lib/shared.j
 const sendPromptCommand = cli({
   site: "copilot365",
   name: "send-prompt",
+  access: "write",
   description: "Send a prompt loaded from a file (alias of `send --file`)",
   domain: "m365.cloud.microsoft",
   strategy: Strategy.COOKIE,

@@ -8,6 +8,7 @@ import {
 const getChatCommand = cli({
   site: "copilot365",
   name: "get-chat",
+  access: "read",
   description: "Fetch a specific Microsoft 365 Copilot conversation by id via the substrate API",
   domain: "m365.cloud.microsoft",
   strategy: Strategy.COOKIE,

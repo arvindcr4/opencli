@@ -4,6 +4,7 @@ import { COPILOT365_URL, copilotDomSend, isCopilot365Url } from "./_lib/shared.j
 const sendCommand = cli({
   site: "copilot365",
   name: "send",
+  access: "write",
   description: "Fire-and-forget: send a message to Microsoft 365 Copilot without waiting for the reply",
   domain: "m365.cloud.microsoft",
   strategy: Strategy.COOKIE,

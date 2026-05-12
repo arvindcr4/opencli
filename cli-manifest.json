@@ -4164,6 +4164,38 @@
   },
   {
     "site": "chatgpt",
+    "name": "deepresearch",
+    "description": "Submit a deep research query to ChatGPT and wait for the full report",
+    "access": "write",
+    "domain": "chatgpt.com",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Research query"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "900",
+        "required": false,
+        "help": "Max seconds to wait for report (default: 900)"
+      }
+    ],
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "type": "js",
+    "modulePath": "chatgpt/deepresearch.js",
+    "sourceFile": "chatgpt/deepresearch.js"
+  },
+  {
+    "site": "chatgpt",
     "name": "detail",
     "description": "Open a ChatGPT web conversation by ID and read its messages",
     "access": "read",
@@ -5632,6 +5664,271 @@
     "type": "js",
     "modulePath": "coingecko/trending.js",
     "sourceFile": "coingecko/trending.js"
+  },
+  {
+    "site": "copilot365",
+    "name": "attach",
+    "description": "Attach a local file to the current Microsoft 365 Copilot chat",
+    "access": "write",
+    "domain": "m365.cloud.microsoft",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "Path to local file (PDF/DOCX/XLSX/PPTX/TXT/CSV/PNG/JPG; <50 MB)"
+      },
+      {
+        "name": "mime",
+        "type": "string",
+        "required": false,
+        "help": "Override MIME type (auto-detected from extension by default)"
+      }
+    ],
+    "columns": [
+      "Status"
+    ],
+    "type": "js",
+    "modulePath": "copilot365/attach.js",
+    "sourceFile": "copilot365/attach.js",
+    "navigateBefore": "https://m365.cloud.microsoft"
+  },
+  {
+    "site": "copilot365",
+    "name": "chat",
+    "description": "Send a prompt to Microsoft 365 Copilot and wait for the reply",
+    "access": "write",
+    "domain": "m365.cloud.microsoft",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "string",
+        "required": false,
+        "positional": true,
+        "help": "Prompt to send (or use --file)"
+      },
+      {
+        "name": "file",
+        "type": "string",
+        "required": false,
+        "help": "Read prompt from this file instead of positional arg"
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "default": 120,
+        "required": false,
+        "help": "Max seconds to wait for the reply (default: 120)"
+      },
+      {
+        "name": "new",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": "Start a new chat before sending"
+      }
+    ],
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "type": "js",
+    "modulePath": "copilot365/chat.js",
+    "sourceFile": "copilot365/chat.js",
+    "navigateBefore": "https://m365.cloud.microsoft"
+  },
+  {
+    "site": "copilot365",
+    "name": "get-chat",
+    "description": "Fetch a specific Microsoft 365 Copilot conversation by id via the substrate API",
+    "access": "read",
+    "domain": "m365.cloud.microsoft",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "Conversation id (uuid) — get from `list-chats`"
+      },
+      {
+        "name": "last",
+        "type": "int",
+        "default": 0,
+        "required": false,
+        "help": "Only return last N messages (0 = all)"
+      }
+    ],
+    "columns": [
+      "Turn",
+      "Role",
+      "Text"
+    ],
+    "type": "js",
+    "modulePath": "copilot365/get-chat.js",
+    "sourceFile": "copilot365/get-chat.js",
+    "navigateBefore": "https://m365.cloud.microsoft"
+  },
+  {
+    "site": "copilot365",
+    "name": "list-chats",
+    "description": "List recent Microsoft 365 Copilot chats via the substrate.office.com API",
+    "access": "read",
+    "domain": "m365.cloud.microsoft",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 25,
+        "required": false,
+        "help": "Maximum chats to return (1–200)"
+      }
+    ],
+    "columns": [
+      "Index",
+      "Title",
+      "ConversationId",
+      "Updated",
+      "LastMessage"
+    ],
+    "type": "js",
+    "modulePath": "copilot365/list-chats.js",
+    "sourceFile": "copilot365/list-chats.js",
+    "navigateBefore": "https://m365.cloud.microsoft"
+  },
+  {
+    "site": "copilot365",
+    "name": "new",
+    "description": "Start a new chat in Microsoft 365 Copilot",
+    "access": "read",
+    "domain": "m365.cloud.microsoft",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "columns": [
+      "Status"
+    ],
+    "type": "js",
+    "modulePath": "copilot365/new.js",
+    "sourceFile": "copilot365/new.js",
+    "navigateBefore": "https://m365.cloud.microsoft"
+  },
+  {
+    "site": "copilot365",
+    "name": "read",
+    "description": "Read the currently-open Microsoft 365 Copilot chat (API first, DOM fallback)",
+    "access": "read",
+    "domain": "m365.cloud.microsoft",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "last",
+        "type": "int",
+        "default": 0,
+        "required": false,
+        "help": "Only return last N messages (0 = all)"
+      },
+      {
+        "name": "dom",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": "Force DOM scrape (skip the substrate API)"
+      }
+    ],
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "type": "js",
+    "modulePath": "copilot365/read.js",
+    "sourceFile": "copilot365/read.js",
+    "navigateBefore": "https://m365.cloud.microsoft"
+  },
+  {
+    "site": "copilot365",
+    "name": "send",
+    "description": "Fire-and-forget: send a message to Microsoft 365 Copilot without waiting for the reply",
+    "access": "write",
+    "domain": "m365.cloud.microsoft",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": false,
+        "positional": true,
+        "help": "Message text (or use --file)"
+      },
+      {
+        "name": "file",
+        "type": "string",
+        "required": false,
+        "help": "Read message from this file"
+      }
+    ],
+    "columns": [
+      "Status"
+    ],
+    "type": "js",
+    "modulePath": "copilot365/send.js",
+    "sourceFile": "copilot365/send.js",
+    "navigateBefore": "https://m365.cloud.microsoft"
+  },
+  {
+    "site": "copilot365",
+    "name": "send-prompt",
+    "description": "Send a prompt loaded from a file (alias of `send --file`)",
+    "access": "write",
+    "domain": "m365.cloud.microsoft",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "help": "File containing the prompt to send"
+      }
+    ],
+    "columns": [
+      "Status"
+    ],
+    "type": "js",
+    "modulePath": "copilot365/send-prompt.js",
+    "sourceFile": "copilot365/send-prompt.js",
+    "navigateBefore": "https://m365.cloud.microsoft"
+  },
+  {
+    "site": "copilot365",
+    "name": "status",
+    "description": "Verify the active Chrome tab is logged in to Microsoft 365 Copilot",
+    "access": "read",
+    "domain": "m365.cloud.microsoft",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "columns": [
+      "Status",
+      "Url",
+      "Title",
+      "SignedIn"
+    ],
+    "type": "js",
+    "modulePath": "copilot365/status.js",
+    "sourceFile": "copilot365/status.js",
+    "navigateBefore": "https://m365.cloud.microsoft"
   },
   {
     "site": "coupang",

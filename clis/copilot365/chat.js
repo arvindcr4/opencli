@@ -9,6 +9,7 @@ import {
 const chatCommand = cli({
   site: "copilot365",
   name: "chat",
+  access: "write",
   description: "Send a prompt to Microsoft 365 Copilot and wait for the reply",
   domain: "m365.cloud.microsoft",
   strategy: Strategy.COOKIE,
