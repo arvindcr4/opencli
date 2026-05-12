@@ -1,4 +1,5 @@
 import { cli, Strategy } from "@jackwener/opencli/registry";
+import { ArgumentError, CommandExecutionError } from "@jackwener/opencli/errors";
 import { COPILOT365_API_JS, COPILOT365_URL, isCopilot365Url } from "./_lib/shared.js";
 const listChatsCommand = cli({
   site: "copilot365",
@@ -13,7 +14,14 @@ const listChatsCommand = cli({
   ],
   columns: ["Index", "Title", "ConversationId", "Updated", "LastMessage"],
   func: async (page, kwargs) => {
-    const limit = Math.max(1, Math.min(200, kwargs.limit || 25));
+    const rawLimit = kwargs.limit ?? 25;
+    if (!Number.isInteger(rawLimit) || rawLimit < 1 || rawLimit > 200) {
+      throw new ArgumentError(
+        "--limit must be an integer between 1 and 200",
+        `Got ${rawLimit}. Example: opencli copilot365 list-chats --limit 50`
+      );
+    }
+    const limit = rawLimit;
     const currentUrl = await page.evaluate(`() => window.location.href`);
     if (!isCopilot365Url(currentUrl)) {
       await page.goto(COPILOT365_URL);
@@ -50,7 +58,10 @@ const listChatsCommand = cli({
       })()
     `);
     if (!result || !result.ok) {
-      return [{ Index: 0, Title: "[ERROR] " + (result?.msg || "unknown"), ConversationId: "", Updated: "", LastMessage: "" }];
+      throw new CommandExecutionError(
+        `copilot365 list-chats failed: ${result?.msg || "unknown error"}`,
+        "Verify the Copilot 365 tab is logged in: opencli copilot365 status"
+      );
     }
     const chats = result.data?.chats || [];
     if (chats.length === 0) {

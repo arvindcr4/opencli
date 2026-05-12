@@ -1,4 +1,5 @@
 import { cli, Strategy } from "@jackwener/opencli/registry";
+import { CommandExecutionError } from "@jackwener/opencli/errors";
 import {
   COPILOT365_API_JS,
   COPILOT365_URL,
@@ -53,7 +54,10 @@ const getChatCommand = cli({
       })()
     `);
     if (!result || !result.ok) {
-      return [{ Turn: 0, Role: "System", Text: "[ERROR] " + (result?.msg || "unknown") }];
+      throw new CommandExecutionError(
+        `copilot365 get-chat failed: ${result?.msg || "unknown error"}`,
+        "Verify the Copilot 365 tab is logged in and the conversation id is valid"
+      );
     }
     const base = extractApiMessages(result.data);
     if (base.length === 0) {
