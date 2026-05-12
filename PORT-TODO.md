@@ -19,7 +19,7 @@ Both tags live on `origin` and can be checked out with
 | copilot365 adapter (9 commands) | d056cc71 / 61ad7eaa | yes | port/fork-features-2026-05-12 |
 | copilot365 attach | 6e66ba1a / 52b8034c (closed PR #4) | yes | same |
 | chatgpt deepresearch | 125a3553 | yes | same |
-| chatgpt promode | 125a3553 / 677b5a4c / 0841f92e | **no** | needs rework |
+| chatgpt promode | 125a3553 / 677b5a4c / 0841f92e | yes (rewritten on upstream API) | same — see notes |
 | chatgpt ask/send/read/new/status/ax tweaks | 0841f92e | **no** | needs review |
 | CDP isolated tab per session | 56f8e8a8 | **no** | needs rework |
 | Gemini CLI commands | 3481396c | obsolete | upstream has clis/gemini/ now |
@@ -27,36 +27,42 @@ Both tags live on `origin` and can be checked out with
 | feishu adapter mods | 0841f92e | dropped | upstream removed feishu |
 | wechat adapter mods | 0841f92e | dropped | upstream removed wechat |
 
-## Why promode + CDP isolated tabs were deferred
+## promode notes (now ported, untested against live ChatGPT)
 
-The fork's `promode` and `cdp` work depend on raw CDP bridge access:
+`clis/chatgpt/promode.js` was rewritten from the legacy
+`src/clis/chatgpt/promode.ts` using upstream's higher-level page API
+instead of the raw CDP bridge the fork relied on:
 
-```ts
-const cdpBridge = (page as any).bridge;
-await cdpBridge.send('Input.dispatchMouseEvent', ...);
-await cdpBridge.send('DOM.setFileInputFiles', ...);
-```
+- `DOM.setFileInputFiles(...)` → `page.setFileInput([filePath], '#upload-files')`
+- `Input.dispatchMouseEvent(...)` for the Radix model dropdown →
+  `page.snapshot({interactive: true})` + `page.click(ref)` (real CDP click
+  under the hood; should fire Radix open-handlers without the y-offset
+  magic). Items are matched by their visible text against `MODE_MATCHERS`.
+- Custom "is generating" / response-polling loop → upstream's
+  `isGenerating` + a local `waitForProResponse` that requires 3 stable
+  ticks and treats "Thinking…/Searching…/Reading…" headers as in-progress
+  (Pro mode can pause for minutes between visible tokens).
 
-Upstream's `IPage` interface (`src/types.ts`) does not expose a `bridge`
-property. The fork's commit `56f8e8a8 feat(cdp): isolated tab per session`
-modified the page class to expose it, but upstream has since refactored
-the browser layer (workspaces → sessions, see `9c06e84c`,
-`467fdd0b`, `0e168d57`) and the patch no longer applies.
+**Untested against live ChatGPT.** Two specific risks to verify on first
+real run:
 
-To port promode properly you'll need to either:
+1. The model-switcher dropdown trigger may not surface as a
+   `data-testid="model-switcher-dropdown-button"` node in the snapshot.
+   If `selectChatGPTMode` throws "Could not find ChatGPT model selector",
+   inspect the snapshot output and adjust the lookup.
+2. Menu-item names may not contain literal `pro` / `thinking` / `instant`
+   substrings — Pro mode is sometimes labelled "Extended Pro" or
+   `5.2-thinking`. Extend `MODE_MATCHERS` in `promode.js` as needed.
 
-1. **Add a sanctioned `bridge` accessor to upstream's page class** (most
-   work; may require an upstream contribution), or
-2. **Replace CDP raw calls with higher-level page methods** —
-   `page.setFileInput(absPaths, '#upload-files')` already covers the file
-   upload case (see `clis/chatgpt/utils.js#uploadChatGPTImages`). For the
-   model-selector Radix dropdown, switch from CDP mouse events to
-   `page.snapshot` + `page.click` semantic-ref clicks.
+## CDP isolated tab per session — still deferred
 
-Skeleton for option 2 lives in the legacy tag at
-`legacy-main-2026-05-12:src/clis/chatgpt/promode.ts` — read it side-by-side
-with `clis/chatgpt/utils.js#uploadChatGPTImages` and `isGenerating` to
-see the upstream equivalents.
+Upstream replaced the workspaces concept with sessions
+(commits `9c06e84c`, `467fdd0b`, `0e168d57`, `0e168d57`). The fork's
+`56f8e8a8 feat(cdp): isolated tab per session` patch was written against
+the workspaces layer and no longer applies. Re-implementing against the
+new session model requires reading `src/browser/cdp.ts` end-to-end on
+upstream and on `legacy-main-2026-05-12` side-by-side — not attempted
+in this port.
 
 ## ChatGPT command tweaks (0841f92e)
 
