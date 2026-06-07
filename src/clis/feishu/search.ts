@@ -5,13 +5,14 @@ import type { IPage } from '../../types.js';
 export const searchCommand = cli({
   site: 'feishu',
   name: 'search',
+  access: 'read',
   description: 'Open Feishu global search and type a query (Cmd+K)',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,
   browser: false,
   args: [{ name: 'query', required: true, positional: true, help: 'Search query' }],
   columns: ['Status'],
-  func: async (page: IPage | null, kwargs: any) => {
+  func: async (kwargs: any) => {
     if (process.platform !== 'darwin') {
       return [{ Status: 'Not supported on Linux — this command requires the macOS desktop app.' }];
     }

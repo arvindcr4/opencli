@@ -10,6 +10,7 @@ import {
 export const sendCommand = cli({
   site: 'chatgpt',
   name: 'send',
+  access: 'write',
   description: 'Send a message to ChatGPT (desktop app on macOS, browser on Linux)',
   domain: 'chatgpt.com',
   strategy: Strategy.PUBLIC,
@@ -58,4 +59,4 @@ export const sendCommand = cli({
       return [{ Status: 'Error: ' + err.message }];
     }
   },
-});
+} as Parameters<typeof cli>[0]);

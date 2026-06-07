@@ -5,13 +5,14 @@ import type { IPage } from '../../types.js';
 export const statusCommand = cli({
   site: 'chatgpt',
   name: 'status',
+  access: 'read',
   description: 'Check ChatGPT status (desktop app on macOS, chatgpt.com reachability on Linux)',
   domain: 'chatgpt.com',
   strategy: Strategy.PUBLIC,
   browser: false,
   args: [],
   columns: ['Status'],
-  func: async (page: IPage | null) => {
+  func: async () => {
     if (process.platform === 'darwin') {
       try {
         const output = execSync("osascript -e 'application \"ChatGPT\" is running'", { encoding: 'utf-8' }).trim();

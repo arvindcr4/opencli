@@ -1,10 +1,15 @@
-import { afterEach, describe, it, expect, vi } from 'vitest';
-import { BrowserBridge, __test__ } from './browser/index.js';
+import { describe, it, expect, vi } from 'vitest';
+import { BrowserBridge, generateStealthJs } from './browser/index.js';
+import { extractTabEntries, diffTabIndexes, appendLimited } from './browser/tabs.js';
+import { withTimeoutMs } from './runtime.js';
+import { __test__ as cdpTest } from './browser/cdp.js';
+import { classifyBrowserError } from './browser/errors.js';
 import * as daemonClient from './browser/daemon-client.js';
+import * as daemonLifecycle from './browser/daemon-lifecycle.js';
 
 describe('browser helpers', () => {
   it('extracts tab entries from string snapshots', () => {
-    const entries = __test__.extractTabEntries('Tab 0 https://example.com\nTab 1 Chrome Extension');
+    const entries = extractTabEntries('Tab 0 https://example.com\nTab 1 Chrome Extension');
 
     expect(entries).toEqual([
       { index: 0, identity: 'https://example.com' },
@@ -13,7 +18,7 @@ describe('browser helpers', () => {
   });
 
   it('extracts tab entries from MCP markdown format', () => {
-    const entries = __test__.extractTabEntries(
+    const entries = extractTabEntries(
       '- 0: (current) [Playwright MCP extension](chrome-extension://abc/connect.html)\n- 1: [知乎 - 首页](https://www.zhihu.com/)'
     );
 
@@ -24,7 +29,7 @@ describe('browser helpers', () => {
   });
 
   it('closes only tabs that were opened during the session', () => {
-    const tabsToClose = __test__.diffTabIndexes(
+    const tabsToClose = diffTabIndexes(
       ['https://example.com', 'Chrome Extension'],
       [
         { index: 0, identity: 'https://example.com' },
@@ -38,15 +43,31 @@ describe('browser helpers', () => {
   });
 
   it('keeps only the tail of stderr buffers', () => {
-    expect(__test__.appendLimited('12345', '67890', 8)).toBe('34567890');
+    expect(appendLimited('12345', '67890', 8)).toBe('34567890');
   });
 
   it('times out slow promises', async () => {
-    await expect(__test__.withTimeoutMs(new Promise(() => {}), 10, 'timeout')).rejects.toThrow('timeout');
+    await expect(withTimeoutMs(new Promise(() => {}), 10, 'timeout')).rejects.toThrow('timeout');
+  });
+
+  it('classifies browser errors with correct kind and retry advice', () => {
+    // CDP target navigation — page-level settle retry
+    const nav = classifyBrowserError(new Error('{"code":-32000,"message":"Inspected target navigated or closed"}'));
+    expect(nav.kind).toBe('target-navigation');
+    expect(nav.delayMs).toBe(200);
+
+    // Extension transient — daemon-client retry only, NOT page-level
+    const ext = classifyBrowserError(new Error('Extension disconnected'));
+    expect(ext.kind).toBe('extension-transient');
+    expect(ext.delayMs).toBe(1500);
+
+    // Non-transient errors — not retryable
+    expect(classifyBrowserError(new Error('malformed exec payload')).kind).toBe('non-retryable');
+    expect(classifyBrowserError(new Error('Permission denied')).kind).toBe('non-retryable');
   });
 
   it('prefers the real Electron app target over DevTools and blank pages', () => {
-    const target = __test__.selectCDPTarget([
+    const target = cdpTest.selectCDPTarget([
       {
         type: 'page',
         title: 'DevTools - localhost:9224',
@@ -73,7 +94,7 @@ describe('browser helpers', () => {
   it('honors OPENCLI_CDP_TARGET when multiple inspectable targets exist', () => {
     vi.stubEnv('OPENCLI_CDP_TARGET', 'codex');
 
-    const target = __test__.selectCDPTarget([
+    const target = cdpTest.selectCDPTarget([
       {
         type: 'app',
         title: 'Cursor',
@@ -94,42 +115,226 @@ describe('browser helpers', () => {
 
 describe('BrowserBridge state', () => {
   it('transitions to closed after close()', async () => {
-    const mcp = new BrowserBridge();
+    const bridge = new BrowserBridge();
 
-    expect(mcp.state).toBe('idle');
+    expect(bridge.state).toBe('idle');
 
-    await mcp.close();
+    await bridge.close();
 
-    expect(mcp.state).toBe('closed');
+    expect(bridge.state).toBe('closed');
   });
 
   it('rejects connect() after the session has been closed', async () => {
-    const mcp = new BrowserBridge();
-    await mcp.close();
+    const bridge = new BrowserBridge();
+    await bridge.close();
 
-    await expect(mcp.connect()).rejects.toThrow('Session is closed');
+    await expect(bridge.connect()).rejects.toThrow('Session is closed');
   });
 
   it('rejects connect() while already connecting', async () => {
-    const mcp = new BrowserBridge();
-    (mcp as any)._state = 'connecting';
+    const bridge = new BrowserBridge();
+    (bridge as unknown as { _state: string })._state = 'connecting';
 
-    await expect(mcp.connect()).rejects.toThrow('Already connecting');
+    await expect(bridge.connect()).rejects.toThrow('Already connecting');
   });
 
   it('rejects connect() while closing', async () => {
-    const mcp = new BrowserBridge();
-    (mcp as any)._state = 'closing';
+    const bridge = new BrowserBridge();
+    (bridge as unknown as { _state: string })._state = 'closing';
 
-    await expect(mcp.connect()).rejects.toThrow('Session is closing');
+    await expect(bridge.connect()).rejects.toThrow('Session is closing');
   });
 
-  it('fails fast when daemon is running but extension is disconnected', async () => {
-    vi.spyOn(daemonClient, 'isExtensionConnected').mockResolvedValue(false);
-    vi.spyOn(daemonClient, 'isDaemonRunning').mockResolvedValue(true);
+  it('fails fast when daemon is running but extension is disconnected (same version)', async () => {
+    const { PKG_VERSION } = await import('./version.js');
+    vi.spyOn(daemonClient, 'getDaemonHealth').mockResolvedValue({
+      state: 'no-extension',
+      status: {
+        ok: true,
+        pid: 999999,
+        uptime: 0,
+        daemonVersion: PKG_VERSION,
+        extensionConnected: false,
+        pending: 0,
+        memoryMB: 0,
+        port: 0,
+      },
+    });
 
-    const mcp = new BrowserBridge();
+    const bridge = new BrowserBridge();
 
-    await expect(mcp.connect()).rejects.toThrow('Browser Extension is not connected');
+    await expect(bridge.connect({ timeout: 0.1 })).rejects.toThrow('Browser Bridge extension not connected');
+  });
+
+  it('attempts stale daemon replacement when daemonVersion is missing', async () => {
+    vi.spyOn(daemonClient, 'getDaemonHealth').mockResolvedValue({
+      state: 'no-extension',
+      status: {
+        ok: true,
+        pid: 999999,
+        uptime: 0,
+        extensionConnected: false,
+        pending: 0,
+        memoryMB: 0,
+        port: 0,
+      },
+    });
+    vi.spyOn(daemonClient, 'requestDaemonShutdown').mockResolvedValue(false);
+    // Keep the SIGKILL fallback's poll short — neither pid 999999 nor the test
+    // daemon exists, so we'd otherwise spin for 2s on every test in the block.
+    vi.spyOn(daemonLifecycle, 'waitForDaemonStop').mockResolvedValue(false);
+
+    const bridge = new BrowserBridge();
+
+    await expect(bridge.connect({ timeout: 0.1 })).rejects.toThrow('Stale daemon could not be replaced');
+  });
+
+  it('attempts stale daemon replacement when daemonVersion mismatches', async () => {
+    vi.spyOn(daemonClient, 'getDaemonHealth').mockResolvedValue({
+      state: 'no-extension',
+      status: {
+        ok: true,
+        pid: 999999,
+        uptime: 0,
+        daemonVersion: '0.0.1',
+        extensionConnected: false,
+        pending: 0,
+        memoryMB: 0,
+        port: 0,
+      },
+    });
+    vi.spyOn(daemonClient, 'requestDaemonShutdown').mockResolvedValue(false);
+    vi.spyOn(daemonLifecycle, 'waitForDaemonStop').mockResolvedValue(false);
+
+    const bridge = new BrowserBridge();
+
+    await expect(bridge.connect({ timeout: 0.1 })).rejects.toThrow('Stale daemon could not be replaced');
+  });
+
+  it('attempts stale daemon replacement even when extension is connected', async () => {
+    vi.spyOn(daemonClient, 'getDaemonHealth').mockResolvedValue({
+      state: 'ready',
+      status: {
+        ok: true,
+        pid: 999999,
+        uptime: 0,
+        daemonVersion: '0.0.1',
+        extensionConnected: true,
+        pending: 0,
+        memoryMB: 0,
+        port: 0,
+      },
+    });
+    vi.spyOn(daemonClient, 'requestDaemonShutdown').mockResolvedValue(false);
+    vi.spyOn(daemonLifecycle, 'waitForDaemonStop').mockResolvedValue(false);
+
+    const bridge = new BrowserBridge();
+
+    await expect(bridge.connect({ timeout: 0.1 })).rejects.toThrow('Stale daemon could not be replaced');
+  });
+
+  it('falls back to SIGKILL when stale daemon refuses graceful shutdown', async () => {
+    vi.spyOn(daemonClient, 'getDaemonHealth').mockResolvedValue({
+      state: 'no-extension',
+      status: {
+        ok: true,
+        pid: 99999,
+        uptime: 0,
+        daemonVersion: '0.0.1',
+        extensionConnected: false,
+        pending: 0,
+        memoryMB: 0,
+        port: 0,
+      },
+    });
+    vi.spyOn(daemonClient, 'requestDaemonShutdown').mockResolvedValue(false);
+    // Graceful shutdown short-circuits to false (requestDaemonShutdown -> false).
+    // After SIGKILL the port is released, so the second waitForDaemonStop returns true.
+    vi.spyOn(daemonLifecycle, 'waitForDaemonStop').mockResolvedValue(true);
+    const killSpy = vi.spyOn(process, 'kill').mockImplementation(() => true);
+
+    const bridge = new BrowserBridge();
+
+    // We expect the stale-daemon path to succeed and then continue into the
+    // no-extension wait (which times out with `timeout: 0.1`), producing the
+    // extension-not-connected error rather than the stale-daemon error.
+    await expect(bridge.connect({ timeout: 0.1 })).rejects.toThrow('Browser Bridge extension not connected');
+    expect(killSpy).toHaveBeenCalledWith(99999, 'SIGKILL');
+  });
+
+  it('reports stale daemon error when SIGKILL fails to release the port', async () => {
+    vi.spyOn(daemonClient, 'getDaemonHealth').mockResolvedValue({
+      state: 'no-extension',
+      status: {
+        ok: true,
+        pid: 99999,
+        uptime: 0,
+        daemonVersion: '0.0.1',
+        extensionConnected: false,
+        pending: 0,
+        memoryMB: 0,
+        port: 0,
+      },
+    });
+    vi.spyOn(daemonClient, 'requestDaemonShutdown').mockResolvedValue(false);
+    // Graceful + SIGKILL both fail to release the port.
+    vi.spyOn(daemonLifecycle, 'waitForDaemonStop').mockResolvedValue(false);
+    vi.spyOn(process, 'kill').mockImplementation(() => {
+      throw Object.assign(new Error('EPERM'), { code: 'EPERM' });
+    });
+
+    const bridge = new BrowserBridge();
+
+    await expect(bridge.connect({ timeout: 0.1 })).rejects.toThrow('Stale daemon could not be replaced');
+  });
+});
+
+describe('stealth anti-detection', () => {
+  it('generates non-empty JS string', () => {
+    const js = generateStealthJs();
+    expect(typeof js).toBe('string');
+    expect(js.length).toBeGreaterThan(100);
+  });
+
+  it('contains all 7 anti-detection patches', () => {
+    const js = generateStealthJs();
+    // 1. webdriver
+    expect(js).toContain('navigator');
+    expect(js).toContain('webdriver');
+    // 2. chrome stub
+    expect(js).toContain('window.chrome');
+    // 3. plugins
+    expect(js).toContain('plugins');
+    expect(js).toContain('PDF Viewer');
+    // 4. languages
+    expect(js).toContain('languages');
+    // 5. permissions
+    expect(js).toContain('Permissions');
+    expect(js).toContain('notifications');
+    // 6. automation artifacts (dynamic cdc_ scan)
+    expect(js).toContain('__playwright');
+    expect(js).toContain('__puppeteer');
+    expect(js).toContain('getOwnPropertyNames');
+    expect(js).toContain('cdc_');
+    // 7. CDP stack trace cleanup
+    expect(js).toContain('Error.prototype');
+    expect(js).toContain('puppeteer_evaluation_script');
+    expect(js).toContain('getOwnPropertyDescriptor');
+  });
+
+  it('includes guard flag to prevent double-injection', () => {
+    const js = generateStealthJs();
+    // Guard uses a non-enumerable property on a built-in prototype
+    expect(js).toContain("EventTarget.prototype");
+    // Guard should check early and return 'skipped'
+    expect(js).toContain("return 'skipped'");
+    // Normal path returns 'applied'
+    expect(js).toContain("return 'applied'");
+  });
+
+  it('generates syntactically valid JS', () => {
+    const js = generateStealthJs();
+    // Should not throw when parsed
+    expect(() => new Function(js)).not.toThrow();
   });
 });

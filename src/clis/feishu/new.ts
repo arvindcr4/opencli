@@ -5,13 +5,14 @@ import type { IPage } from '../../types.js';
 export const newCommand = cli({
   site: 'feishu',
   name: 'new',
+  access: 'write',
   description: 'Create a new message or document in Feishu',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,
   browser: false,
   args: [],
   columns: ['Status'],
-  func: async (page: IPage | null) => {
+  func: async () => {
     if (process.platform !== 'darwin') {
       return [{ Status: 'Not supported on Linux — this command requires the macOS desktop app.' }];
     }

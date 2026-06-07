@@ -5,6 +5,7 @@ import type { IPage } from '../../types.js';
 export const newCommand = cli({
   site: 'chatgpt',
   name: 'new',
+  access: 'write',
   description: 'Open a new ChatGPT chat (desktop app on macOS, browser on Linux)',
   domain: 'chatgpt.com',
   strategy: Strategy.PUBLIC,
@@ -26,4 +27,4 @@ export const newCommand = cli({
       return [{ Status: "Error: " + err.message }];
     }
   },
-});
+} as Parameters<typeof cli>[0]);

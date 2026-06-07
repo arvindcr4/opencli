@@ -4,6 +4,7 @@ import type { IPage } from '../../types.js';
 export const sendCommand = cli({
   site: 'gemini',
   name: 'send',
+  access: 'write',
   description: 'Send a message to Google Gemini',
   domain: 'gemini.google.com',
   strategy: Strategy.COOKIE,

@@ -1,10 +1,24 @@
 /**
  * CDP client — implements IPage by connecting directly to a Chrome/Electron CDP WebSocket.
+ *
+ * Fixes applied:
+ * - send() now has a 30s timeout guard (P0 #4)
+ * - goto() waits for Page.loadEventFired instead of hardcoded 1s sleep (P1 #3)
+ * - Implemented scroll, autoScroll, screenshot, networkRequests (P1 #2)
+ * - Shared DOM helper methods extracted to reduce duplication with Page (P1 #5)
  */
 
-import { WebSocket } from 'ws';
-import type { IPage } from '../types.js';
-import { wrapForEval } from './utils.js';
+import { WebSocket, type RawData } from 'ws';
+import { request as httpRequest } from 'node:http';
+import { request as httpsRequest } from 'node:https';
+import type { BrowserCookie, BrowserEvaluateFunction, IPage, ScreenshotOptions } from '../types.js';
+import type { IBrowserFactory } from '../runtime.js';
+import { buildEvaluateExpression } from './utils.js';
+import { generateStealthJs } from './stealth.js';
+import { waitForDomStableJs } from './dom-helpers.js';
+import { isRecord, saveBase64ToFile } from '../utils.js';
+import { getAllElectronApps } from '../electron-apps.js';
+import { BasePage } from './base-page.js';
 
 export interface CDPTarget {
   type?: string;
@@ -13,61 +27,100 @@ export interface CDPTarget {
   webSocketDebuggerUrl?: string;
 }
 
-export class CDPBridge {
+interface RuntimeEvaluateResult {
+  result?: {
+    value?: unknown;
+  };
+  exceptionDetails?: {
+    exception?: {
+      description?: string;
+    };
+  };
+}
+
+const CDP_SEND_TIMEOUT = 30_000;
+
+// Memory guard for in-process capture. The 4k cap we used to apply everywhere
+// silently truncated JSON so `JSON.parse` failed or gave partial objects — the
+// primary agent-facing bug. Now we keep the full body up to a large cap and
+// surface `responseBodyFullSize` + `responseBodyTruncated` so downstream layers
+// can tell the agent what happened instead of lying about the payload.
+export const CDP_RESPONSE_BODY_CAPTURE_LIMIT = 8 * 1024 * 1024;
+
+export class CDPBridge implements IBrowserFactory {
   private _ws: WebSocket | null = null;
   private _idCounter = 0;
-  private _pending = new Map<number, { resolve: (val: any) => void; reject: (err: Error) => void }>();
-  private _tabId: string | null = null;
-  private _baseEndpoint: string | null = null;
+  private _pending = new Map<number, { resolve: (val: unknown) => void; reject: (err: Error) => void; timer: ReturnType<typeof setTimeout> }>();
+  private _eventListeners = new Map<string, Set<(params: unknown) => void>>();
 
-  async connect(opts?: { timeout?: number }): Promise<IPage> {
-    const endpoint = process.env.OPENCLI_CDP_ENDPOINT;
-    if (!endpoint) throw new Error('OPENCLI_CDP_ENDPOINT is not set');
+  async connect(opts?: { timeout?: number; session?: string; cdpEndpoint?: string; contextId?: string; idleTimeout?: number; windowMode?: 'foreground' | 'background'; surface?: 'browser' | 'adapter'; siteSession?: 'ephemeral' | 'persistent' }): Promise<IPage> {
+    if (this._ws) throw new Error('CDPBridge is already connected. Call close() before reconnecting.');
 
-    // If it's a direct ws:// URL, use it. Otherwise, create a new isolated tab.
+    const endpoint = opts?.cdpEndpoint ?? process.env.OPENCLI_CDP_ENDPOINT;
+    if (!endpoint) throw new Error('CDP endpoint not provided (pass cdpEndpoint or set OPENCLI_CDP_ENDPOINT)');
+
     let wsUrl = endpoint;
     if (endpoint.startsWith('http')) {
-      const base = endpoint.replace(/\/$/, '');
-      this._baseEndpoint = base;
-      // Create a fresh tab so concurrent opencli processes don't share a tab
-      // Chrome requires PUT for /json/new (GET returns 405)
-      const res = await fetch(`${base}/json/new?url=about:blank`, { method: 'PUT' });
-      if (!res.ok) throw new Error(`Failed to create new CDP tab: ${res.statusText}`);
-      const target = await res.json() as any;
-      if (!target?.webSocketDebuggerUrl) throw new Error('No webSocketDebuggerUrl in new tab response');
+      const targets = await fetchJsonDirect(`${endpoint.replace(/\/$/, '')}/json`) as CDPTarget[];
+      const target = selectCDPTarget(targets);
+      if (!target || !target.webSocketDebuggerUrl) {
+        throw new Error('No inspectable targets found at CDP endpoint');
+      }
       wsUrl = target.webSocketDebuggerUrl;
-      this._tabId = target.id ?? null;
     }
 
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(wsUrl);
-      const timeout = setTimeout(() => reject(new Error('CDP connect timeout')), opts?.timeout ?? 10000);
+      const timeoutMs = (opts?.timeout ?? 10) * 1000;
+      const timeout = setTimeout(() => {
+        this._ws = null;
+        ws.close();
+        reject(new Error('CDP connect timeout'));
+      }, timeoutMs);
 
-      ws.on('open', () => {
+      ws.on('open', async () => {
         clearTimeout(timeout);
         this._ws = ws;
+        try {
+          await this.send('Page.enable');
+          await this.send('Page.addScriptToEvaluateOnNewDocument', { source: generateStealthJs() });
+        } catch (err) {
+          ws.close();
+          reject(err instanceof Error ? err : new Error(String(err)));
+          return;
+        }
         resolve(new CDPPage(this));
       });
 
-      ws.on('error', (err) => {
+      ws.on('error', (err: Error) => {
         clearTimeout(timeout);
         reject(err);
       });
 
-      ws.on('message', (data) => {
+      ws.on('message', (data: RawData) => {
         try {
           const msg = JSON.parse(data.toString());
           if (msg.id && this._pending.has(msg.id)) {
-            const { resolve, reject } = this._pending.get(msg.id)!;
+            const entry = this._pending.get(msg.id)!;
+            clearTimeout(entry.timer);
             this._pending.delete(msg.id);
             if (msg.error) {
-              reject(new Error(msg.error.message));
+              entry.reject(new Error(msg.error.message));
             } else {
-              resolve(msg.result);
+              entry.resolve(msg.result);
             }
           }
-        } catch (e) {
-          // ignore parsing errors
+          if (msg.method) {
+            const listeners = this._eventListeners.get(msg.method);
+            if (listeners) {
+              for (const fn of listeners) fn(msg.params);
+            }
+          }
+        } catch (err) {
+          if (process.env.OPENCLI_VERBOSE) {
+            // eslint-disable-next-line no-console
+            console.error('[cdp] Failed to parse WebSocket message:', err instanceof Error ? err.message : err);
+          }
         }
       });
     });
@@ -79,177 +132,360 @@ export class CDPBridge {
       this._ws = null;
     }
     for (const p of this._pending.values()) {
+      clearTimeout(p.timer);
       p.reject(new Error('CDP connection closed'));
     }
     this._pending.clear();
-    // Close the tab we created so Chrome doesn't accumulate orphaned tabs
-    if (this._tabId && this._baseEndpoint) {
-      try { await fetch(`${this._baseEndpoint}/json/close/${this._tabId}`); } catch { /* ignore */ }
-      this._tabId = null;
-    }
+    this._eventListeners.clear();
   }
 
-  async send(method: string, params: any = {}): Promise<any> {
+  async send(method: string, params: Record<string, unknown> = {}, timeoutMs: number = CDP_SEND_TIMEOUT): Promise<unknown> {
     if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
       throw new Error('CDP connection is not open');
     }
     const id = ++this._idCounter;
     return new Promise((resolve, reject) => {
-      this._pending.set(id, { resolve, reject });
+      const timer = setTimeout(() => {
+        this._pending.delete(id);
+        reject(new Error(`CDP command '${method}' timed out after ${timeoutMs / 1000}s`));
+      }, timeoutMs);
+      this._pending.set(id, { resolve, reject, timer });
       this._ws!.send(JSON.stringify({ id, method, params }));
+    });
+  }
+
+  on(event: string, handler: (params: unknown) => void): void {
+    let set = this._eventListeners.get(event);
+    if (!set) {
+      set = new Set();
+      this._eventListeners.set(event, set);
+    }
+    set.add(handler);
+  }
+
+  off(event: string, handler: (params: unknown) => void): void {
+    this._eventListeners.get(event)?.delete(handler);
+  }
+
+  waitForEvent(event: string, timeoutMs: number = 15_000): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.off(event, handler);
+        reject(new Error(`Timed out waiting for CDP event '${event}'`));
+      }, timeoutMs);
+      const handler = (params: unknown) => {
+        clearTimeout(timer);
+        this.off(event, handler);
+        resolve(params);
+      };
+      this.on(event, handler);
     });
   }
 }
 
-class CDPPage implements IPage {
-  constructor(private bridge: CDPBridge) {}
+class CDPPage extends BasePage {
+  private _pageEnabled = false;
 
-  async goto(url: string): Promise<void> {
-    await this.bridge.send('Page.navigate', { url });
-    await new Promise(r => setTimeout(r, 1000));
+  // Network capture state (mirrors extension/src/cdp.ts NetworkCaptureEntry shape)
+  private _networkCapturing = false;
+  private _networkCapturePattern = '';
+  private _networkEntries: Array<{
+    url: string; method: string; responseStatus?: number;
+    responseContentType?: string;
+    responsePreview?: string;
+    responseBodyFullSize?: number;
+    responseBodyTruncated?: boolean;
+    timestamp: number;
+  }> = [];
+  private _pendingRequests = new Map<string, number>(); // requestId → index in _networkEntries
+  private _pendingBodyFetches: Set<Promise<void>> = new Set(); // track in-flight getResponseBody calls
+  private _consoleMessages: Array<{ type: string; text: string; timestamp: number }> = [];
+  private _consoleCapturing = false;
+
+  constructor(private bridge: CDPBridge) {
+    super();
   }
 
-  async evaluate(js: string): Promise<any> {
-    const expression = wrapForEval(js);
+  async goto(url: string, options?: { waitUntil?: 'load' | 'none'; settleMs?: number; allowBoundNavigation?: boolean }): Promise<void> {
+    if (!this._pageEnabled) {
+      await this.bridge.send('Page.enable');
+      this._pageEnabled = true;
+    }
+    const loadPromise = this.bridge.waitForEvent('Page.loadEventFired', 30_000).catch(() => {});
+    await this.bridge.send('Page.navigate', { url });
+    await loadPromise;
+    this._lastUrl = url;
+    if (options?.waitUntil !== 'none') {
+      const maxMs = options?.settleMs ?? 1000;
+      await this.evaluate(waitForDomStableJs(maxMs, Math.min(500, maxMs)));
+    }
+  }
+
+  async evaluate<T = unknown>(js: string): Promise<T>;
+  async evaluate<Args extends unknown[], T>(fn: BrowserEvaluateFunction<Args, T>, ...args: Args): Promise<Awaited<T>>;
+  async evaluate(input: string | BrowserEvaluateFunction<unknown[], unknown>, ...args: unknown[]): Promise<unknown> {
+    const expression = buildEvaluateExpression(input, args);
     const result = await this.bridge.send('Runtime.evaluate', {
       expression,
       returnByValue: true,
-      awaitPromise: true
-    });
+      awaitPromise: true,
+    }) as RuntimeEvaluateResult;
     if (result.exceptionDetails) {
       throw new Error('Evaluate error: ' + (result.exceptionDetails.exception?.description || 'Unknown exception'));
     }
     return result.result?.value;
   }
 
-  async getCookies(opts: { domain?: string; url?: string } = {}): Promise<any[]> {
+  async getCookies(opts: { domain?: string; url?: string } = {}): Promise<BrowserCookie[]> {
     const result = await this.bridge.send('Network.getCookies', opts.url ? { urls: [opts.url] } : {});
-    const cookies = Array.isArray(result?.cookies) ? result.cookies : [];
-    return opts.domain
-      ? cookies.filter((cookie: any) => typeof cookie.domain === 'string' && cookie.domain.includes(opts.domain!))
+    const cookies = isRecord(result) && Array.isArray(result.cookies) ? result.cookies : [];
+    const domain = opts.domain;
+    return domain
+      ? cookies.filter((cookie): cookie is BrowserCookie => isCookie(cookie) && matchesCookieDomain(cookie.domain, domain))
       : cookies;
   }
 
-  async snapshot(opts?: any): Promise<any> {
-    const code = `
-(function() {
-  const sel = 'a, button, input, select, textarea, [contenteditable="true"], [role="button"], [role="textbox"], [role="combobox"], [role="searchbox"], [tabindex]';
-  const elements = document.querySelectorAll(sel);
-  const nodes: any[] = [];
-  elements.forEach(function(el: any, i: number) {
-    const ref = 'snap-' + i;
-    el.setAttribute('data-ref', ref);
-    const tag = el.tagName.toLowerCase();
-    const role = el.getAttribute('role') || (tag === 'a' ? 'link' : tag === 'button' ? 'button' : tag === 'input' ? (el.type === 'checkbox' ? 'checkbox' : el.type === 'radio' ? 'radio' : 'textbox') : tag === 'textarea' ? 'textbox' : el.getAttribute('contenteditable') ? 'textbox' : tag);
-    const id = el.id || '';
-    const name = el.getAttribute('aria-label') || el.getAttribute('name') || el.getAttribute('title') || (el.textContent || '').trim().slice(0, 80) || id || '';
-    const placeholder = el.getAttribute('placeholder') || '';
-    nodes.push({ role, name, placeholder, id, ref });
-  });
-  return JSON.stringify({ nodes });
-})()`;
-    const raw = await this.evaluate(code);
-    try { return JSON.parse(raw); } catch { return { nodes: [] }; }
-  }
-  async click(ref: string): Promise<void> {
-    const safeRef = JSON.stringify(ref);
-    const code = `
-      (() => {
-        const ref = ${safeRef};
-        const el = document.querySelector('[data-ref="' + ref + '"]')
-          || document.querySelectorAll('a, button, input, [role="button"], [tabindex]')[parseInt(ref, 10) || 0];
-        if (!el) throw new Error('Element not found: ' + ref);
-        el.scrollIntoView({ behavior: 'instant', block: 'center' });
-        el.click();
-        return 'clicked';
-      })()
-    `;
-    await this.evaluate(code);
-  }
-  async typeText(ref: string, text: string): Promise<void> {
-    const safeRef = JSON.stringify(ref);
-    const code = `
-      (() => {
-        const ref = ${safeRef};
-        const el = document.querySelector('[data-ref="' + ref + '"]')
-          || document.querySelectorAll('input, textarea, [contenteditable]')[parseInt(ref, 10) || 0];
-        if (!el) throw new Error('Element not found: ' + ref);
-        el.focus();
-        return 'focused';
-      })()
-    `;
-    await this.evaluate(code);
-    // Use CDP Input.insertText for reliable typing into contenteditable/ProseMirror
-    await this.bridge.send('Input.insertText', { text });
-  }
-  async pressKey(key: string): Promise<void> {
-    // Use CDP Input.dispatchKeyEvent for reliable key dispatch
-    const keyMap: Record<string, any> = {
-      'Return': { key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 },
-    };
-    const k = keyMap[key] || { key, code: key };
-    await this.bridge.send('Input.dispatchKeyEvent', { type: 'keyDown', ...k });
-    await this.bridge.send('Input.dispatchKeyEvent', { type: 'keyUp', ...k });
-  }
-  async wait(options: any): Promise<void> {
-    if (typeof options === 'number') {
-      await new Promise(resolve => setTimeout(resolve, options * 1000));
-      return;
+  async screenshot(options: ScreenshotOptions = {}): Promise<string> {
+    const fullPage = options.fullPage === true;
+    const overrideWidth = options.width && options.width > 0 ? Math.ceil(options.width) : undefined;
+    // height is ignored under fullPage so the captureBeyondViewport path stays unchanged for users who pass --height alongside --full-page.
+    const overrideHeight = !fullPage && options.height && options.height > 0 ? Math.ceil(options.height) : undefined;
+    const needsOverride = overrideWidth !== undefined || overrideHeight !== undefined;
+
+    if (needsOverride) {
+      if (overrideWidth !== undefined && fullPage) {
+        await this.bridge.send('Emulation.setDeviceMetricsOverride', {
+          mobile: false,
+          width: overrideWidth,
+          height: 0,
+          deviceScaleFactor: 1,
+        });
+      }
+      let finalWidth = overrideWidth ?? 0;
+      let finalHeight = overrideHeight ?? 0;
+      if (fullPage) {
+        const metrics = await this.bridge.send('Page.getLayoutMetrics');
+        const m = isRecord(metrics) ? metrics : {};
+        const css = isRecord(m.cssContentSize) ? m.cssContentSize : undefined;
+        const fb = isRecord(m.contentSize) ? m.contentSize : undefined;
+        const size = css ?? fb;
+        if (size && typeof size.width === 'number' && typeof size.height === 'number') {
+          if (finalWidth === 0) finalWidth = Math.ceil(size.width);
+          finalHeight = Math.ceil(size.height);
+        }
+      }
+      await this.bridge.send('Emulation.setDeviceMetricsOverride', {
+        mobile: false,
+        width: finalWidth,
+        height: finalHeight,
+        deviceScaleFactor: 1,
+      });
     }
-    if (options.time) {
-      await new Promise(resolve => setTimeout(resolve, options.time * 1000));
-      return;
-    }
-    if (options.text) {
-      const timeout = (options.timeout ?? 30) * 1000;
-      const code = `
-        new Promise((resolve, reject) => {
-          const deadline = Date.now() + ${timeout};
-          const check = () => {
-            if (document.body.innerText.includes(${JSON.stringify(options.text)})) return resolve('found');
-            if (Date.now() > deadline) return reject(new Error('Text not found: ' + ${JSON.stringify(options.text)}));
-            setTimeout(check, 200);
-          };
-          check();
-        })
-      `;
-      await this.evaluate(code);
+
+    try {
+      const result = await this.bridge.send('Page.captureScreenshot', {
+        format: options.format ?? 'png',
+        quality: options.format === 'jpeg' ? (options.quality ?? 80) : undefined,
+        captureBeyondViewport: !needsOverride && fullPage,
+      });
+      const base64 = isRecord(result) && typeof result.data === 'string' ? result.data : '';
+      if (options.path) {
+        await saveBase64ToFile(base64, options.path);
+      }
+      return base64;
+    } finally {
+      if (needsOverride) {
+        await this.bridge.send('Emulation.clearDeviceMetricsOverride').catch(() => {});
+      }
     }
   }
-  async tabs(): Promise<any> {
-    throw new Error('Method not implemented.');
+
+  async startNetworkCapture(pattern: string = ''): Promise<boolean> {
+    // Always update the filter pattern
+    this._networkCapturePattern = pattern;
+
+    // Reset state only on first start; avoid wiping entries if already capturing
+    if (!this._networkCapturing) {
+      this._networkEntries = [];
+      this._pendingRequests.clear();
+      this._pendingBodyFetches.clear();
+      await this.bridge.send('Network.enable');
+
+      // Step 1: Record request method/url on requestWillBeSent
+      this.bridge.on('Network.requestWillBeSent', (params: unknown) => {
+        const p = params as { requestId: string; request: { method: string; url: string }; timestamp: number };
+        if (!this._networkCapturePattern || p.request.url.includes(this._networkCapturePattern)) {
+          const idx = this._networkEntries.push({
+            url: p.request.url,
+            method: p.request.method,
+            timestamp: Date.now(),
+          }) - 1;
+          this._pendingRequests.set(p.requestId, idx);
+        }
+      });
+
+      // Step 2: Fill in response metadata on responseReceived
+      this.bridge.on('Network.responseReceived', (params: unknown) => {
+        const p = params as { requestId: string; response: { status: number; mimeType?: string } };
+        const idx = this._pendingRequests.get(p.requestId);
+        if (idx !== undefined) {
+          this._networkEntries[idx].responseStatus = p.response.status;
+          this._networkEntries[idx].responseContentType = p.response.mimeType || '';
+        }
+      });
+
+      // Step 3: Fetch body on loadingFinished (body is only reliably available after this)
+      this.bridge.on('Network.loadingFinished', (params: unknown) => {
+        const p = params as { requestId: string };
+        const idx = this._pendingRequests.get(p.requestId);
+        if (idx !== undefined) {
+          const bodyFetch = this.bridge.send('Network.getResponseBody', { requestId: p.requestId }).then((result: unknown) => {
+            const r = result as { body?: string; base64Encoded?: boolean } | undefined;
+            if (typeof r?.body === 'string') {
+              const fullSize = r.body.length;
+              const truncated = fullSize > CDP_RESPONSE_BODY_CAPTURE_LIMIT;
+              const body = truncated ? r.body.slice(0, CDP_RESPONSE_BODY_CAPTURE_LIMIT) : r.body;
+              this._networkEntries[idx].responsePreview = r.base64Encoded ? `base64:${body}` : body;
+              this._networkEntries[idx].responseBodyFullSize = fullSize;
+              this._networkEntries[idx].responseBodyTruncated = truncated;
+            }
+          }).catch((err) => {
+            // Body unavailable for some requests (e.g. uploads) — non-fatal
+            if (process.env.OPENCLI_VERBOSE) {
+              // eslint-disable-next-line no-console
+              console.error(`[cdp] getResponseBody failed for ${p.requestId}:`, err instanceof Error ? err.message : err);
+            }
+          }).finally(() => {
+            this._pendingBodyFetches.delete(bodyFetch);
+          });
+          this._pendingBodyFetches.add(bodyFetch);
+          this._pendingRequests.delete(p.requestId);
+        }
+      });
+
+      this._networkCapturing = true;
+    }
+    return true;
   }
-  async closeTab(index?: number): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async readNetworkCapture(): Promise<unknown[]> {
+    // Await all in-flight body fetches so entries have responsePreview populated
+    if (this._pendingBodyFetches.size > 0) {
+      await Promise.all([...this._pendingBodyFetches]);
+    }
+    const entries = [...this._networkEntries];
+    this._networkEntries = [];
+    return entries;
   }
-  async newTab(): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async consoleMessages(level: string = 'all'): Promise<Array<{ type: string; text: string; timestamp: number }>> {
+    if (!this._consoleCapturing) {
+      await this.bridge.send('Runtime.enable');
+      this.bridge.on('Runtime.consoleAPICalled', (params: unknown) => {
+        const p = params as { type: string; args: Array<{ value?: unknown; description?: string }>; timestamp: number };
+        const text = (p.args || []).map(a => a.value !== undefined ? String(a.value) : (a.description || '')).join(' ');
+        this._consoleMessages.push({ type: p.type, text, timestamp: Date.now() });
+        if (this._consoleMessages.length > 500) this._consoleMessages.shift();
+      });
+      // Capture uncaught exceptions as error-level messages
+      this.bridge.on('Runtime.exceptionThrown', (params: unknown) => {
+        const p = params as { timestamp: number; exceptionDetails?: { exception?: { description?: string }; text?: string } };
+        const desc = p.exceptionDetails?.exception?.description || p.exceptionDetails?.text || 'Unknown exception';
+        this._consoleMessages.push({ type: 'error', text: desc, timestamp: Date.now() });
+        if (this._consoleMessages.length > 500) this._consoleMessages.shift();
+      });
+      this._consoleCapturing = true;
+    }
+    if (level === 'all') return [...this._consoleMessages];
+    // 'error' level includes both console.error() and uncaught exceptions
+    if (level === 'error') return this._consoleMessages.filter(m => m.type === 'error' || m.type === 'warning');
+    return this._consoleMessages.filter(m => m.type === level);
   }
-  async selectTab(index: number): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async tabs(): Promise<unknown[]> {
+    return [];
   }
-  async networkRequests(includeStatic?: boolean): Promise<any> {
-    throw new Error('Method not implemented.');
+
+  async selectTab(_target: number | string): Promise<void> {
+    // Not supported in direct CDP mode
   }
-  async consoleMessages(level?: string): Promise<any> {
-    throw new Error('Method not implemented.');
+
+  async cdp(method: string, params: Record<string, unknown> = {}): Promise<unknown> {
+    return this.bridge.send(method, params);
   }
-  async scroll(direction?: string, amount?: number): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async handleJavaScriptDialog(accept: boolean, promptText?: string): Promise<void> {
+    await this.cdp('Page.handleJavaScriptDialog', {
+      accept,
+      ...(promptText !== undefined && { promptText }),
+    });
   }
-  async autoScroll(options?: any): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async nativeClick(x: number, y: number): Promise<void> {
+    await this.cdp('Input.dispatchMouseEvent', {
+      type: 'mouseMoved',
+      x,
+      y,
+    });
+    await this.cdp('Input.dispatchMouseEvent', {
+      type: 'mousePressed',
+      x,
+      y,
+      button: 'left',
+      clickCount: 1,
+    });
+    await this.cdp('Input.dispatchMouseEvent', {
+      type: 'mouseReleased',
+      x,
+      y,
+      button: 'left',
+      clickCount: 1,
+    });
   }
-  async installInterceptor(pattern: string): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async nativeType(text: string): Promise<void> {
+    await this.cdp('Input.insertText', { text });
   }
-  async getInterceptedRequests(): Promise<any[]> {
-    throw new Error('Method not implemented.');
+
+  async insertText(text: string): Promise<void> {
+    await this.nativeType(text);
   }
-  async screenshot(options?: any): Promise<string> {
-    throw new Error('Method not implemented.');
+
+  async nativeKeyPress(key: string, modifiers: string[] = []): Promise<void> {
+    let modifierFlags = 0;
+    for (const mod of modifiers) {
+      if (mod === 'Alt') modifierFlags |= 1;
+      if (mod === 'Ctrl' || mod === 'Control') modifierFlags |= 2;
+      if (mod === 'Meta') modifierFlags |= 4;
+      if (mod === 'Shift') modifierFlags |= 8;
+    }
+    await this.cdp('Input.dispatchKeyEvent', {
+      type: 'keyDown',
+      key,
+      modifiers: modifierFlags,
+    });
+    await this.cdp('Input.dispatchKeyEvent', {
+      type: 'keyUp',
+      key,
+      modifiers: modifierFlags,
+    });
   }
 }
+
+function isCookie(value: unknown): value is BrowserCookie {
+  return isRecord(value)
+    && typeof value.name === 'string'
+    && typeof value.value === 'string'
+    && typeof value.domain === 'string';
+}
+
+function matchesCookieDomain(cookieDomain: string, targetDomain: string): boolean {
+  const normalizedCookieDomain = cookieDomain.replace(/^\./, '').toLowerCase();
+  const normalizedTargetDomain = targetDomain.replace(/^\./, '').toLowerCase();
+  return normalizedTargetDomain === normalizedCookieDomain
+    || normalizedTargetDomain.endsWith(`.${normalizedCookieDomain}`);
+}
+
 function selectCDPTarget(targets: CDPTarget[]): CDPTarget | undefined {
   const preferredPattern = compilePreferredPattern(process.env.OPENCLI_CDP_TARGET);
 
@@ -274,6 +510,7 @@ function scoreCDPTarget(target: CDPTarget, preferredPattern?: RegExp): number {
 
   if (!haystack.trim() && !type) return Number.NEGATIVE_INFINITY;
   if (haystack.includes('devtools')) return Number.NEGATIVE_INFINITY;
+  if (type === 'background_page' || type === 'service_worker') return Number.NEGATIVE_INFINITY;
 
   let score = 0;
 
@@ -291,21 +528,15 @@ function scoreCDPTarget(target: CDPTarget, preferredPattern?: RegExp): number {
   if (url === '' || url === 'about:blank') score -= 40;
 
   if (title && title !== 'devtools') score += 25;
-  if (title.includes('antigravity')) score += 120;
-  if (title.includes('codex')) score += 120;
-  if (title.includes('cursor')) score += 120;
-  if (title.includes('chatwise')) score += 120;
-  if (title.includes('notion')) score += 120;
-  if (title.includes('discord')) score += 120;
-  if (title.includes('netease')) score += 120;
 
-  if (url.includes('antigravity')) score += 100;
-  if (url.includes('codex')) score += 100;
-  if (url.includes('cursor')) score += 100;
-  if (url.includes('chatwise')) score += 100;
-  if (url.includes('notion')) score += 100;
-  if (url.includes('discord')) score += 100;
-  if (url.includes('netease')) score += 100;
+  // Boost score for known Electron app names from the registry (builtin + user-defined)
+  const appNames = Object.values(getAllElectronApps()).map(a => (a.displayName ?? a.processName).toLowerCase());
+  for (const name of appNames) {
+    if (title.includes(name)) { score += 120; break; }
+  }
+  for (const name of appNames) {
+    if (url.includes(name)) { score += 100; break; }
+  }
 
   return score;
 }
@@ -324,3 +555,31 @@ export const __test__ = {
   selectCDPTarget,
   scoreCDPTarget,
 };
+
+function fetchJsonDirect(url: string): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const request = (parsed.protocol === 'https:' ? httpsRequest : httpRequest)(parsed, (res) => {
+      const statusCode = res.statusCode ?? 0;
+      if (statusCode < 200 || statusCode >= 300) {
+        res.resume();
+        reject(new Error(`Failed to fetch CDP targets: HTTP ${statusCode}`));
+        return;
+      }
+
+      const chunks: Buffer[] = [];
+      res.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+        } catch (error) {
+          reject(error instanceof Error ? error : new Error(String(error)));
+        }
+      });
+    });
+
+    request.on('error', reject);
+    request.setTimeout(10_000, () => request.destroy(new Error('Timed out fetching CDP targets')));
+    request.end();
+  });
+}

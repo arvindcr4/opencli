@@ -74,11 +74,11 @@ async function isGenerating(page: IPage): Promise<boolean> {
 export const promodeCommand = cli({
   site: 'chatgpt',
   name: 'promode',
+  access: 'write',
   description: 'Ask ChatGPT in Pro mode (Extended Pro / o3-pro with extended thinking)',
   domain: 'chatgpt.com',
   strategy: Strategy.PUBLIC,
   browser: true,
-  timeoutSeconds: 7200,
   args: [
     { name: 'text', required: true, positional: true, help: 'Question or task' },
     { name: 'timeout', required: false, help: 'Max seconds to wait (default: 300)', default: '300' },

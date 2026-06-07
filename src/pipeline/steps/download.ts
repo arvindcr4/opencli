@@ -13,6 +13,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import type { IPage } from '../../types.js';
 import { render } from '../template.js';
+import { getErrorMessage } from '../../errors.js';
 import {
   httpDownload,
   ytdlpDownload,
@@ -26,6 +27,7 @@ import {
   formatCookieHeader,
 } from '../../download/index.js';
 import { DownloadProgressTracker, formatBytes } from '../../download/progress.js';
+import { mapConcurrent } from '../../utils.js';
 
 export interface DownloadResult {
   status: 'success' | 'skipped' | 'failed';
@@ -35,35 +37,14 @@ export interface DownloadResult {
   duration?: number;
 }
 
-/**
- * Simple async concurrency limiter for downloads.
- */
-async function mapConcurrent<T, R>(
-  items: T[],
-  limit: number,
-  fn: (item: T, index: number) => Promise<R>,
-): Promise<R[]> {
-  const results: R[] = new Array(items.length);
-  let index = 0;
 
-  async function worker() {
-    while (index < items.length) {
-      const i = index++;
-      results[i] = await fn(items[i], i);
-    }
-  }
-
-  const workers = Array.from({ length: Math.min(limit, items.length) }, () => worker());
-  await Promise.all(workers);
-  return results;
-}
 
 /**
  * Extract cookies from browser page.
  */
-async function extractBrowserCookies(page: IPage, domain?: string): Promise<string> {
+async function extractBrowserCookies(page: IPage, domain: string): Promise<string> {
   try {
-    const cookies = await page.getCookies(domain ? { domain } : {});
+    const cookies = await page.getCookies({ domain });
     return formatCookieHeader(cookies);
   } catch {
     return '';
@@ -94,6 +75,16 @@ async function extractCookiesArray(
   }
 }
 
+function dedupeCookies(
+  cookies: Array<{ name: string; value: string; domain: string; path: string; secure: boolean; httpOnly: boolean }>,
+): Array<{ name: string; value: string; domain: string; path: string; secure: boolean; httpOnly: boolean }> {
+  const deduped = new Map<string, { name: string; value: string; domain: string; path: string; secure: boolean; httpOnly: boolean }>();
+  for (const cookie of cookies) {
+    deduped.set(`${cookie.domain}\t${cookie.path}\t${cookie.name}`, cookie);
+  }
+  return [...deduped.values()];
+}
+
 /**
  * Download step handler for YAML pipelines.
  *
@@ -110,32 +101,55 @@ async function extractCookiesArray(
  *       type: auto
  * ```
  */
+interface DownloadParams {
+  url?: string;
+  dir?: string;
+  filename?: string;
+  concurrency?: number;
+  skip_existing?: boolean;
+  timeout?: number;
+  use_ytdlp?: boolean;
+  ytdlp_args?: unknown;
+  type?: string;
+  progress?: boolean;
+  content?: string;
+  metadata?: Record<string, unknown>;
+}
+
 export async function stepDownload(
   page: IPage | null,
-  params: any,
-  data: any,
-  args: Record<string, any>,
-): Promise<any> {
+  params: unknown,
+  data: unknown,
+  args: Record<string, unknown>,
+): Promise<unknown> {
   // Parse parameters with defaults
-  const urlTemplate = typeof params === 'string' ? params : (params?.url ?? '');
-  const dirTemplate = params?.dir ?? './downloads';
-  const filenameTemplate = params?.filename ?? '';
-  const concurrency = typeof params?.concurrency === 'number' ? params.concurrency : 3;
-  const skipExisting = params?.skip_existing !== false;
-  const timeout = typeof params?.timeout === 'number' ? params.timeout * 1000 : 30000;
-  const useYtdlp = params?.use_ytdlp ?? false;
-  const ytdlpArgs = Array.isArray(params?.ytdlp_args) ? params.ytdlp_args : [];
-  const contentType = params?.type ?? 'auto';
-  const showProgress = params?.progress !== false;
-  const contentTemplate = params?.content;
-  const metadataTemplate = params?.metadata;
+  const p: DownloadParams =
+    typeof params === 'object' && params !== null ? (params as DownloadParams) : {};
+  const urlTemplate = typeof params === 'string' ? params : (p.url ?? '');
+  const dirTemplate = p.dir ?? './downloads';
+  const filenameTemplate = p.filename ?? '';
+  const concurrency = typeof p.concurrency === 'number' ? p.concurrency : 3;
+  const skipExisting = p.skip_existing !== false;
+  const timeout = typeof p.timeout === 'number' ? p.timeout * 1000 : 30000;
+  const useYtdlp = p.use_ytdlp ?? false;
+  const ytdlpArgs: string[] = Array.isArray(p.ytdlp_args)
+    ? p.ytdlp_args.map((v) => String(v))
+    : [];
+  const contentType = p.type ?? 'auto';
+  const showProgress = p.progress !== false;
+  const contentTemplate = p.content;
+  const metadataTemplate = p.metadata;
 
   // Resolve output directory
   const dir = String(render(dirTemplate, { args, data }));
   fs.mkdirSync(dir, { recursive: true });
 
-  // Normalize data to array
-  const items: any[] = Array.isArray(data) ? data : data ? [data] : [];
+  // Normalize data to array. Items are row records (string-keyed) produced by
+  // upstream steps; we treat them as Record<string, unknown> and narrow per-use.
+  const items: Array<Record<string, unknown>> =
+    Array.isArray(data) ? (data as Array<Record<string, unknown>>)
+    : data ? [data as Record<string, unknown>]
+    : [];
   if (items.length === 0) {
     return [];
   }
@@ -143,23 +157,29 @@ export async function stepDownload(
   // Create progress tracker
   const tracker = new DownloadProgressTracker(items.length, showProgress);
 
-  // Extract cookies if browser is available
-  let cookies = '';
+  // Cache cookie lookups per domain so mixed-domain batches stay isolated without repeated browser calls.
+  const cookieHeaderCache = new Map<string, Promise<string>>();
   let cookiesFile: string | undefined;
 
   if (page) {
-    cookies = await extractBrowserCookies(page);
-
     // For yt-dlp, we need to export cookies to Netscape format
     if (useYtdlp || items.some((item, index) => {
       const url = String(render(urlTemplate, { args, data, item, index }));
       return requiresYtdlp(url);
     })) {
       try {
-        // Try to get domain from first URL
-        const firstUrl = String(render(urlTemplate, { args, data, item: items[0], index: 0 }));
-        const domain = new URL(firstUrl).hostname;
-        const cookiesArray = await extractCookiesArray(page, domain);
+        const ytdlpDomains = [...new Set(items.flatMap((item, index) => {
+          const url = String(render(urlTemplate, { args, data, item, index }));
+          if (!useYtdlp && !requiresYtdlp(url)) return [];
+          try {
+            return [new URL(url).hostname];
+          } catch {
+            return [];
+          }
+        }))];
+        const cookiesArray = dedupeCookies(
+          (await Promise.all(ytdlpDomains.map((domain) => extractCookiesArray(page, domain)))).flat(),
+        );
 
         if (cookiesArray.length > 0) {
           const tempDir = getTempDir();
@@ -174,7 +194,8 @@ export async function stepDownload(
   }
 
   // Process downloads with concurrency
-  const results = await mapConcurrent(items, concurrency, async (item, index): Promise<any> => {
+  type DownloadedItem = Record<string, unknown> & { _download: DownloadResult };
+  const results = await mapConcurrent(items, concurrency, async (item, index): Promise<DownloadedItem> => {
     const startTime = Date.now();
 
     // Render URL
@@ -254,6 +275,21 @@ export async function stepDownload(
         }
       } else {
         // Direct HTTP download
+        let cookies = '';
+        if (page) {
+          try {
+            const targetDomain = new URL(url).hostname;
+            let cookiePromise = cookieHeaderCache.get(targetDomain);
+            if (!cookiePromise) {
+              cookiePromise = extractBrowserCookies(page, targetDomain);
+              cookieHeaderCache.set(targetDomain, cookiePromise);
+            }
+            cookies = await cookiePromise;
+          } catch {
+            cookies = '';
+          }
+        }
+
         result = await httpDownload(url, destPath, {
           cookies,
           timeout,
@@ -268,10 +304,11 @@ export async function stepDownload(
           progressBar.complete(result.success, result.success ? formatBytes(result.size) : undefined);
         }
       }
-    } catch (err: any) {
-      result = { success: false, size: 0, error: err.message };
+    } catch (err) {
+      const msg = getErrorMessage(err);
+      result = { success: false, size: 0, error: msg };
       if (progressBar) {
-        progressBar.fail(err.message);
+        progressBar.fail(msg);
       }
     }
 

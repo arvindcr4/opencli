@@ -11,6 +11,7 @@ import {
 export const chatCommand = cli({
   site: 'copilot365',
   name: 'chat',
+  access: 'write',
   description: 'Send a prompt to Microsoft 365 Copilot and wait for the reply',
   domain: 'm365.cloud.microsoft',
   strategy: Strategy.COOKIE,
@@ -22,7 +23,6 @@ export const chatCommand = cli({
     { name: 'new', type: 'boolean', default: false, help: 'Start a new chat before sending' },
   ],
   columns: ['Role', 'Text'],
-  timeoutSeconds: 180,
   func: async (page: IPage, kwargs: Record<string, any>) => {
     const promptArg = kwargs.prompt as string | undefined;
     const filePath = kwargs.file as string | undefined;

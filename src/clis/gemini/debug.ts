@@ -4,6 +4,7 @@ import type { IPage } from '../../types.js';
 export const debugCommand = cli({
   site: 'gemini',
   name: 'debug',
+  access: 'read',
   description: 'Debug Gemini page structure (find input selectors)',
   domain: 'gemini.google.com',
   strategy: Strategy.COOKIE,
@@ -12,7 +13,6 @@ export const debugCommand = cli({
     { name: 'scope', type: 'string', default: 'all', help: 'What to inspect: all, buttons, input, deep-research' },
   ],
   columns: ['Type', 'Selector', 'Details'],
-  timeoutSeconds: 60,
   func: async (page: IPage, kwargs: Record<string, any>) => {
     const scope = (kwargs.scope as string) || 'all';
 

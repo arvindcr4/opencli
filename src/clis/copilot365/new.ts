@@ -5,6 +5,7 @@ import { COPILOT365_URL } from './_lib/shared.js';
 export const newCommand = cli({
   site: 'copilot365',
   name: 'new',
+  access: 'write',
   description: 'Start a new chat in Microsoft 365 Copilot',
   domain: 'm365.cloud.microsoft',
   strategy: Strategy.COOKIE,

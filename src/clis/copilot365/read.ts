@@ -11,6 +11,7 @@ import {
 export const readCommand = cli({
   site: 'copilot365',
   name: 'read',
+  access: 'read',
   description: 'Read the currently-open Microsoft 365 Copilot chat (API first, DOM fallback)',
   domain: 'm365.cloud.microsoft',
   strategy: Strategy.COOKIE,

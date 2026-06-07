@@ -5,13 +5,14 @@ import type { IPage } from '../../types.js';
 export const sendCommand = cli({
   site: 'wechat',
   name: 'send',
+  access: 'write',
   description: 'Send a message in the active WeChat conversation via clipboard paste',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,
   browser: false,
   args: [{ name: 'text', required: true, positional: true, help: 'Message to send' }],
   columns: ['Status'],
-  func: async (page: IPage | null, kwargs: any) => {
+  func: async (kwargs: any) => {
     if (process.platform !== 'darwin') {
       return [{ Status: 'Not supported on Linux — this command requires the macOS desktop app.' }];
     }

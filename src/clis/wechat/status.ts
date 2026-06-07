@@ -5,13 +5,14 @@ import type { IPage } from '../../types.js';
 export const statusCommand = cli({
   site: 'wechat',
   name: 'status',
+  access: 'read',
   description: 'Check if WeChat Desktop is running on macOS',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,
   browser: false,
   args: [],
   columns: ['Status', 'Detail'],
-  func: async (page: IPage | null) => {
+  func: async () => {
     if (process.platform !== 'darwin') {
       return [{ Status: 'Not supported on Linux — this command requires the macOS desktop app.' }];
     }

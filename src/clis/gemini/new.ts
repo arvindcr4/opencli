@@ -4,6 +4,7 @@ import type { IPage } from '../../types.js';
 export const newCommand = cli({
   site: 'gemini',
   name: 'new',
+  access: 'write',
   description: 'Start a new conversation in Google Gemini',
   domain: 'gemini.google.com',
   strategy: Strategy.COOKIE,

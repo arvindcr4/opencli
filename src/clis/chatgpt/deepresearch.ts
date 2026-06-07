@@ -53,11 +53,11 @@ async function isResearching(page: IPage): Promise<boolean> {
 export const deepresearchCommand = cli({
   site: 'chatgpt',
   name: 'deepresearch',
+  access: 'write',
   description: 'Submit a deep research query to ChatGPT and wait for the full report',
   domain: 'chatgpt.com',
   strategy: Strategy.PUBLIC,
   browser: true,
-  timeoutSeconds: 1800,
   args: [
     { name: 'text', required: true, positional: true, help: 'Research query' },
     { name: 'timeout', required: false, help: 'Max seconds to wait for report (default: 900)', default: '900' },

@@ -9,6 +9,7 @@ import {
 export const modelCommand = cli({
   site: 'chatgpt',
   name: 'model',
+  access: 'write',
   description: 'Get or switch the active model in ChatGPT Desktop',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,
@@ -23,7 +24,7 @@ export const modelCommand = cli({
     },
   ],
   columns: ['Status', 'Model'],
-  func: async (_page: IPage | null, kwargs: any) => {
+  func: async (kwargs: any) => {
     const desiredModel = kwargs['model-name'] as string | undefined;
 
     try {

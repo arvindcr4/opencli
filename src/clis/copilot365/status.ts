@@ -5,6 +5,7 @@ import { COPILOT365_URL, isCopilot365Url } from './_lib/shared.js';
 export const statusCommand = cli({
   site: 'copilot365',
   name: 'status',
+  access: 'read',
   description: 'Verify the active Chrome tab is logged in to Microsoft 365 Copilot',
   domain: 'm365.cloud.microsoft',
   strategy: Strategy.COOKIE,
