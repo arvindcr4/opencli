@@ -19,11 +19,13 @@ cli({
     const count = Math.min(kwargs.limit || 10, 40);
     await page.goto('https://www.reuters.com');
     await page.wait(2);
+    // SECURITY: JSON.stringify user input to prevent JS injection
+    const queryJs = JSON.stringify(kwargs.query);
     const data = await page.evaluate(`
       (async () => {
         const count = ${count};
         const apiQuery = JSON.stringify({
-          keyword: '${kwargs.query.replace(/'/g, "\\'")}',
+          keyword: ${queryJs},
           offset: 0, orderby: 'display_date:desc', size: count, website: 'reuters'
         });
         const apiUrl = 'https://www.reuters.com/pf/api/v3/content/fetch/articles-by-search-v2?query=' + encodeURIComponent(apiQuery);

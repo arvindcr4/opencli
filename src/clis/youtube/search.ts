@@ -19,6 +19,8 @@ cli({
     const limit = Math.min(kwargs.limit || 20, 50);
     await page.goto('https://www.youtube.com');
     await page.wait(2);
+    // SECURITY: JSON.stringify user input to prevent JS injection
+    const queryJs = JSON.stringify(kwargs.query);
     const data = await page.evaluate(`
       (async () => {
         const cfg = window.ytcfg?.data_ || {};
@@ -29,7 +31,7 @@ cli({
         const resp = await fetch('/youtubei/v1/search?key=' + apiKey + '&prettyPrint=false', {
           method: 'POST', credentials: 'include',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({context, query: '${kwargs.query.replace(/'/g, "\\'")}'})
+          body: JSON.stringify({context, query: ${queryJs}})
         });
         if (!resp.ok) return {error: 'HTTP ' + resp.status};
 

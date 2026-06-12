@@ -19,9 +19,11 @@ cli({
     const limit = kwargs.limit || 15;
     await page.goto('https://www.ctrip.com');
     await page.wait(2);
+    // SECURITY: use JSON.stringify to prevent JS injection from query
+    const queryJs = JSON.stringify(kwargs.query);
     const data = await page.evaluate(`
       (async () => {
-        const query = '${kwargs.query.replace(/'/g, "\\'")}';
+        const query = ${queryJs};
         const limit = ${limit};
 
         // Strategy 1: Suggestion API
