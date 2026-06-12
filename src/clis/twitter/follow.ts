@@ -19,6 +19,8 @@ cli({
     await page.goto(`https://x.com/${username}`);
     await page.wait(5);
 
+    // SECURITY: use JSON.stringify to prevent JS injection via username
+    const usernameJs = JSON.stringify(username);
     const result = await page.evaluate(`(async () => {
         try {
             let attempts = 0;
@@ -29,7 +31,7 @@ cli({
                 // Check if already following (button shows screen_name-unfollow)
                 unfollowTestId = document.querySelector('[data-testid$="-unfollow"]');
                 if (unfollowTestId) {
-                    return { ok: true, message: 'Already following @${username}.' };
+                    return { ok: true, message: 'Already following @' + ${usernameJs} + '.' };
                 }
 
                 // Look for the Follow button
@@ -50,7 +52,7 @@ cli({
             // Verify
             const verify = document.querySelector('[data-testid$="-unfollow"]');
             if (verify) {
-                return { ok: true, message: 'Successfully followed @${username}.' };
+                return { ok: true, message: 'Successfully followed @' + ${usernameJs} + '.' };
             } else {
                 return { ok: false, message: 'Follow action initiated but UI did not update.' };
             }

@@ -30,9 +30,11 @@ cli({
     await page.goto(`https://x.com/${username}`);
     await page.wait(3);
 
+    // SECURITY: use JSON.stringify to prevent JS injection from username
+    const usernameJs = JSON.stringify(username);
     const result = await page.evaluate(`
       async () => {
-        const screenName = "${username}";
+        const screenName = ${usernameJs};
         const ct0 = document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith('ct0='))?.split('=')[1];
         if (!ct0) return {error: 'No ct0 cookie — not logged into x.com'};
 
