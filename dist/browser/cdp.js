@@ -72,7 +72,10 @@ export class CDPBridge {
         this._pending.clear();
         // Close the tab we created so Chrome doesn't accumulate orphaned tabs
         if (this._tabId && this._baseEndpoint) {
-            try { await fetch(`${this._baseEndpoint}/json/close/${this._tabId}`); } catch { /* ignore */ }
+            try {
+                await fetch(`${this._baseEndpoint}/json/close/${this._tabId}`);
+            }
+            catch { /* ignore */ }
             this._tabId = null;
         }
     }
@@ -108,13 +111,20 @@ class CDPPage {
         }
         return result.result?.value;
     }
-    async snapshot(opts = {}) {
+    async getCookies(opts = {}) {
+        const result = await this.bridge.send('Network.getCookies', opts.url ? { urls: [opts.url] } : {});
+        const cookies = Array.isArray(result?.cookies) ? result.cookies : [];
+        return opts.domain
+            ? cookies.filter((cookie) => typeof cookie.domain === 'string' && cookie.domain.includes(opts.domain))
+            : cookies;
+    }
+    async snapshot(opts) {
         const code = `
 (function() {
   const sel = 'a, button, input, select, textarea, [contenteditable="true"], [role="button"], [role="textbox"], [role="combobox"], [role="searchbox"], [tabindex]';
   const elements = document.querySelectorAll(sel);
-  const nodes = [];
-  elements.forEach(function(el, i) {
+  const nodes: any[] = [];
+  elements.forEach(function(el: any, i: number) {
     const ref = 'snap-' + i;
     el.setAttribute('data-ref', ref);
     const tag = el.tagName.toLowerCase();
@@ -122,12 +132,17 @@ class CDPPage {
     const id = el.id || '';
     const name = el.getAttribute('aria-label') || el.getAttribute('name') || el.getAttribute('title') || (el.textContent || '').trim().slice(0, 80) || id || '';
     const placeholder = el.getAttribute('placeholder') || '';
-    nodes.push({ role: role, name: name, placeholder: placeholder, id: id, ref: ref });
+    nodes.push({ role, name, placeholder, id, ref });
   });
-  return JSON.stringify({ nodes: nodes });
+  return JSON.stringify({ nodes });
 })()`;
         const raw = await this.evaluate(code);
-        try { return JSON.parse(raw); } catch { return { nodes: [] }; }
+        try {
+            return JSON.parse(raw);
+        }
+        catch {
+            return { nodes: [] };
+        }
     }
     async click(ref) {
         const safeRef = JSON.stringify(ref);
@@ -162,7 +177,9 @@ class CDPPage {
     }
     async pressKey(key) {
         // Use CDP Input.dispatchKeyEvent for reliable key dispatch
-        const keyMap = { 'Return': { key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 } };
+        const keyMap = {
+            'Return': { key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 },
+        };
         const k = keyMap[key] || { key, code: key };
         await this.bridge.send('Input.dispatchKeyEvent', { type: 'keyDown', ...k });
         await this.bridge.send('Input.dispatchKeyEvent', { type: 'keyUp', ...k });

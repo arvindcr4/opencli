@@ -70,7 +70,14 @@ async function loadFromManifest(manifestPath: string, clisDir: string): Promise<
         // TS adapters: register a lightweight stub.
         // The actual module is loaded lazily on first executeCommand().
         const strategy = (Strategy as any)[(entry.strategy ?? 'cookie').toUpperCase()] ?? Strategy.COOKIE;
-        const modulePath = path.resolve(clisDir, entry.modulePath);
+        // SECURITY: prevent path traversal — resolved modulePath must stay within clisDir
+        const resolvedModulePath = path.resolve(clisDir, entry.modulePath);
+        const normalizedClisDir = path.resolve(clisDir) + path.sep;
+        if (!resolvedModulePath.startsWith(normalizedClisDir) && resolvedModulePath !== path.resolve(clisDir)) {
+          log.warn(`Skipping adapter '${entry.site}/${entry.name}': modulePath '${entry.modulePath}' resolves outside clisDir`);
+          return;
+        }
+        const modulePath = resolvedModulePath;
         const cmd: InternalCliCommand = {
           site: entry.site,
           name: entry.name,

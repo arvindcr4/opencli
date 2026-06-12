@@ -50,9 +50,25 @@ export async function stepSnapshot(page: IPage | null, params: any, _data: any, 
   return page!.snapshot({ interactive: opts.interactive ?? false, compact: opts.compact ?? false, maxDepth: opts.max_depth, raw: opts.raw ?? false });
 }
 
+/**
+ * SECURITY-CRITICAL: stepEvaluate must NOT interpolate user-supplied args
+ * directly into the JS string. Instead, pass args via JSON serialization
+ * to a wrapper function, or use the safe evaluation pattern.
+ */
 export async function stepEvaluate(page: IPage | null, params: any, data: any, args: Record<string, any>): Promise<any> {
+  // Render the JS template (which may contain trusted ${{ ... }} references)
   const js = String(render(params, { args, data }));
-  let result = await page!.evaluate(js);
+
+  // Wrap in a function and pass args via JSON-safe channel
+  const safeArgs = JSON.stringify(args);
+  const safeData = data !== undefined ? JSON.stringify(data) : 'null';
+  const wrappedJs = `(() => {
+    const __args = ${safeArgs};
+    const __data = ${safeData};
+    return (${js})({ args: __args, data: __data });
+  })()`;
+
+  let result = await page!.evaluate(wrappedJs);
   // MCP may return JSON as a string — auto-parse it
   if (typeof result === 'string') {
     const trimmed = result.trim();

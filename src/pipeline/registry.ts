@@ -36,10 +36,22 @@ export function getStep(name: string): StepHandler | undefined {
 
 /**
  * Register a new custom step handler for the YAML pipeline.
+ * Core step names (navigate, fetch, evaluate, etc.) are reserved and cannot be overridden.
  */
 export function registerStep(name: string, handler: StepHandler): void {
+  if (RESERVED_STEPS.has(name) && _stepRegistry.has(name)) {
+    // Silently reject attempts to override reserved core steps
+    return;
+  }
   _stepRegistry.set(name, handler);
 }
+
+/** Core step names that cannot be overridden by plugins */
+const RESERVED_STEPS = new Set([
+  'navigate', 'fetch', 'select', 'evaluate', 'snapshot',
+  'click', 'type', 'wait', 'press', 'map', 'filter',
+  'sort', 'limit', 'intercept', 'tap', 'download',
+]);
 
 // -------------------------------------------------------------
 // Auto-Register Core Steps

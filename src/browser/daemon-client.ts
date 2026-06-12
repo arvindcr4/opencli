@@ -2,6 +2,8 @@
  * HTTP client for communicating with the opencli daemon.
  *
  * Provides a typed send() function that posts a Command and returns a Result.
+ *
+ * Security: All requests include a bearer token for daemon authentication.
  */
 
 const DAEMON_PORT = parseInt(process.env.OPENCLI_DAEMON_PORT ?? '19825', 10);
@@ -11,6 +13,28 @@ let _idCounter = 0;
 
 function generateId(): string {
   return `cmd_${Date.now()}_${++_idCounter}`;
+}
+
+/** Daemon auth token, set by BrowserBridge after spawning the daemon */
+let _daemonToken: string | undefined;
+
+/** Set the daemon token (called by BrowserBridge after spawning) */
+export function setDaemonToken(token: string): void {
+  _daemonToken = token;
+}
+
+/** Get current daemon token */
+export function getDaemonToken(): string | undefined {
+  return _daemonToken ?? undefined;
+}
+
+/** Create headers with daemon auth token if available */
+function authHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (_daemonToken) {
+    headers['Authorization'] = `Bearer ${_daemonToken}`;
+  }
+  return headers;
 }
 
 export interface DaemonCommand {
@@ -85,7 +109,7 @@ export async function sendCommand(
 
       const res = await fetch(`${DAEMON_URL}/command`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify(command),
         signal: controller.signal,
       });

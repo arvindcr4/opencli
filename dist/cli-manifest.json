@@ -111,6 +111,16 @@
   },
   {
     "site": "antigravity",
+    "name": "serve",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "antigravity/serve.js"
+  },
+  {
+    "site": "antigravity",
     "name": "status",
     "description": "Check Antigravity CDP connection and get current page state",
     "strategy": "ui",
@@ -135,7 +145,18 @@
     "type": "ts",
     "modulePath": "antigravity/watch.js",
     "domain": "localhost",
-    "columns": []
+    "columns": [],
+    "timeout": 86400
+  },
+  {
+    "site": "apple-podcasts",
+    "name": "commands.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "apple-podcasts/commands.test.js"
   },
   {
     "site": "apple-podcasts",
@@ -249,6 +270,73 @@
     "args": [],
     "type": "ts",
     "modulePath": "apple-podcasts/utils.test.js"
+  },
+  {
+    "site": "arxiv",
+    "name": "paper",
+    "description": "Get arXiv paper details by ID",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "id",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "arXiv paper ID (e.g. 1706.03762)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "arxiv/paper.js",
+    "columns": [
+      "id",
+      "title",
+      "authors",
+      "published",
+      "abstract",
+      "url"
+    ]
+  },
+  {
+    "site": "arxiv",
+    "name": "search",
+    "description": "Search arXiv papers",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search keyword (e.g. "
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 10,
+        "required": false,
+        "help": "Max results (max 25)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "arxiv/search.js",
+    "columns": [
+      "id",
+      "title",
+      "authors",
+      "published"
+    ]
+  },
+  {
+    "site": "arxiv",
+    "name": "utils",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "arxiv/utils.js"
   },
   {
     "site": "barchart",
@@ -450,7 +538,7 @@
   {
     "site": "bilibili",
     "name": "download",
-    "description": "\u4e0b\u8f7dB\u7ad9\u89c6\u9891\uff08\u9700\u8981 yt-dlp\uff09",
+    "description": "下载B站视频（需要 yt-dlp）",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -514,7 +602,7 @@
   {
     "site": "bilibili",
     "name": "favorite",
-    "description": "\u6211\u7684\u9ed8\u8ba4\u6536\u85cf\u5939",
+    "description": "我的默认收藏夹",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -547,7 +635,7 @@
   {
     "site": "bilibili",
     "name": "feed",
-    "description": "\u5173\u6ce8\u7684\u4eba\u7684\u52a8\u6001\u65f6\u95f4\u7ebf",
+    "description": "关注的人的动态时间线",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -580,7 +668,7 @@
   {
     "site": "bilibili",
     "name": "following",
-    "description": "\u83b7\u53d6 Bilibili \u7528\u6237\u7684\u5173\u6ce8\u5217\u8868",
+    "description": "获取 Bilibili 用户的关注列表",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -588,21 +676,21 @@
         "name": "uid",
         "type": "str",
         "required": false,
-        "help": "\u76ee\u6807\u7528\u6237 ID\uff08\u9ed8\u8ba4\u4e3a\u5f53\u524d\u767b\u5f55\u7528\u6237\uff09"
+        "help": "目标用户 ID（默认为当前登录用户）"
       },
       {
         "name": "page",
         "type": "int",
         "default": 1,
         "required": false,
-        "help": "\u9875\u7801"
+        "help": "页码"
       },
       {
         "name": "limit",
         "type": "int",
         "default": 50,
         "required": false,
-        "help": "\u6bcf\u9875\u6570\u91cf (\u6700\u5927 50)"
+        "help": "每页数量 (最大 50)"
       }
     ],
     "type": "ts",
@@ -618,7 +706,7 @@
   {
     "site": "bilibili",
     "name": "history",
-    "description": "\u6211\u7684\u89c2\u770b\u5386\u53f2",
+    "description": "我的观看历史",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -644,7 +732,7 @@
   {
     "site": "bilibili",
     "name": "hot",
-    "description": "B\u7ad9\u70ed\u95e8\u89c6\u9891",
+    "description": "B站热门视频",
     "domain": "www.bilibili.com",
     "strategy": "cookie",
     "browser": true,
@@ -780,7 +868,7 @@
   {
     "site": "bilibili",
     "name": "subtitle",
-    "description": "\u83b7\u53d6 Bilibili \u89c6\u9891\u7684\u5b57\u5e55",
+    "description": "获取 Bilibili 视频的字幕",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -794,7 +882,7 @@
         "name": "lang",
         "type": "str",
         "required": false,
-        "help": "\u5b57\u5e55\u8bed\u8a00\u4ee3\u7801 (\u5982 zh-CN, en-US, ai-zh)\uff0c\u9ed8\u8ba4\u53d6\u7b2c\u4e00\u4e2a"
+        "help": "字幕语言代码 (如 zh-CN, en-US, ai-zh)，默认取第一个"
       }
     ],
     "type": "ts",
@@ -809,7 +897,7 @@
   {
     "site": "bilibili",
     "name": "user-videos",
-    "description": "\u67e5\u770b\u6307\u5b9a\u7528\u6237\u7684\u6295\u7a3f\u89c6\u9891",
+    "description": "查看指定用户的投稿视频",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -854,9 +942,318 @@
     ]
   },
   {
+    "site": "bilibili",
+    "name": "utils",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "bilibili/utils.js"
+  },
+  {
+    "site": "bloomberg",
+    "name": "businessweek",
+    "description": "Bloomberg Businessweek top stories (RSS)",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Number of feed items to return (max 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bloomberg/businessweek.js",
+    "domain": "feeds.bloomberg.com",
+    "columns": [
+      "title",
+      "summary",
+      "link",
+      "mediaLinks"
+    ]
+  },
+  {
+    "site": "bloomberg",
+    "name": "economics",
+    "description": "Bloomberg Economics top stories (RSS)",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Number of feed items to return (max 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bloomberg/economics.js",
+    "domain": "feeds.bloomberg.com",
+    "columns": [
+      "title",
+      "summary",
+      "link",
+      "mediaLinks"
+    ]
+  },
+  {
+    "site": "bloomberg",
+    "name": "feeds",
+    "description": "List the Bloomberg RSS feed aliases used by the adapter",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "bloomberg/feeds.js",
+    "domain": "feeds.bloomberg.com",
+    "columns": [
+      "name",
+      "url"
+    ]
+  },
+  {
+    "site": "bloomberg",
+    "name": "industries",
+    "description": "Bloomberg Industries top stories (RSS)",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Number of feed items to return (max 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bloomberg/industries.js",
+    "domain": "feeds.bloomberg.com",
+    "columns": [
+      "title",
+      "summary",
+      "link",
+      "mediaLinks"
+    ]
+  },
+  {
+    "site": "bloomberg",
+    "name": "main",
+    "description": "Bloomberg homepage top stories (RSS)",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Number of feed items to return (max 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bloomberg/main.js",
+    "domain": "feeds.bloomberg.com",
+    "columns": [
+      "title",
+      "summary",
+      "link",
+      "mediaLinks"
+    ]
+  },
+  {
+    "site": "bloomberg",
+    "name": "markets",
+    "description": "Bloomberg Markets top stories (RSS)",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Number of feed items to return (max 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bloomberg/markets.js",
+    "domain": "feeds.bloomberg.com",
+    "columns": [
+      "title",
+      "summary",
+      "link",
+      "mediaLinks"
+    ]
+  },
+  {
+    "site": "bloomberg",
+    "name": "news",
+    "description": "Read a Bloomberg story/article page and return title, full content, and media links",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "link",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Bloomberg story/article URL or relative Bloomberg path"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bloomberg/news.js",
+    "domain": "www.bloomberg.com",
+    "columns": [
+      "title",
+      "summary",
+      "link",
+      "mediaLinks",
+      "content"
+    ]
+  },
+  {
+    "site": "bloomberg",
+    "name": "opinions",
+    "description": "Bloomberg Opinion top stories (RSS)",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Number of feed items to return (max 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bloomberg/opinions.js",
+    "domain": "feeds.bloomberg.com",
+    "columns": [
+      "title",
+      "summary",
+      "link",
+      "mediaLinks"
+    ]
+  },
+  {
+    "site": "bloomberg",
+    "name": "politics",
+    "description": "Bloomberg Politics top stories (RSS)",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Number of feed items to return (max 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bloomberg/politics.js",
+    "domain": "feeds.bloomberg.com",
+    "columns": [
+      "title",
+      "summary",
+      "link",
+      "mediaLinks"
+    ]
+  },
+  {
+    "site": "bloomberg",
+    "name": "tech",
+    "description": "Bloomberg Tech top stories (RSS)",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Number of feed items to return (max 20)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "bloomberg/tech.js",
+    "domain": "feeds.bloomberg.com",
+    "columns": [
+      "title",
+      "summary",
+      "link",
+      "mediaLinks"
+    ]
+  },
+  {
+    "site": "bloomberg",
+    "name": "utils",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "bloomberg/utils.js"
+  },
+  {
+    "site": "bloomberg",
+    "name": "utils.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "bloomberg/utils.test.js"
+  },
+  {
+    "site": "boss",
+    "name": "batchgreet",
+    "description": "BOSS直聘批量向推荐候选人发送招呼",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "job-id",
+        "type": "str",
+        "default": "",
+        "required": false,
+        "help": "Filter by encrypted job ID (greet all jobs if empty)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 5,
+        "required": false,
+        "help": "Max candidates to greet"
+      },
+      {
+        "name": "text",
+        "type": "str",
+        "default": "",
+        "required": false,
+        "help": "Custom greeting message (uses default if empty)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/batchgreet.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "name",
+      "status",
+      "detail"
+    ]
+  },
+  {
     "site": "boss",
     "name": "chatlist",
-    "description": "BOSS\u76f4\u8058\u67e5\u770b\u804a\u5929\u5217\u8868\uff08\u62db\u8058\u7aef\uff09",
+    "description": "BOSS直聘查看聊天列表（招聘端）",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -897,7 +1294,7 @@
   {
     "site": "boss",
     "name": "chatmsg",
-    "description": "BOSS\u76f4\u8058\u67e5\u770b\u4e0e\u5019\u9009\u4eba\u7684\u804a\u5929\u6d88\u606f",
+    "description": "BOSS直聘查看与候选人的聊天消息",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -928,7 +1325,7 @@
   {
     "site": "boss",
     "name": "detail",
-    "description": "BOSS\u76f4\u8058\u67e5\u770b\u804c\u4f4d\u8be6\u60c5",
+    "description": "BOSS直聘查看职位详情",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -965,8 +1362,235 @@
   },
   {
     "site": "boss",
+    "name": "exchange",
+    "description": "BOSS直聘交换联系方式（请求手机/微信）",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "uid",
+        "type": "str",
+        "required": true,
+        "help": "Encrypted UID of the candidate"
+      },
+      {
+        "name": "type",
+        "type": "str",
+        "default": "phone",
+        "required": false,
+        "help": "Exchange type: phone or wechat",
+        "choices": [
+          "phone",
+          "wechat"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/exchange.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "status",
+      "detail"
+    ]
+  },
+  {
+    "site": "boss",
+    "name": "greet",
+    "description": "BOSS直聘向新候选人发送招呼（开始聊天）",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "uid",
+        "type": "str",
+        "required": true,
+        "help": "Encrypted UID of the candidate (from recommend)"
+      },
+      {
+        "name": "security-id",
+        "type": "str",
+        "required": true,
+        "help": "Security ID of the candidate"
+      },
+      {
+        "name": "job-id",
+        "type": "str",
+        "required": true,
+        "help": "Encrypted job ID"
+      },
+      {
+        "name": "text",
+        "type": "str",
+        "default": "",
+        "required": false,
+        "help": "Custom greeting message (uses default template if empty)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/greet.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "status",
+      "detail"
+    ]
+  },
+  {
+    "site": "boss",
+    "name": "invite",
+    "description": "BOSS直聘发送面试邀请",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "uid",
+        "type": "str",
+        "required": true,
+        "help": "Encrypted UID of the candidate"
+      },
+      {
+        "name": "time",
+        "type": "str",
+        "required": true,
+        "help": "Interview time (e.g. 2025-04-01 14:00)"
+      },
+      {
+        "name": "address",
+        "type": "str",
+        "default": "",
+        "required": false,
+        "help": "Interview address (uses saved address if empty)"
+      },
+      {
+        "name": "contact",
+        "type": "str",
+        "default": "",
+        "required": false,
+        "help": "Contact person name (uses saved contact if empty)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/invite.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "status",
+      "detail"
+    ]
+  },
+  {
+    "site": "boss",
+    "name": "joblist",
+    "description": "BOSS直聘查看我发布的职位列表",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "boss/joblist.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "job_name",
+      "salary",
+      "city",
+      "status",
+      "encrypt_job_id"
+    ]
+  },
+  {
+    "site": "boss",
+    "name": "mark",
+    "description": "BOSS直聘给候选人添加标签",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "uid",
+        "type": "str",
+        "required": true,
+        "help": "Encrypted UID of the candidate"
+      },
+      {
+        "name": "label",
+        "type": "str",
+        "required": true,
+        "help": "Label name (新招呼/沟通中/已约面/已获取简历/已交换电话/已交换微信/不合适/收藏) or label ID"
+      },
+      {
+        "name": "remove",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": "Remove the label instead of adding"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/mark.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "status",
+      "detail"
+    ]
+  },
+  {
+    "site": "boss",
+    "name": "recommend",
+    "description": "BOSS直聘查看推荐候选人（新招呼列表）",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of results to return"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/recommend.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "name",
+      "job_name",
+      "last_time",
+      "labels",
+      "encrypt_uid",
+      "security_id",
+      "encrypt_job_id"
+    ]
+  },
+  {
+    "site": "boss",
+    "name": "resume",
+    "description": "BOSS直聘查看候选人简历（招聘端）",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "uid",
+        "type": "str",
+        "required": true,
+        "help": "Encrypted UID of the candidate (from chatlist)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/resume.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "name",
+      "gender",
+      "age",
+      "experience",
+      "degree",
+      "active_time",
+      "work_history",
+      "education",
+      "job_chatting",
+      "expect"
+    ]
+  },
+  {
+    "site": "boss",
     "name": "search",
-    "description": "BOSS\u76f4\u8058\u641c\u7d22\u804c\u4f4d",
+    "description": "BOSS直聘搜索职位",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -974,42 +1598,42 @@
         "name": "query",
         "type": "str",
         "required": true,
-        "help": "Search keyword (e.g. AI agent, \u524d\u7aef)"
+        "help": "Search keyword (e.g. AI agent, 前端)"
       },
       {
         "name": "city",
         "type": "str",
-        "default": "\u5317\u4eac",
+        "default": "北京",
         "required": false,
-        "help": "City name or code (e.g. \u676d\u5dde, \u4e0a\u6d77, 101010100)"
+        "help": "City name or code (e.g. 杭州, 上海, 101010100)"
       },
       {
         "name": "experience",
         "type": "str",
         "default": "",
         "required": false,
-        "help": "Experience: \u5e94\u5c4a/1\u5e74\u4ee5\u5185/1-3\u5e74/3-5\u5e74/5-10\u5e74/10\u5e74\u4ee5\u4e0a"
+        "help": "Experience: 应届/1年以内/1-3年/3-5年/5-10年/10年以上"
       },
       {
         "name": "degree",
         "type": "str",
         "default": "",
         "required": false,
-        "help": "Degree: \u5927\u4e13/\u672c\u79d1/\u7855\u58eb/\u535a\u58eb"
+        "help": "Degree: 大专/本科/硕士/博士"
       },
       {
         "name": "salary",
         "type": "str",
         "default": "",
         "required": false,
-        "help": "Salary: 3K\u4ee5\u4e0b/3-5K/5-10K/10-15K/15-20K/20-30K/30-50K/50K\u4ee5\u4e0a"
+        "help": "Salary: 3K以下/3-5K/5-10K/10-15K/15-20K/20-30K/30-50K/50K以上"
       },
       {
         "name": "industry",
         "type": "str",
         "default": "",
         "required": false,
-        "help": "Industry code or name (e.g. 100020, \u4e92\u8054\u7f51)"
+        "help": "Industry code or name (e.g. 100020, 互联网)"
       },
       {
         "name": "page",
@@ -1045,7 +1669,7 @@
   {
     "site": "boss",
     "name": "send",
-    "description": "BOSS\u76f4\u8058\u53d1\u9001\u804a\u5929\u6d88\u606f",
+    "description": "BOSS直聘发送聊天消息",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -1071,9 +1695,36 @@
     ]
   },
   {
+    "site": "boss",
+    "name": "stats",
+    "description": "BOSS直聘职位数据统计",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "job-id",
+        "type": "str",
+        "default": "",
+        "required": false,
+        "help": "Encrypted job ID (show all if empty)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "boss/stats.js",
+    "domain": "www.zhipin.com",
+    "columns": [
+      "job_name",
+      "salary",
+      "city",
+      "status",
+      "total_chats",
+      "encrypt_job_id"
+    ]
+  },
+  {
     "site": "chaoxing",
     "name": "assignments",
-    "description": "\u5b66\u4e60\u901a\u4f5c\u4e1a\u5217\u8868",
+    "description": "学习通作业列表",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -1081,14 +1732,14 @@
         "name": "course",
         "type": "string",
         "required": false,
-        "help": "\u6309\u8bfe\u7a0b\u540d\u8fc7\u6ee4\uff08\u6a21\u7cca\u5339\u914d\uff09"
+        "help": "按课程名过滤（模糊匹配）"
       },
       {
         "name": "status",
         "type": "string",
         "default": "all",
         "required": false,
-        "help": "\u6309\u72b6\u6001\u8fc7\u6ee4",
+        "help": "按状态过滤",
         "choices": [
           "all",
           "pending",
@@ -1101,7 +1752,7 @@
         "type": "int",
         "default": 20,
         "required": false,
-        "help": "\u6700\u5927\u8fd4\u56de\u6570\u91cf"
+        "help": "最大返回数量"
       }
     ],
     "type": "ts",
@@ -1114,12 +1765,13 @@
       "deadline",
       "status",
       "score"
-    ]
+    ],
+    "timeout": 90
   },
   {
     "site": "chaoxing",
     "name": "exams",
-    "description": "\u5b66\u4e60\u901a\u8003\u8bd5\u5217\u8868",
+    "description": "学习通考试列表",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -1127,14 +1779,14 @@
         "name": "course",
         "type": "string",
         "required": false,
-        "help": "\u6309\u8bfe\u7a0b\u540d\u8fc7\u6ee4\uff08\u6a21\u7cca\u5339\u914d\uff09"
+        "help": "按课程名过滤（模糊匹配）"
       },
       {
         "name": "status",
         "type": "string",
         "default": "all",
         "required": false,
-        "help": "\u6309\u72b6\u6001\u8fc7\u6ee4",
+        "help": "按状态过滤",
         "choices": [
           "all",
           "upcoming",
@@ -1147,7 +1799,7 @@
         "type": "int",
         "default": 20,
         "required": false,
-        "help": "\u6700\u5927\u8fd4\u56de\u6570\u91cf"
+        "help": "最大返回数量"
       }
     ],
     "type": "ts",
@@ -1161,7 +1813,28 @@
       "end",
       "status",
       "score"
-    ]
+    ],
+    "timeout": 90
+  },
+  {
+    "site": "chaoxing",
+    "name": "utils",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chaoxing/utils.js"
+  },
+  {
+    "site": "chaoxing",
+    "name": "utils.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chaoxing/utils.test.js"
   },
   {
     "site": "chatgpt",
@@ -1183,6 +1856,15 @@
         "default": "30)",
         "required": false,
         "help": "Max seconds to wait for response (default: 30)"
+      },
+      {
+        "name": "model",
+        "type": "str",
+        "required": false,
+        "help": "Model/mode to choose before sending (e.g. pro, thinking, instant, auto)",
+        "choices": [
+          "...CHATGPT_MODEL_CHOICES"
+        ]
       }
     ],
     "type": "ts",
@@ -1205,6 +1887,73 @@
   },
   {
     "site": "chatgpt",
+    "name": "deepresearch",
+    "description": "Submit a deep research query to ChatGPT and wait for the full report",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Research query"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "900)",
+        "required": false,
+        "help": "Max seconds to wait for report (default: 900)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/deepresearch.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 1800
+  },
+  {
+    "site": "chatgpt",
+    "name": "model",
+    "description": "Get or switch the active model in ChatGPT Desktop",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "model-name",
+        "type": "str",
+        "required": false,
+        "positional": true,
+        "help": "Model to switch to (e.g. pro, thinking, instant, auto)",
+        "choices": [
+          "...CHATGPT_MODEL_CHOICES"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/model.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Model"
+    ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "model.test",
+    "description": "Decides how long to think",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/model.test.js"
+  },
+  {
+    "site": "chatgpt",
     "name": "new",
     "description": "Open a new ChatGPT chat (desktop app on macOS, browser on Linux)",
     "strategy": "public",
@@ -1216,6 +1965,50 @@
     "columns": [
       "Status"
     ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "promode",
+    "description": "Ask ChatGPT in Pro mode (Extended Pro / o3-pro with extended thinking)",
+    "strategy": "public",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Question or task"
+      },
+      {
+        "name": "timeout",
+        "type": "str",
+        "default": "300)",
+        "required": false,
+        "help": "Max seconds to wait (default: 300)"
+      },
+      {
+        "name": "mode",
+        "type": "str",
+        "default": "pro)",
+        "required": false,
+        "help": "Model mode: instant | thinking | pro (default: pro)"
+      },
+      {
+        "name": "file",
+        "type": "str",
+        "required": false,
+        "help": "Absolute path to a file to attach (e.g. /tmp/report.pdf)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "chatgpt/promode.js",
+    "domain": "chatgpt.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 7200
   },
   {
     "site": "chatgpt",
@@ -1245,6 +2038,15 @@
         "required": true,
         "positional": true,
         "help": "Message to send"
+      },
+      {
+        "name": "model",
+        "type": "str",
+        "required": false,
+        "help": "Model/mode to choose before sending (e.g. pro, thinking, instant, auto)",
+        "choices": [
+          "...CHATGPT_MODEL_CHOICES"
+        ]
       }
     ],
     "type": "ts",
@@ -1253,6 +2055,16 @@
     "columns": [
       "Status"
     ]
+  },
+  {
+    "site": "chatgpt",
+    "name": "shared",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "chatgpt/shared.js"
   },
   {
     "site": "chatgpt",
@@ -1266,81 +2078,6 @@
     "domain": "chatgpt.com",
     "columns": [
       "Status"
-    ]
-  },
-  {
-    "site": "chatgpt",
-    "name": "deepresearch",
-    "description": "Submit a deep research query to ChatGPT and wait for the full report",
-    "strategy": "public",
-    "browser": true,
-    "timeout": 1800,
-    "args": [
-      {
-        "name": "text",
-        "type": "str",
-        "required": true,
-        "positional": true,
-        "help": "Research query"
-      },
-      {
-        "name": "timeout",
-        "type": "str",
-        "default": "900",
-        "required": false,
-        "help": "Max seconds to wait for report (default: 900)"
-      }
-    ],
-    "type": "ts",
-    "modulePath": "chatgpt/deepresearch.js",
-    "domain": "chatgpt.com",
-    "columns": [
-      "Role",
-      "Text"
-    ]
-  },
-  {
-    "site": "chatgpt",
-    "name": "promode",
-    "description": "Ask ChatGPT in Pro mode (Extended Pro / o3-pro with extended thinking)",
-    "strategy": "public",
-    "browser": true,
-    "timeout": 7200,
-    "args": [
-      {
-        "name": "text",
-        "type": "str",
-        "required": true,
-        "positional": true,
-        "help": "Question or task"
-      },
-      {
-        "name": "timeout",
-        "type": "str",
-        "default": "300",
-        "required": false,
-        "help": "Max seconds to wait (default: 300)"
-      },
-      {
-        "name": "mode",
-        "type": "str",
-        "default": "pro",
-        "required": false,
-        "help": "Model mode: instant | thinking | pro (default: pro)"
-      },
-      {
-        "name": "file",
-        "type": "str",
-        "required": false,
-        "help": "Absolute path to a file to attach"
-      }
-    ],
-    "type": "ts",
-    "modulePath": "chatgpt/promode.js",
-    "domain": "chatgpt.com",
-    "columns": [
-      "Role",
-      "Text"
     ]
   },
   {
@@ -1823,9 +2560,29 @@
     ]
   },
   {
+    "site": "coupang",
+    "name": "utils",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "coupang/utils.js"
+  },
+  {
+    "site": "coupang",
+    "name": "utils.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "coupang/utils.test.js"
+  },
+  {
     "site": "ctrip",
     "name": "search",
-    "description": "\u643a\u7a0b\u65c5\u884c\u641c\u7d22",
+    "description": "携程旅行搜索",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -2313,6 +3070,307 @@
     ]
   },
   {
+    "site": "gemini",
+    "name": "app-ask",
+    "description": "Send a prompt to the Gemini MacOS Desktop App and read back the response",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Prompt to send"
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "default": 60,
+        "required": false,
+        "help": "Max seconds to wait for the response"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/app-ask.js",
+    "domain": "localhost",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "app-new",
+    "description": "Start a new conversation in the Google Gemini MacOS Desktop App",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/app-new.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "app-read",
+    "description": "Read the latest visible chat content from the Gemini MacOS Desktop App",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/app-read.js",
+    "domain": "localhost",
+    "columns": [
+      "Index",
+      "Text"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "app-send",
+    "description": "Send a message to the active Google Gemini MacOS Desktop App window",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "text",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Message to send"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/app-send.js",
+    "domain": "localhost",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "app-status",
+    "description": "Check whether the Google Gemini MacOS Desktop App is running",
+    "strategy": "public",
+    "browser": false,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/app-status.js",
+    "domain": "localhost",
+    "columns": [
+      "Status",
+      "Windows",
+      "VisibleTextPreview"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "ask",
+    "description": "Send a prompt to Gemini and wait for the response",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "Prompt to send"
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "default": 120,
+        "required": false,
+        "help": "Max seconds to wait (default: 120)"
+      },
+      {
+        "name": "new",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": "Start a new conversation first"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/ask.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 180
+  },
+  {
+    "site": "gemini",
+    "name": "conversations",
+    "description": "List recent Gemini conversations from the sidebar",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Max conversations to return"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/conversations.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Index",
+      "Title",
+      "Url"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "debug",
+    "description": "Debug Gemini page structure (find input selectors)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "scope",
+        "type": "string",
+        "default": "all",
+        "required": false,
+        "help": "What to inspect: all, buttons, input, deep-research"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/debug.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Type",
+      "Selector",
+      "Details"
+    ],
+    "timeout": 60
+  },
+  {
+    "site": "gemini",
+    "name": "deep-research",
+    "description": "Run Gemini Deep Research on a topic and return the full report",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "prompt",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "Research topic or question"
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "default": 600,
+        "required": false,
+        "help": "Max seconds to wait for research (default: 600 = 10min)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/deep-research.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Role",
+      "Text"
+    ],
+    "timeout": 660
+  },
+  {
+    "site": "gemini",
+    "name": "desktop",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/desktop.js"
+  },
+  {
+    "site": "gemini",
+    "name": "new",
+    "description": "Start a new conversation in Google Gemini",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/new.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "read",
+    "description": "Read the latest Gemini conversation messages",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "last",
+        "type": "int",
+        "default": 0,
+        "required": false,
+        "help": "Only show last N messages (0 = all)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/read.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Role",
+      "Text"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "send",
+    "description": "Send a message to Google Gemini",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "Message to send"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "gemini/send.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status"
+    ]
+  },
+  {
+    "site": "gemini",
+    "name": "status",
+    "description": "Check active CDP connection to Google Gemini",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "gemini/status.js",
+    "domain": "gemini.google.com",
+    "columns": [
+      "Status",
+      "Url",
+      "Title",
+      "Model"
+    ]
+  },
+  {
     "site": "grok",
     "name": "ask",
     "description": "Send a message to Grok and get response",
@@ -2406,9 +3464,254 @@
     "type": "yaml"
   },
   {
+    "site": "hf",
+    "name": "top",
+    "description": "Top upvoted Hugging Face papers",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of papers"
+      },
+      {
+        "name": "all",
+        "type": "bool",
+        "default": false,
+        "required": false,
+        "help": "Return all papers (ignore limit)"
+      },
+      {
+        "name": "date",
+        "type": "str",
+        "required": false,
+        "help": "Date (YYYY-MM-DD), defaults to most recent"
+      },
+      {
+        "name": "period",
+        "type": "str",
+        "default": "daily",
+        "required": false,
+        "help": "Time period: daily, weekly, or monthly",
+        "choices": [
+          "daily",
+          "weekly",
+          "monthly"
+        ]
+      }
+    ],
+    "type": "ts",
+    "modulePath": "hf/top.js",
+    "domain": "huggingface.co"
+  },
+  {
+    "site": "jike",
+    "name": "comment",
+    "description": "评论即刻帖子",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "帖子 ID"
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "评论内容"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "jike/comment.js",
+    "domain": "web.okjike.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "jike",
+    "name": "create",
+    "description": "发布即刻动态",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "text",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "动态正文内容"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "jike/create.js",
+    "domain": "web.okjike.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "jike",
+    "name": "feed",
+    "description": "即刻首页动态流",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "jike/feed.js",
+    "domain": "web.okjike.com",
+    "columns": [
+      "author",
+      "content",
+      "likes",
+      "comments",
+      "time",
+      "url"
+    ]
+  },
+  {
+    "site": "jike",
+    "name": "like",
+    "description": "点赞即刻帖子",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "帖子 ID"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "jike/like.js",
+    "domain": "web.okjike.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "jike",
+    "name": "notifications",
+    "description": "即刻通知",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "jike/notifications.js",
+    "domain": "web.okjike.com",
+    "columns": [
+      "type",
+      "user",
+      "content",
+      "time"
+    ]
+  },
+  {
+    "site": "jike",
+    "name": "repost",
+    "description": "转发即刻帖子",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "id",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "帖子 ID"
+      },
+      {
+        "name": "text",
+        "type": "string",
+        "required": false,
+        "help": "转发附言（可选）"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "jike/repost.js",
+    "domain": "web.okjike.com",
+    "columns": [
+      "status",
+      "message"
+    ]
+  },
+  {
+    "site": "jike",
+    "name": "search",
+    "description": "搜索即刻帖子",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "query",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": ""
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": ""
+      }
+    ],
+    "type": "ts",
+    "modulePath": "jike/search.js",
+    "domain": "web.okjike.com",
+    "columns": [
+      "author",
+      "content",
+      "likes",
+      "comments",
+      "time",
+      "url"
+    ]
+  },
+  {
+    "site": "jike",
+    "name": "shared",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "jike/shared.js"
+  },
+  {
     "site": "jimeng",
     "name": "generate",
-    "description": "\u5373\u68a6AI \u6587\u751f\u56fe \u2014 \u8f93\u5165 prompt \u751f\u6210\u56fe\u7247",
+    "description": "即梦AI 文生图 — 输入 prompt 生成图片",
     "domain": "jimeng.jianying.com",
     "strategy": "cookie",
     "browser": true,
@@ -2417,21 +3720,21 @@
         "name": "prompt",
         "type": "string",
         "required": true,
-        "help": "\u56fe\u7247\u63cf\u8ff0 prompt"
+        "help": "图片描述 prompt"
       },
       {
         "name": "model",
         "type": "string",
         "default": "high_aes_general_v50",
         "required": false,
-        "help": "\u6a21\u578b: high_aes_general_v50 (5.0 Lite), high_aes_general_v42 (4.6), high_aes_general_v40 (4.0)"
+        "help": "模型: high_aes_general_v50 (5.0 Lite), high_aes_general_v42 (4.6), high_aes_general_v40 (4.0)"
       },
       {
         "name": "wait",
         "type": "int",
         "default": 40,
         "required": false,
-        "help": "\u7b49\u5f85\u751f\u6210\u5b8c\u6210\u7684\u79d2\u6570"
+        "help": "等待生成完成的秒数"
       }
     ],
     "columns": [
@@ -2448,7 +3751,7 @@
         "wait": 3
       },
       {
-        "evaluate": "(async () => {\n  const prompt = ${{ args.prompt | json }};\n  const waitSec = ${{ args.wait }};\n  \n  // Step 1: Count existing images before generation\n  const beforeImgs = document.querySelectorAll('img[src*=\"dreamina-sign\"], img[src*=\"tb4s082cfz\"]').length;\n  \n  // Step 2: Clear and set prompt\n  const editors = document.querySelectorAll('[contenteditable=\"true\"]');\n  const editor = editors[0];\n  if (!editor) return [{ status: 'failed', prompt: prompt, image_count: 0, image_urls: 'Editor not found' }];\n  \n  editor.focus();\n  await new Promise(r => setTimeout(r, 200));\n  document.execCommand('selectAll');\n  await new Promise(r => setTimeout(r, 100));\n  document.execCommand('delete');\n  await new Promise(r => setTimeout(r, 200));\n  document.execCommand('insertText', false, prompt);\n  await new Promise(r => setTimeout(r, 500));\n  \n  // Step 3: Click generate\n  const btn = document.querySelector('.lv-btn.lv-btn-primary[class*=\"circle\"]');\n  if (!btn) return [{ status: 'failed', prompt: prompt, image_count: 0, image_urls: 'Generate button not found' }];\n  btn.click();\n  \n  // Step 4: Wait for new images to appear\n  let newImgs = [];\n  for (let i = 0; i < waitSec; i++) {\n    await new Promise(r => setTimeout(r, 1000));\n    const allImgs = document.querySelectorAll('img[src*=\"dreamina-sign\"], img[src*=\"tb4s082cfz\"]');\n    if (allImgs.length > beforeImgs) {\n      // New images appeared \u2014 generation complete\n      newImgs = Array.from(allImgs).slice(0, allImgs.length - beforeImgs);\n      break;\n    }\n  }\n  \n  if (newImgs.length === 0) {\n    return [{ status: 'timeout', prompt: prompt, image_count: 0, image_urls: 'Generation may still be in progress' }];\n  }\n  \n  // Step 5: Extract image URLs (use thumbnail URLs which are accessible)\n  const urls = newImgs.map(img => img.src);\n  \n  return [{ \n    status: 'success', \n    prompt: prompt.substring(0, 80), \n    image_count: urls.length, \n    image_urls: urls.join('\\n')\n  }];\n})()\n"
+        "evaluate": "(async () => {\n  const prompt = ${{ args.prompt | json }};\n  const waitSec = ${{ args.wait }};\n  \n  // Step 1: Count existing images before generation\n  const beforeImgs = document.querySelectorAll('img[src*=\"dreamina-sign\"], img[src*=\"tb4s082cfz\"]').length;\n  \n  // Step 2: Clear and set prompt\n  const editors = document.querySelectorAll('[contenteditable=\"true\"]');\n  const editor = editors[0];\n  if (!editor) return [{ status: 'failed', prompt: prompt, image_count: 0, image_urls: 'Editor not found' }];\n  \n  editor.focus();\n  await new Promise(r => setTimeout(r, 200));\n  document.execCommand('selectAll');\n  await new Promise(r => setTimeout(r, 100));\n  document.execCommand('delete');\n  await new Promise(r => setTimeout(r, 200));\n  document.execCommand('insertText', false, prompt);\n  await new Promise(r => setTimeout(r, 500));\n  \n  // Step 3: Click generate\n  const btn = document.querySelector('.lv-btn.lv-btn-primary[class*=\"circle\"]');\n  if (!btn) return [{ status: 'failed', prompt: prompt, image_count: 0, image_urls: 'Generate button not found' }];\n  btn.click();\n  \n  // Step 4: Wait for new images to appear\n  let newImgs = [];\n  for (let i = 0; i < waitSec; i++) {\n    await new Promise(r => setTimeout(r, 1000));\n    const allImgs = document.querySelectorAll('img[src*=\"dreamina-sign\"], img[src*=\"tb4s082cfz\"]');\n    if (allImgs.length > beforeImgs) {\n      // New images appeared — generation complete\n      newImgs = Array.from(allImgs).slice(0, allImgs.length - beforeImgs);\n      break;\n    }\n  }\n  \n  if (newImgs.length === 0) {\n    return [{ status: 'timeout', prompt: prompt, image_count: 0, image_urls: 'Generation may still be in progress' }];\n  }\n  \n  // Step 5: Extract image URLs (use thumbnail URLs which are accessible)\n  const urls = newImgs.map(img => img.src);\n  \n  return [{ \n    status: 'success', \n    prompt: prompt.substring(0, 80), \n    image_count: urls.length, \n    image_urls: urls.join('\\n')\n  }];\n})()\n"
       },
       {
         "map": {
@@ -2464,7 +3767,7 @@
   {
     "site": "jimeng",
     "name": "history",
-    "description": "\u5373\u68a6AI \u67e5\u770b\u6700\u8fd1\u751f\u6210\u7684\u4f5c\u54c1",
+    "description": "即梦AI 查看最近生成的作品",
     "domain": "jimeng.jianying.com",
     "strategy": "cookie",
     "browser": true,
@@ -2596,7 +3899,7 @@
   {
     "site": "linux-do",
     "name": "categories",
-    "description": "linux.do \u5206\u7c7b\u5217\u8868",
+    "description": "linux.do 分类列表",
     "domain": "linux.do",
     "strategy": "cookie",
     "browser": true,
@@ -2621,7 +3924,7 @@
         "navigate": "https://linux.do"
       },
       {
-        "evaluate": "(async () => {\n  const res = await fetch('/categories.json', { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - \u8bf7\u5148\u767b\u5f55 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('\u54cd\u5e94\u4e0d\u662f\u6709\u6548 JSON - \u8bf7\u5148\u767b\u5f55 linux.do'); }\n  const cats = data?.category_list?.categories || [];\n  return cats.slice(0, ${{ args.limit }}).map(c => ({\n    name: c.name,\n    slug: c.slug,\n    id: c.id,\n    topics: c.topic_count,\n    description: (c.description_text || '').slice(0, 80),\n  }));\n})()\n"
+        "evaluate": "(async () => {\n  const res = await fetch('/categories.json', { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - 请先登录 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('响应不是有效 JSON - 请先登录 linux.do'); }\n  const cats = data?.category_list?.categories || [];\n  return cats.slice(0, ${{ args.limit }}).map(c => ({\n    name: c.name,\n    slug: c.slug,\n    id: c.id,\n    topics: c.topic_count,\n    description: (c.description_text || '').slice(0, 80),\n  }));\n})()\n"
       },
       {
         "map": {
@@ -2641,7 +3944,7 @@
   {
     "site": "linux-do",
     "name": "category",
-    "description": "linux.do \u5206\u7c7b\u5185\u8bdd\u9898",
+    "description": "linux.do 分类内话题",
     "domain": "linux.do",
     "strategy": "cookie",
     "browser": true,
@@ -2678,7 +3981,7 @@
         "navigate": "https://linux.do"
       },
       {
-        "evaluate": "(async () => {\n  const slug = ${{ args.slug | json }};\n  const res = await fetch('/c/' + encodeURIComponent(slug) + '/${{ args.id }}.json', { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - \u8bf7\u5148\u767b\u5f55 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('\u54cd\u5e94\u4e0d\u662f\u6709\u6548 JSON - \u8bf7\u5148\u767b\u5f55 linux.do'); }\n  const topics = data?.topic_list?.topics || [];\n  return topics.slice(0, ${{ args.limit }}).map(t => ({\n    title: t.title,\n    replies: (t.posts_count || 1) - 1,\n    views: t.views,\n    likes: t.like_count,\n  }));\n})()\n"
+        "evaluate": "(async () => {\n  const slug = ${{ args.slug | json }};\n  const res = await fetch('/c/' + encodeURIComponent(slug) + '/${{ args.id }}.json', { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - 请先登录 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('响应不是有效 JSON - 请先登录 linux.do'); }\n  const topics = data?.topic_list?.topics || [];\n  return topics.slice(0, ${{ args.limit }}).map(t => ({\n    title: t.title,\n    replies: (t.posts_count || 1) - 1,\n    views: t.views,\n    likes: t.like_count,\n  }));\n})()\n"
       },
       {
         "map": {
@@ -2698,7 +4001,7 @@
   {
     "site": "linux-do",
     "name": "hot",
-    "description": "linux.do \u70ed\u95e8\u8bdd\u9898",
+    "description": "linux.do 热门话题",
     "domain": "linux.do",
     "strategy": "cookie",
     "browser": true,
@@ -2738,7 +4041,7 @@
         "navigate": "https://linux.do"
       },
       {
-        "evaluate": "(async () => {\n  const period = ${{ args.period | json }};\n  const res = await fetch('/top.json?period=' + encodeURIComponent(period), { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - \u8bf7\u5148\u767b\u5f55 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('\u54cd\u5e94\u4e0d\u662f\u6709\u6548 JSON - \u8bf7\u5148\u767b\u5f55 linux.do'); }\n  const topics = data?.topic_list?.topics || [];\n  const cats = data?.topic_list?.categories || data?.categories || [];\n  const catMap = Object.fromEntries(cats.map(c => [c.id, c.name]));\n  return topics.slice(0, ${{ args.limit }}).map(t => ({\n    title: t.title,\n    replies: (t.posts_count || 1) - 1,\n    views: t.views,\n    likes: t.like_count,\n    category: catMap[t.category_id] || String(t.category_id),\n  }));\n})()\n"
+        "evaluate": "(async () => {\n  const period = ${{ args.period | json }};\n  const res = await fetch('/top.json?period=' + encodeURIComponent(period), { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - 请先登录 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('响应不是有效 JSON - 请先登录 linux.do'); }\n  const topics = data?.topic_list?.topics || [];\n  const cats = data?.topic_list?.categories || data?.categories || [];\n  const catMap = Object.fromEntries(cats.map(c => [c.id, c.name]));\n  return topics.slice(0, ${{ args.limit }}).map(t => ({\n    title: t.title,\n    replies: (t.posts_count || 1) - 1,\n    views: t.views,\n    likes: t.like_count,\n    category: catMap[t.category_id] || String(t.category_id),\n  }));\n})()\n"
       },
       {
         "map": {
@@ -2759,7 +4062,7 @@
   {
     "site": "linux-do",
     "name": "latest",
-    "description": "linux.do \u6700\u65b0\u8bdd\u9898",
+    "description": "linux.do 最新话题",
     "domain": "linux.do",
     "strategy": "cookie",
     "browser": true,
@@ -2784,7 +4087,7 @@
         "navigate": "https://linux.do"
       },
       {
-        "evaluate": "(async () => {\n  const res = await fetch('/latest.json', { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - \u8bf7\u5148\u767b\u5f55 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('\u54cd\u5e94\u4e0d\u662f\u6709\u6548 JSON - \u8bf7\u5148\u767b\u5f55 linux.do'); }\n  const topics = data?.topic_list?.topics || [];\n  return topics.slice(0, ${{ args.limit }}).map(t => ({\n    title: t.title,\n    replies: (t.posts_count || 1) - 1,\n    views: t.views,\n    likes: t.like_count,\n  }));\n})()\n"
+        "evaluate": "(async () => {\n  const res = await fetch('/latest.json', { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - 请先登录 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('响应不是有效 JSON - 请先登录 linux.do'); }\n  const topics = data?.topic_list?.topics || [];\n  return topics.slice(0, ${{ args.limit }}).map(t => ({\n    title: t.title,\n    replies: (t.posts_count || 1) - 1,\n    views: t.views,\n    likes: t.like_count,\n  }));\n})()\n"
       },
       {
         "map": {
@@ -2804,7 +4107,7 @@
   {
     "site": "linux-do",
     "name": "search",
-    "description": "\u641c\u7d22 linux.do",
+    "description": "搜索 linux.do",
     "domain": "linux.do",
     "strategy": "cookie",
     "browser": true,
@@ -2835,7 +4138,7 @@
         "navigate": "https://linux.do"
       },
       {
-        "evaluate": "(async () => {\n  const keyword = ${{ args.keyword | json }};\n  const res = await fetch('/search.json?q=' + encodeURIComponent(keyword), { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - \u8bf7\u5148\u767b\u5f55 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('\u54cd\u5e94\u4e0d\u662f\u6709\u6548 JSON - \u8bf7\u5148\u767b\u5f55 linux.do'); }\n  const topics = data?.topics || [];\n  return topics.slice(0, ${{ args.limit }}).map(t => ({\n    title: t.title,\n    views: t.views,\n    likes: t.like_count,\n    replies: (t.posts_count || 1) - 1,\n  }));\n})()\n"
+        "evaluate": "(async () => {\n  const keyword = ${{ args.keyword | json }};\n  const res = await fetch('/search.json?q=' + encodeURIComponent(keyword), { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - 请先登录 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('响应不是有效 JSON - 请先登录 linux.do'); }\n  const topics = data?.topics || [];\n  return topics.slice(0, ${{ args.limit }}).map(t => ({\n    title: t.title,\n    views: t.views,\n    likes: t.like_count,\n    replies: (t.posts_count || 1) - 1,\n  }));\n})()\n"
       },
       {
         "map": {
@@ -2855,7 +4158,7 @@
   {
     "site": "linux-do",
     "name": "topic",
-    "description": "linux.do \u5e16\u5b50\u8be6\u60c5\u548c\u56de\u590d\uff08\u9996\u9875\uff09",
+    "description": "linux.do 帖子详情和回复（首页）",
     "domain": "linux.do",
     "strategy": "cookie",
     "browser": true,
@@ -2878,7 +4181,7 @@
         "navigate": "https://linux.do"
       },
       {
-        "evaluate": "(async () => {\n  const res = await fetch('/t/${{ args.id }}.json', { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - \u8bf7\u5148\u767b\u5f55 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('\u54cd\u5e94\u4e0d\u662f\u6709\u6548 JSON - \u8bf7\u5148\u767b\u5f55 linux.do'); }\n  const strip = (html) => (html || '').replace(/<br\\s*\\/?>/gi, ' ').replace(/<\\/(p|div|li|blockquote|h[1-6])>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '\"').replace(/&#(?:(\\d+)|x([0-9a-fA-F]+));/g, (_, dec, hex) => { try { return String.fromCodePoint(dec !== undefined ? Number(dec) : parseInt(hex, 16)); } catch { return ''; } }).replace(/\\s+/g, ' ').trim();\n  const posts = data?.post_stream?.posts || [];\n  return posts.map(p => ({\n    author: p.username,\n    content: strip(p.cooked).slice(0, 200),\n    likes: p.like_count,\n    created_at: p.created_at,\n  }));\n})()\n"
+        "evaluate": "(async () => {\n  const res = await fetch('/t/${{ args.id }}.json', { credentials: 'include' });\n  if (!res.ok) throw new Error('HTTP ' + res.status + ' - 请先登录 linux.do');\n  let data;\n  try { data = await res.json(); } catch { throw new Error('响应不是有效 JSON - 请先登录 linux.do'); }\n  const strip = (html) => (html || '').replace(/<br\\s*\\/?>/gi, ' ').replace(/<\\/(p|div|li|blockquote|h[1-6])>/gi, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '\"').replace(/&#(?:(\\d+)|x([0-9a-fA-F]+));/g, (_, dec, hex) => { try { return String.fromCodePoint(dec !== undefined ? Number(dec) : parseInt(hex, 16)); } catch { return ''; } }).replace(/\\s+/g, ' ').trim();\n  const posts = data?.post_stream?.posts || [];\n  return posts.map(p => ({\n    author: p.username,\n    content: strip(p.cooked).slice(0, 200),\n    likes: p.like_count,\n    created_at: p.created_at,\n  }));\n})()\n"
       },
       {
         "map": {
@@ -3289,7 +4592,7 @@
   {
     "site": "reddit",
     "name": "hot",
-    "description": "Reddit \u70ed\u95e8\u5e16\u5b50",
+    "description": "Reddit 热门帖子",
     "domain": "www.reddit.com",
     "strategy": "cookie",
     "browser": true,
@@ -3846,7 +5149,7 @@
         "navigate": "https://www.reddit.com"
       },
       {
-        "evaluate": "(async () => {\n  const username = ${{ args.username | json }};\n  const name = username.startsWith('u/') ? username.slice(2) : username;\n  const res = await fetch('/user/' + name + '/about.json?raw_json=1', {\n    credentials: 'include'\n  });\n  const d = await res.json();\n  const u = d?.data || d || {};\n  const created = u.created_utc ? new Date(u.created_utc * 1000).toISOString().split('T')[0] : '-';\n  return [\n    { field: 'Username', value: 'u/' + (u.name || name) },\n    { field: 'Post Karma', value: String(u.link_karma || 0) },\n    { field: 'Comment Karma', value: String(u.comment_karma || 0) },\n    { field: 'Total Karma', value: String(u.total_karma || (u.link_karma||0) + (u.comment_karma||0)) },\n    { field: 'Account Created', value: created },\n    { field: 'Gold', value: u.is_gold ? '\u2b50 Yes' : 'No' },\n    { field: 'Verified', value: u.verified ? '\u2705 Yes' : 'No' },\n  ];\n})()\n"
+        "evaluate": "(async () => {\n  const username = ${{ args.username | json }};\n  const name = username.startsWith('u/') ? username.slice(2) : username;\n  const res = await fetch('/user/' + name + '/about.json?raw_json=1', {\n    credentials: 'include'\n  });\n  const d = await res.json();\n  const u = d?.data || d || {};\n  const created = u.created_utc ? new Date(u.created_utc * 1000).toISOString().split('T')[0] : '-';\n  return [\n    { field: 'Username', value: 'u/' + (u.name || name) },\n    { field: 'Post Karma', value: String(u.link_karma || 0) },\n    { field: 'Comment Karma', value: String(u.comment_karma || 0) },\n    { field: 'Total Karma', value: String(u.total_karma || (u.link_karma||0) + (u.comment_karma||0)) },\n    { field: 'Account Created', value: created },\n    { field: 'Gold', value: u.is_gold ? '⭐ Yes' : 'No' },\n    { field: 'Verified', value: u.verified ? '✅ Yes' : 'No' },\n  ];\n})()\n"
       },
       {
         "map": {
@@ -3860,7 +5163,7 @@
   {
     "site": "reuters",
     "name": "search",
-    "description": "Reuters \u8def\u900f\u793e\u65b0\u95fb\u641c\u7d22",
+    "description": "Reuters 路透社新闻搜索",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -3890,9 +5193,41 @@
     ]
   },
   {
+    "site": "sinafinance",
+    "name": "news",
+    "description": "新浪财经 7x24 小时实时快讯",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Max results (max 50)"
+      },
+      {
+        "name": "type",
+        "type": "int",
+        "default": 0,
+        "required": false,
+        "help": "News type: 0=全部 1=A股 2=宏观 3=公司 4=数据 5=市场 6=国际 7=观点 8=央行 9=其它"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "sinafinance/news.js",
+    "domain": "app.cj.sina.com.cn",
+    "columns": [
+      "id",
+      "time",
+      "content",
+      "views"
+    ]
+  },
+  {
     "site": "smzdm",
     "name": "search",
-    "description": "\u4ec0\u4e48\u503c\u5f97\u4e70\u641c\u7d22\u597d\u4ef7",
+    "description": "什么值得买搜索好价",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -3951,7 +5286,8 @@
       "status",
       "user",
       "message"
-    ]
+    ],
+    "timeout": 600
   },
   {
     "site": "twitter",
@@ -3976,6 +5312,29 @@
       "author",
       "content",
       "url"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "block",
+    "description": "Block a Twitter user",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "username",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "Twitter screen name (without @)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/block.js",
+    "domain": "x.com",
+    "columns": [
+      "status",
+      "message"
     ]
   },
   {
@@ -4051,7 +5410,7 @@
   {
     "site": "twitter",
     "name": "download",
-    "description": "\u4e0b\u8f7d Twitter/X \u5a92\u4f53\uff08\u56fe\u7247\u548c\u89c6\u9891\uff09",
+    "description": "下载 Twitter/X 媒体（图片和视频）",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -4060,6 +5419,12 @@
         "type": "str",
         "required": false,
         "help": "Twitter username (downloads from media tab)"
+      },
+      {
+        "name": "tweet-url",
+        "type": "str",
+        "required": false,
+        "help": "Single tweet URL to download"
       },
       {
         "name": "limit",
@@ -4169,6 +5534,29 @@
       "name",
       "bio",
       "followers"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "hide-reply",
+    "description": "Hide a reply on your tweet (useful for hiding bot/spam replies)",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "url",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "The URL of the reply tweet to hide"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/hide-reply.js",
+    "domain": "x.com",
+    "columns": [
+      "status",
+      "message"
     ]
   },
   {
@@ -4293,6 +5681,13 @@
         "default": 20,
         "required": false,
         "help": "Maximum number of conversations to reply to (default: 20)"
+      },
+      {
+        "name": "skip-replied",
+        "type": "boolean",
+        "default": true,
+        "required": false,
+        "help": "Skip conversations where you already sent the same text (default: true)"
       }
     ],
     "type": "ts",
@@ -4303,7 +5698,8 @@
       "status",
       "user",
       "message"
-    ]
+    ],
+    "timeout": 600
   },
   {
     "site": "twitter",
@@ -4434,6 +5830,31 @@
     "site": "twitter",
     "name": "trending",
     "description": "Twitter/X trending topics",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 20,
+        "required": false,
+        "help": "Number of trends to show"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/trending.js",
+    "domain": "x.com",
+    "columns": [
+      "rank",
+      "topic",
+      "tweets",
+      "category"
+    ]
+  },
+  {
+    "site": "twitter",
+    "name": "trending",
+    "description": "Twitter/X trending topics",
     "domain": "x.com",
     "strategy": "cookie",
     "browser": true,
@@ -4470,6 +5891,29 @@
       }
     ],
     "type": "yaml"
+  },
+  {
+    "site": "twitter",
+    "name": "unblock",
+    "description": "Unblock a Twitter user",
+    "strategy": "ui",
+    "browser": true,
+    "args": [
+      {
+        "name": "username",
+        "type": "string",
+        "required": true,
+        "positional": true,
+        "help": "Twitter screen name (without @)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "twitter/unblock.js",
+    "domain": "x.com",
+    "columns": [
+      "status",
+      "message"
+    ]
   },
   {
     "site": "twitter",
@@ -4520,7 +5964,7 @@
   {
     "site": "v2ex",
     "name": "daily",
-    "description": "V2EX \u6bcf\u65e5\u7b7e\u5230\u5e76\u9886\u53d6\u94dc\u5e01",
+    "description": "V2EX 每日签到并领取铜币",
     "strategy": "cookie",
     "browser": true,
     "args": [],
@@ -4535,7 +5979,7 @@
   {
     "site": "v2ex",
     "name": "hot",
-    "description": "V2EX \u70ed\u95e8\u8bdd\u9898",
+    "description": "V2EX 热门话题",
     "domain": "www.v2ex.com",
     "strategy": "public",
     "browser": false,
@@ -4575,7 +6019,7 @@
   {
     "site": "v2ex",
     "name": "latest",
-    "description": "V2EX \u6700\u65b0\u8bdd\u9898",
+    "description": "V2EX 最新话题",
     "domain": "www.v2ex.com",
     "strategy": "public",
     "browser": false,
@@ -4615,7 +6059,7 @@
   {
     "site": "v2ex",
     "name": "me",
-    "description": "V2EX \u83b7\u53d6\u4e2a\u4eba\u8d44\u6599 (\u4f59\u989d/\u672a\u8bfb\u63d0\u9192)",
+    "description": "V2EX 获取个人资料 (余额/未读提醒)",
     "strategy": "cookie",
     "browser": true,
     "args": [],
@@ -4632,7 +6076,7 @@
   {
     "site": "v2ex",
     "name": "notifications",
-    "description": "V2EX \u83b7\u53d6\u63d0\u9192 (\u56de\u590d/\u7531\u4e8e)",
+    "description": "V2EX 获取提醒 (回复/由于)",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -4656,7 +6100,7 @@
   {
     "site": "v2ex",
     "name": "topic",
-    "description": "V2EX \u4e3b\u9898\u8be6\u60c5\u548c\u56de\u590d",
+    "description": "V2EX 主题详情和回复",
     "domain": "www.v2ex.com",
     "strategy": "public",
     "browser": false,
@@ -4799,7 +6243,7 @@
   {
     "site": "weibo",
     "name": "hot",
-    "description": "\u5fae\u535a\u70ed\u641c",
+    "description": "微博热搜",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -5043,9 +6487,87 @@
     "modulePath": "weread/utils.test.js"
   },
   {
+    "site": "wikipedia",
+    "name": "search",
+    "description": "Search Wikipedia articles",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "query",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Search keyword"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 10,
+        "required": false,
+        "help": "Max results"
+      },
+      {
+        "name": "lang",
+        "type": "str",
+        "default": "en",
+        "required": false,
+        "help": "Language code (e.g. en, zh, ja)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "wikipedia/search.js",
+    "columns": [
+      "title",
+      "snippet",
+      "url"
+    ]
+  },
+  {
+    "site": "wikipedia",
+    "name": "summary",
+    "description": "Get Wikipedia article summary",
+    "strategy": "public",
+    "browser": false,
+    "args": [
+      {
+        "name": "title",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Article title (e.g. "
+      },
+      {
+        "name": "lang",
+        "type": "str",
+        "default": "en",
+        "required": false,
+        "help": "Language code (e.g. en, zh, ja)"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "wikipedia/summary.js",
+    "columns": [
+      "title",
+      "description",
+      "extract",
+      "url"
+    ]
+  },
+  {
+    "site": "wikipedia",
+    "name": "utils",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "wikipedia/utils.js"
+  },
+  {
     "site": "xiaohongshu",
     "name": "creator-note-detail",
-    "description": "\u5c0f\u7ea2\u4e66\u5355\u7bc7\u7b14\u8bb0\u8be6\u7ec6\u6570\u636e (\u9605\u8bfb/\u4e92\u52a8/\u70b9\u8d5e/\u6536\u85cf/\u8bc4\u8bba/\u5206\u4eab\uff0c\u533a\u5206\u81ea\u7136\u6d41\u91cf/\u63a8\u5e7f/\u89c6\u9891)",
+    "description": "小红书单篇笔记详细数据 (阅读/互动/点赞/收藏/评论/分享，区分自然流量/推广/视频)",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -5071,8 +6593,63 @@
   },
   {
     "site": "xiaohongshu",
+    "name": "creator-note-detail.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "xiaohongshu/creator-note-detail.test.js"
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "creator-notes-summary",
+    "description": "小红书最近笔记批量摘要 (列表 + 单篇关键数据汇总)",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 3,
+        "required": false,
+        "help": "Number of recent notes to summarize"
+      }
+    ],
+    "type": "ts",
+    "modulePath": "xiaohongshu/creator-notes-summary.js",
+    "domain": "creator.xiaohongshu.com",
+    "columns": [
+      "rank",
+      "id",
+      "title",
+      "views",
+      "likes",
+      "collects",
+      "comments",
+      "shares",
+      "avg_view_time",
+      "rise_fans",
+      "top_source",
+      "top_interest",
+      "url"
+    ],
+    "timeout": 180
+  },
+  {
+    "site": "xiaohongshu",
+    "name": "creator-notes-summary.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "xiaohongshu/creator-notes-summary.test.js"
+  },
+  {
+    "site": "xiaohongshu",
     "name": "creator-notes",
-    "description": "\u5c0f\u7ea2\u4e66\u521b\u4f5c\u8005\u7b14\u8bb0\u5217\u8868 + \u6bcf\u7bc7\u6570\u636e (\u6807\u9898/\u65e5\u671f/\u89c2\u770b/\u70b9\u8d5e/\u6536\u85cf/\u8bc4\u8bba)",
+    "description": "小红书创作者笔记列表 + 每篇数据 (标题/日期/观看/点赞/收藏/评论)",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -5101,8 +6678,18 @@
   },
   {
     "site": "xiaohongshu",
+    "name": "creator-notes.test",
+    "description": "",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [],
+    "type": "ts",
+    "modulePath": "xiaohongshu/creator-notes.test.js"
+  },
+  {
+    "site": "xiaohongshu",
     "name": "creator-profile",
-    "description": "\u5c0f\u7ea2\u4e66\u521b\u4f5c\u8005\u8d26\u53f7\u4fe1\u606f (\u7c89\u4e1d/\u5173\u6ce8/\u83b7\u8d5e/\u6210\u957f\u7b49\u7ea7)",
+    "description": "小红书创作者账号信息 (粉丝/关注/获赞/成长等级)",
     "strategy": "cookie",
     "browser": true,
     "args": [],
@@ -5117,7 +6704,7 @@
   {
     "site": "xiaohongshu",
     "name": "creator-stats",
-    "description": "\u5c0f\u7ea2\u4e66\u521b\u4f5c\u8005\u6570\u636e\u603b\u89c8 (\u89c2\u770b/\u70b9\u8d5e/\u6536\u85cf/\u8bc4\u8bba/\u5206\u4eab/\u6da8\u7c89\uff0c\u542b\u6bcf\u65e5\u8d8b\u52bf)",
+    "description": "小红书创作者数据总览 (观看/点赞/收藏/评论/分享/涨粉，含每日趋势)",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -5145,7 +6732,7 @@
   {
     "site": "xiaohongshu",
     "name": "download",
-    "description": "\u4e0b\u8f7d\u5c0f\u7ea2\u4e66\u7b14\u8bb0\u4e2d\u7684\u56fe\u7247\u548c\u89c6\u9891",
+    "description": "下载小红书笔记中的图片和视频",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -5176,7 +6763,7 @@
   {
     "site": "xiaohongshu",
     "name": "feed",
-    "description": "\u5c0f\u7ea2\u4e66\u9996\u9875\u63a8\u8350 Feed (via Pinia Store Action)",
+    "description": "小红书首页推荐 Feed (via Pinia Store Action)",
     "domain": "www.xiaohongshu.com",
     "strategy": "intercept",
     "browser": true,
@@ -5231,7 +6818,7 @@
   {
     "site": "xiaohongshu",
     "name": "notifications",
-    "description": "\u5c0f\u7ea2\u4e66\u901a\u77e5 (mentions/likes/connections)",
+    "description": "小红书通知 (mentions/likes/connections)",
     "domain": "www.xiaohongshu.com",
     "strategy": "intercept",
     "browser": true,
@@ -5297,7 +6884,7 @@
   {
     "site": "xiaohongshu",
     "name": "search",
-    "description": "\u641c\u7d22\u5c0f\u7ea2\u4e66\u7b14\u8bb0",
+    "description": "搜索小红书笔记",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -5488,7 +7075,7 @@
   {
     "site": "xueqiu",
     "name": "feed",
-    "description": "\u83b7\u53d6\u96ea\u7403\u9996\u9875\u65f6\u95f4\u7ebf\uff08\u5173\u6ce8\u7528\u6237\u7684\u52a8\u6001\uff09",
+    "description": "获取雪球首页时间线（关注用户的动态）",
     "domain": "xueqiu.com",
     "strategy": "cookie",
     "browser": true,
@@ -5498,14 +7085,14 @@
         "type": "int",
         "default": 1,
         "required": false,
-        "help": "\u9875\u7801\uff0c\u9ed8\u8ba4 1"
+        "help": "页码，默认 1"
       },
       {
         "name": "limit",
         "type": "int",
         "default": 20,
         "required": false,
-        "help": "\u6bcf\u9875\u6570\u91cf\uff0c\u9ed8\u8ba4 20"
+        "help": "每页数量，默认 20"
       }
     ],
     "columns": [
@@ -5540,7 +7127,7 @@
   {
     "site": "xueqiu",
     "name": "hot-stock",
-    "description": "\u83b7\u53d6\u96ea\u7403\u70ed\u95e8\u80a1\u7968\u699c",
+    "description": "获取雪球热门股票榜",
     "domain": "xueqiu.com",
     "strategy": "cookie",
     "browser": true,
@@ -5550,14 +7137,14 @@
         "type": "int",
         "default": 20,
         "required": false,
-        "help": "\u8fd4\u56de\u6570\u91cf\uff0c\u9ed8\u8ba4 20\uff0c\u6700\u5927 50"
+        "help": "返回数量，默认 20，最大 50"
       },
       {
         "name": "type",
         "type": "str",
         "default": "10",
         "required": false,
-        "help": "\u699c\u5355\u7c7b\u578b 10=\u4eba\u6c14\u699c(\u9ed8\u8ba4) 12=\u5173\u6ce8\u699c"
+        "help": "榜单类型 10=人气榜(默认) 12=关注榜"
       }
     ],
     "columns": [
@@ -5573,7 +7160,7 @@
         "navigate": "https://xueqiu.com"
       },
       {
-        "evaluate": "(async () => {\n  const count = ${{ args.limit }};\n  const type = ${{ args.type | json }};\n  const resp = await fetch(`https://stock.xueqiu.com/v5/stock/hot_stock/list.json?size=${count}&type=${type}`, {credentials: 'include'});\n  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' Hint: Not logged in?');\n  const d = await resp.json();\n  if (!d.data || !d.data.items) throw new Error('\u83b7\u53d6\u5931\u8d25');\n  return d.data.items.map((s, i) => ({\n    rank: i + 1,\n    symbol: s.symbol,\n    name: s.name,\n    price: s.current,\n    changePercent: s.percent != null ? s.percent.toFixed(2) + '%' : null,\n    heat: s.value,\n    rank_change: s.rank_change,\n    url: 'https://xueqiu.com/S/' + s.symbol\n  }));\n})()\n"
+        "evaluate": "(async () => {\n  const count = ${{ args.limit }};\n  const type = ${{ args.type | json }};\n  const resp = await fetch(`https://stock.xueqiu.com/v5/stock/hot_stock/list.json?size=${count}&type=${type}`, {credentials: 'include'});\n  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' Hint: Not logged in?');\n  const d = await resp.json();\n  if (!d.data || !d.data.items) throw new Error('获取失败');\n  return d.data.items.map((s, i) => ({\n    rank: i + 1,\n    symbol: s.symbol,\n    name: s.name,\n    price: s.current,\n    changePercent: s.percent != null ? s.percent.toFixed(2) + '%' : null,\n    heat: s.value,\n    rank_change: s.rank_change,\n    url: 'https://xueqiu.com/S/' + s.symbol\n  }));\n})()\n"
       },
       {
         "map": {
@@ -5594,7 +7181,7 @@
   {
     "site": "xueqiu",
     "name": "hot",
-    "description": "\u83b7\u53d6\u96ea\u7403\u70ed\u95e8\u52a8\u6001",
+    "description": "获取雪球热门动态",
     "domain": "xueqiu.com",
     "strategy": "cookie",
     "browser": true,
@@ -5604,7 +7191,7 @@
         "type": "int",
         "default": 20,
         "required": false,
-        "help": "\u8fd4\u56de\u6570\u91cf\uff0c\u9ed8\u8ba4 20\uff0c\u6700\u5927 50"
+        "help": "返回数量，默认 20，最大 50"
       }
     ],
     "columns": [
@@ -5639,7 +7226,7 @@
   {
     "site": "xueqiu",
     "name": "search",
-    "description": "\u641c\u7d22\u96ea\u7403\u80a1\u7968\uff08\u4ee3\u7801\u6216\u540d\u79f0\uff09",
+    "description": "搜索雪球股票（代码或名称）",
     "domain": "xueqiu.com",
     "strategy": "cookie",
     "browser": true,
@@ -5648,14 +7235,14 @@
         "name": "query",
         "type": "str",
         "required": false,
-        "help": "\u641c\u7d22\u5173\u952e\u8bcd\uff0c\u5982 \u8305\u53f0\u3001AAPL\u3001\u817e\u8baf"
+        "help": "搜索关键词，如 茅台、AAPL、腾讯"
       },
       {
         "name": "limit",
         "type": "int",
         "default": 10,
         "required": false,
-        "help": "\u8fd4\u56de\u6570\u91cf\uff0c\u9ed8\u8ba4 10"
+        "help": "返回数量，默认 10"
       }
     ],
     "columns": [
@@ -5690,7 +7277,7 @@
   {
     "site": "xueqiu",
     "name": "stock",
-    "description": "\u83b7\u53d6\u96ea\u7403\u80a1\u7968\u5b9e\u65f6\u884c\u60c5",
+    "description": "获取雪球股票实时行情",
     "domain": "xueqiu.com",
     "strategy": "cookie",
     "browser": true,
@@ -5699,7 +7286,7 @@
         "name": "symbol",
         "type": "str",
         "required": false,
-        "help": "\u80a1\u7968\u4ee3\u7801\uff0c\u5982 SH600519\u3001SZ000858\u3001AAPL\u300100700"
+        "help": "股票代码，如 SH600519、SZ000858、AAPL、00700"
       }
     ],
     "columns": [
@@ -5714,7 +7301,7 @@
         "navigate": "https://xueqiu.com"
       },
       {
-        "evaluate": "(async () => {\n  const symbol = (${{ args.symbol | json }} || '').toUpperCase();\n  if (!symbol) throw new Error('Missing argument: symbol');\n  const resp = await fetch(`https://stock.xueqiu.com/v5/stock/batch/quote.json?symbol=${encodeURIComponent(symbol)}`, {credentials: 'include'});\n  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' Hint: Not logged in?');\n  const d = await resp.json();\n  if (!d.data || !d.data.items || d.data.items.length === 0) throw new Error('\u672a\u627e\u5230\u80a1\u7968: ' + symbol);\n  \n  function fmtAmount(v) {\n    if (v == null) return null;\n    if (Math.abs(v) >= 1e12) return (v / 1e12).toFixed(2) + '\u4e07\u4ebf';\n    if (Math.abs(v) >= 1e8) return (v / 1e8).toFixed(2) + '\u4ebf';\n    if (Math.abs(v) >= 1e4) return (v / 1e4).toFixed(2) + '\u4e07';\n    return v.toString();\n  }\n  \n  const item = d.data.items[0];\n  const q = item.quote || {};\n  const m = item.market || {};\n  \n  return [{\n    name: q.name,\n    symbol: q.symbol,\n    exchange: q.exchange,\n    currency: q.currency,\n    price: q.current,\n    change: q.chg,\n    changePercent: q.percent != null ? q.percent.toFixed(2) + '%' : null,\n    open: q.open,\n    high: q.high,\n    low: q.low,\n    prevClose: q.last_close,\n    amplitude: q.amplitude != null ? q.amplitude.toFixed(2) + '%' : null,\n    volume: q.volume,\n    amount: fmtAmount(q.amount),\n    turnover_rate: q.turnover_rate != null ? q.turnover_rate.toFixed(2) + '%' : null,\n    marketCap: fmtAmount(q.market_capital),\n    floatMarketCap: fmtAmount(q.float_market_capital),\n    ytdPercent: q.current_year_percent != null ? q.current_year_percent.toFixed(2) + '%' : null,\n    market_status: m.status || null,\n    time: q.timestamp ? new Date(q.timestamp).toISOString() : null,\n    url: 'https://xueqiu.com/S/' + q.symbol\n  }];\n})()\n"
+        "evaluate": "(async () => {\n  const symbol = (${{ args.symbol | json }} || '').toUpperCase();\n  if (!symbol) throw new Error('Missing argument: symbol');\n  const resp = await fetch(`https://stock.xueqiu.com/v5/stock/batch/quote.json?symbol=${encodeURIComponent(symbol)}`, {credentials: 'include'});\n  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' Hint: Not logged in?');\n  const d = await resp.json();\n  if (!d.data || !d.data.items || d.data.items.length === 0) throw new Error('未找到股票: ' + symbol);\n  \n  function fmtAmount(v) {\n    if (v == null) return null;\n    if (Math.abs(v) >= 1e12) return (v / 1e12).toFixed(2) + '万亿';\n    if (Math.abs(v) >= 1e8) return (v / 1e8).toFixed(2) + '亿';\n    if (Math.abs(v) >= 1e4) return (v / 1e4).toFixed(2) + '万';\n    return v.toString();\n  }\n  \n  const item = d.data.items[0];\n  const q = item.quote || {};\n  const m = item.market || {};\n  \n  return [{\n    name: q.name,\n    symbol: q.symbol,\n    exchange: q.exchange,\n    currency: q.currency,\n    price: q.current,\n    change: q.chg,\n    changePercent: q.percent != null ? q.percent.toFixed(2) + '%' : null,\n    open: q.open,\n    high: q.high,\n    low: q.low,\n    prevClose: q.last_close,\n    amplitude: q.amplitude != null ? q.amplitude.toFixed(2) + '%' : null,\n    volume: q.volume,\n    amount: fmtAmount(q.amount),\n    turnover_rate: q.turnover_rate != null ? q.turnover_rate.toFixed(2) + '%' : null,\n    marketCap: fmtAmount(q.market_capital),\n    floatMarketCap: fmtAmount(q.float_market_capital),\n    ytdPercent: q.current_year_percent != null ? q.current_year_percent.toFixed(2) + '%' : null,\n    market_status: m.status || null,\n    time: q.timestamp ? new Date(q.timestamp).toISOString() : null,\n    url: 'https://xueqiu.com/S/' + q.symbol\n  }];\n})()\n"
       },
       {
         "map": {
@@ -5731,7 +7318,7 @@
   {
     "site": "xueqiu",
     "name": "watchlist",
-    "description": "\u83b7\u53d6\u96ea\u7403\u81ea\u9009\u80a1\u5217\u8868",
+    "description": "获取雪球自选股列表",
     "domain": "xueqiu.com",
     "strategy": "cookie",
     "browser": true,
@@ -5741,14 +7328,14 @@
         "type": "str",
         "default": "1",
         "required": false,
-        "help": "\u5206\u7c7b\uff1a1=\u81ea\u9009(\u9ed8\u8ba4) 2=\u6301\u4ed3 3=\u5173\u6ce8"
+        "help": "分类：1=自选(默认) 2=持仓 3=关注"
       },
       {
         "name": "limit",
         "type": "int",
         "default": 100,
         "required": false,
-        "help": "\u9ed8\u8ba4 100"
+        "help": "默认 100"
       }
     ],
     "columns": [
@@ -5762,7 +7349,7 @@
         "navigate": "https://xueqiu.com"
       },
       {
-        "evaluate": "(async () => {\n  const category = parseInt(${{ args.category | json }}) || 1;\n  const resp = await fetch(`https://stock.xueqiu.com/v5/stock/portfolio/stock/list.json?size=100&category=${category}&pid=-1`, {credentials: 'include'});\n  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' Hint: Not logged in?');\n  const d = await resp.json();\n  if (!d.data || !d.data.stocks) throw new Error('\u83b7\u53d6\u5931\u8d25\uff0c\u53ef\u80fd\u672a\u767b\u5f55');\n  \n  return d.data.stocks.map(s => ({\n    symbol: s.symbol,\n    name: s.name,\n    price: s.current,\n    change: s.chg,\n    changePercent: s.percent != null ? s.percent.toFixed(2) + '%' : null,\n    volume: s.volume,\n    url: 'https://xueqiu.com/S/' + s.symbol\n  }));\n})()\n"
+        "evaluate": "(async () => {\n  const category = parseInt(${{ args.category | json }}) || 1;\n  const resp = await fetch(`https://stock.xueqiu.com/v5/stock/portfolio/stock/list.json?size=100&category=${category}&pid=-1`, {credentials: 'include'});\n  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' Hint: Not logged in?');\n  const d = await resp.json();\n  if (!d.data || !d.data.stocks) throw new Error('获取失败，可能未登录');\n  \n  return d.data.stocks.map(s => ({\n    symbol: s.symbol,\n    name: s.name,\n    price: s.current,\n    change: s.chg,\n    changePercent: s.percent != null ? s.percent.toFixed(2) + '%' : null,\n    volume: s.volume,\n    url: 'https://xueqiu.com/S/' + s.symbol\n  }));\n})()\n"
       },
       {
         "map": {
@@ -5781,7 +7368,7 @@
   {
     "site": "yahoo-finance",
     "name": "quote",
-    "description": "Yahoo Finance \u80a1\u7968\u884c\u60c5",
+    "description": "Yahoo Finance 股票行情",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -5927,7 +7514,7 @@
   {
     "site": "zhihu",
     "name": "download",
-    "description": "\u5bfc\u51fa\u77e5\u4e4e\u6587\u7ae0\u4e3a Markdown \u683c\u5f0f",
+    "description": "导出知乎文章为 Markdown 格式",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -5943,6 +7530,13 @@
         "default": "./zhihu-articles",
         "required": false,
         "help": "Output directory"
+      },
+      {
+        "name": "download-images",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": "Download images locally"
       }
     ],
     "type": "ts",
@@ -5968,7 +7562,7 @@
   {
     "site": "zhihu",
     "name": "hot",
-    "description": "\u77e5\u4e4e\u70ed\u699c",
+    "description": "知乎热榜",
     "domain": "www.zhihu.com",
     "strategy": "cookie",
     "browser": true,
@@ -6012,7 +7606,7 @@
   {
     "site": "zhihu",
     "name": "question",
-    "description": "\u77e5\u4e4e\u95ee\u9898\u8be6\u60c5\u548c\u56de\u7b54",
+    "description": "知乎问题详情和回答",
     "strategy": "cookie",
     "browser": true,
     "args": [
@@ -6043,7 +7637,7 @@
   {
     "site": "zhihu",
     "name": "search",
-    "description": "\u77e5\u4e4e\u641c\u7d22",
+    "description": "知乎搜索",
     "domain": "www.zhihu.com",
     "strategy": "cookie",
     "browser": true,

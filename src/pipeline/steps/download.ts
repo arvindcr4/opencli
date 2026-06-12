@@ -143,12 +143,20 @@ export async function stepDownload(
   // Create progress tracker
   const tracker = new DownloadProgressTracker(items.length, showProgress);
 
-  // Extract cookies if browser is available
+  // SECURITY: Extract cookies ONLY for the target domain, not all browser cookies.
+  // Domain is extracted from the first download URL if available.
   let cookies = '';
   let cookiesFile: string | undefined;
 
   if (page) {
-    cookies = await extractBrowserCookies(page);
+    let targetDomain: string | undefined;
+    if (items.length > 0) {
+      try {
+        const firstUrl = String(render(urlTemplate, { args, data, item: items[0], index: 0 }));
+        targetDomain = new URL(firstUrl).hostname;
+      } catch {}
+    }
+    cookies = await extractBrowserCookies(page, targetDomain);
 
     // For yt-dlp, we need to export cookies to Netscape format
     if (useYtdlp || items.some((item, index) => {

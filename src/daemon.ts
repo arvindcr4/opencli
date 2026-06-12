@@ -9,13 +9,65 @@
  *   - Auto-spawned by opencli on first browser command
  *   - Auto-exits after 5 minutes of idle
  *   - Listens on localhost:19825
+ *
+ * Security:
+ *   - Token-based authentication for all /command requests
+ *   - Rate limiting on /command endpoint
+ *   - Error message sanitization
+ *   - 1MB request body size limit
+ *   - WebSocket hijacking prevention (single extension)
  */
 
+import * as crypto from 'node:crypto';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { WebSocketServer, WebSocket } from 'ws';
 
 const PORT = parseInt(process.env.OPENCLI_DAEMON_PORT ?? '19825', 10);
-const IDLE_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+const IDLE_TIMEOUT = 5 * 60 * 1000; // 5 minutos
+const MAX_BODY_SIZE = 1024 * 1024; // 1MB request body limit
+
+// ─── Token-based authentication ───────────────────────────────────────────
+
+const DAEMON_TOKEN = crypto.randomBytes(32).toString('hex');
+// Print token to stderr so the spawning process (BrowserBridge) can capture it
+console.error(`[daemon] TOKEN:${DAEMON_TOKEN}`);
+
+function isValidToken(req: IncomingMessage): boolean {
+  const authHeader = req.headers['authorization'] ?? '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  // timingSafeEqual requires both buffers to have the same length
+  if (token.length !== DAEMON_TOKEN.length) return false;
+  return crypto.timingSafeEqual(
+    Buffer.from(token, 'utf-8'),
+    Buffer.from(DAEMON_TOKEN, 'utf-8'),
+  );
+}
+
+// ─── Rate limiting ──────────────────────────────────────────────────────
+
+const RATE_LIMIT_WINDOW = 60_000; // 1 minute window
+const RATE_LIMIT_MAX = 120; // max commands per window
+const commandCounts = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = commandCounts.get(ip);
+  if (!entry || now >= entry.resetAt) {
+    commandCounts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return false;
+  entry.count++;
+  return true;
+}
+
+// Periodic cleanup of stale rate limit entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of commandCounts) {
+    if (now >= entry.resetAt) commandCounts.delete(ip);
+  }
+}, RATE_LIMIT_WINDOW);
 
 // ─── State ───────────────────────────────────────────────────────────
 
@@ -47,12 +99,33 @@ function resetIdleTimer(): void {
   }, IDLE_TIMEOUT);
 }
 
+// ─── Error sanitization ─────────────────────────────────────────────
+
+/** Sanitize error messages to prevent information leakage */
+function sanitizeError(err: unknown, isRequestError: boolean = false): string {
+  if (err instanceof Error) {
+    if (err.message.includes('timeout')) return 'Request timed out';
+    if (isRequestError) return 'Invalid request';
+    return err.message.replace(/at\s+.*/g, '').replace(/\s+/g, ' ').trim().slice(0, 200);
+  }
+  return 'An internal error occurred';
+}
+
 // ─── HTTP Server ─────────────────────────────────────────────────────
 
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
-    req.on('data', (c: Buffer) => chunks.push(c));
+    let totalLength = 0;
+    req.on('data', (c: Buffer) => {
+      totalLength += c.length;
+      if (totalLength > MAX_BODY_SIZE) {
+        req.destroy();
+        reject(new Error('Request body too large'));
+        return;
+      }
+      chunks.push(c);
+    });
     req.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
     req.on('error', reject);
   });
@@ -63,14 +136,23 @@ function jsonResponse(res: ServerResponse, status: number, data: unknown): void 
   res.end(JSON.stringify(data));
 }
 
+function getClientIP(req: IncomingMessage): string {
+  return (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
+    || req.socket.remoteAddress
+    || 'unknown';
+}
+
 async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
   const url = req.url ?? '/';
   const pathname = url.split('?')[0];
+  const ip = getClientIP(req);
+
+  // ── Public endpoints (no auth required) ────────────────────────────
 
   if (req.method === 'GET' && pathname === '/status') {
     jsonResponse(res, 200, {
@@ -80,6 +162,15 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
     });
     return;
   }
+
+  // ── Token validation for all protected endpoints ───────────────────
+
+  if (!isValidToken(req)) {
+    jsonResponse(res, 401, { ok: false, error: 'Unauthorized — invalid or missing daemon token' });
+    return;
+  }
+
+  // ── Protected endpoints ────────────────────────────────────────────
 
   if (req.method === 'GET' && pathname === '/logs') {
     const params = new URL(url, `http://localhost:${PORT}`).searchParams;
@@ -98,6 +189,12 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
   }
 
   if (req.method === 'POST' && url === '/command') {
+    // Rate limiting
+    if (!checkRateLimit(ip)) {
+      jsonResponse(res, 429, { ok: false, error: 'Too many requests. Please slow down.' });
+      return;
+    }
+
     resetIdleTimer();
     try {
       const body = JSON.parse(await readBody(req));
@@ -122,9 +219,12 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
 
       jsonResponse(res, 200, result);
     } catch (err) {
-      jsonResponse(res, err instanceof Error && err.message.includes('timeout') ? 408 : 400, {
+      const isTimeout = err instanceof Error && err.message.includes('timeout');
+      const isBodyLarge = err instanceof Error && err.message.includes('too large');
+      const status = isTimeout ? 408 : isBodyLarge ? 413 : 400;
+      jsonResponse(res, status, {
         ok: false,
-        error: err instanceof Error ? err.message : 'Invalid request',
+        error: sanitizeError(err, !isTimeout && !isBodyLarge),
       });
     }
     return;
@@ -139,6 +239,14 @@ const httpServer = createServer((req, res) => { handleRequest(req, res).catch(()
 const wss = new WebSocketServer({ server: httpServer, path: '/ext' });
 
 wss.on('connection', (ws) => {
+  // SECURITY: Reject additional extension connections while one is already active.
+  // This prevents a second (potentially malicious) extension from hijacking
+  // commands by racing the connection.
+  if (extensionWs && extensionWs.readyState === WebSocket.OPEN) {
+    console.error('[daemon] Rejecting second extension connection (one already active)');
+    ws.close(1008, 'Another extension is already connected');
+    return;
+  }
   console.error('[daemon] Extension connected');
   extensionWs = ws;
 

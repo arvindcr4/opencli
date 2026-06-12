@@ -8,11 +8,17 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import type { IPage } from '../types.js';
 import { Page } from './page.js';
-import { isDaemonRunning, isExtensionConnected } from './daemon-client.js';
+import { isDaemonRunning, isExtensionConnected, setDaemonToken } from './daemon-client.js';
 
 const DAEMON_SPAWN_TIMEOUT = 10000; // 10s to wait for daemon + extension
 
 export type BrowserBridgeState = 'idle' | 'connecting' | 'connected' | 'closing' | 'closed';
+
+/** Extract daemon auth token from stderr output line */
+function extractDaemonToken(line: string): string | undefined {
+  const match = line.match(/\[daemon\] TOKEN:([a-f0-9]{64})/);
+  return match ? match[1] : undefined;
+}
 
 /**
  * Browser factory: manages daemon lifecycle and provides IPage instances.
@@ -87,10 +93,33 @@ export class BrowserBridge {
 
     this._daemonProc = spawn(spawnArgs[0], spawnArgs.slice(1), {
       detached: true,
-      stdio: 'ignore',
+      stdio: ['ignore', 'ignore', 'pipe'], // pipe stderr for token capture
       env: { ...process.env },
     });
     this._daemonProc.unref();
+
+    // Capture auth token from daemon stderr output
+    let capturedToken: string | undefined;
+    const daemonProc = this._daemonProc;
+    const stderr = daemonProc?.stderr;
+    if (stderr) {
+      let stderrBuffer = '';
+      stderr.on('data', (chunk: Buffer) => {
+        stderrBuffer += chunk.toString();
+        const lines = stderrBuffer.split('\n');
+        stderrBuffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (process.env.OPENCLI_VERBOSE) {
+            console.error(`[daemon:stderr] ${line}`);
+          }
+          const token = extractDaemonToken(line);
+          if (token && !capturedToken) {
+            capturedToken = token;
+            setDaemonToken(token);
+          }
+        }
+      });
+    }
 
     // Wait for daemon to be ready AND extension to connect
     const deadline = Date.now() + timeoutMs;

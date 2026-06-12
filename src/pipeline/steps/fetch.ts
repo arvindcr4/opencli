@@ -1,5 +1,9 @@
 /**
  * Pipeline step: fetch — HTTP API requests.
+ *
+ * SECURITY: credentials default to 'same-origin' (not 'include'). Cross-origin
+ * credentialed requests must be explicitly opted in via `credentials: "include"`
+ * in YAML.
  */
 
 import type { IPage } from '../../types.js';
@@ -27,6 +31,7 @@ async function fetchSingle(
   page: IPage | null, url: string, method: string,
   queryParams: Record<string, any>, headers: Record<string, any>,
   args: Record<string, any>, data: any,
+  credentials: string,
 ): Promise<any> {
   const renderedParams: Record<string, string> = {};
   for (const [k, v] of Object.entries(queryParams)) renderedParams[k] = String(render(v, { args, data }));
@@ -44,57 +49,56 @@ async function fetchSingle(
     return resp.json();
   }
 
+  // Safe: all user-supplied values go through JSON.stringify, never raw interpolation
   const headersJs = JSON.stringify(renderedHeaders);
   const urlJs = JSON.stringify(finalUrl);
   const methodJs = JSON.stringify(method.toUpperCase());
-  return page.evaluate(`
-    async () => {
-      const resp = await fetch(${urlJs}, {
-        method: ${methodJs}, headers: ${headersJs}, credentials: "include"
-      });
-      return await resp.json();
-    }
-  `);
+  const credJs = JSON.stringify(credentials);
+  return page.evaluate(`async () => {
+    const resp = await fetch(${urlJs}, {
+      method: ${methodJs}, headers: ${headersJs}, credentials: ${credJs}
+    });
+    return await resp.json();
+  }`);
 }
 
 /**
  * Batch fetch: send all URLs into the browser as a single evaluate() call.
- * This eliminates N-1 cross-process IPC round trips, performing all fetches
- * inside the V8 engine and returning results as one JSON array.
  */
 async function fetchBatchInBrowser(
   page: IPage, urls: string[], method: string,
   headers: Record<string, string>, concurrency: number,
+  credentials: string,
 ): Promise<any[]> {
   const headersJs = JSON.stringify(headers);
   const urlsJs = JSON.stringify(urls);
-  return page.evaluate(`
-    async () => {
-      const urls = ${urlsJs};
-      const method = "${method}";
-      const headers = ${headersJs};
-      const concurrency = ${concurrency};
+  const credJs = JSON.stringify(credentials);
+  return page.evaluate(`async () => {
+    const urls = ${urlsJs};
+    const method = ${JSON.stringify(method)};
+    const headers = ${headersJs};
+    const credentials = ${credJs};
+    const concurrency = ${concurrency};
 
-      const results = new Array(urls.length);
-      let idx = 0;
+    const results = new Array(urls.length);
+    let idx = 0;
 
-      async function worker() {
-        while (idx < urls.length) {
-          const i = idx++;
-          try {
-            const resp = await fetch(urls[i], { method, headers, credentials: "include" });
-            results[i] = await resp.json();
-          } catch (e) {
-            results[i] = { error: e.message };
-          }
+    async function worker() {
+      while (idx < urls.length) {
+        const i = idx++;
+        try {
+          const resp = await fetch(urls[i], { method, headers, credentials });
+          results[i] = await resp.json();
+        } catch (e) {
+          results[i] = { error: e.message };
         }
       }
-
-      const workers = Array.from({ length: Math.min(concurrency, urls.length) }, () => worker());
-      await Promise.all(workers);
-      return results;
     }
-  `);
+
+    const workers = Array.from({ length: Math.min(concurrency, urls.length) }, () => worker());
+    await Promise.all(workers);
+    return results;
+  }`);
 }
 
 export async function stepFetch(page: IPage | null, params: any, data: any, args: Record<string, any>): Promise<any> {
@@ -102,13 +106,14 @@ export async function stepFetch(page: IPage | null, params: any, data: any, args
   const method = params?.method ?? 'GET';
   const queryParams: Record<string, any> = params?.params ?? {};
   const headers: Record<string, any> = params?.headers ?? {};
+  // SECURITY: default to 'same-origin' — cross-origin credentialed requests
+  // must be explicitly opted in with `credentials: "include"` in YAML
+  const credentials = params?.credentials ?? (page !== null ? 'same-origin' : 'omit');
   const urlTemplate = String(urlOrObj);
 
-  // Per-item fetch when data is array and URL references item
   if (Array.isArray(data) && urlTemplate.includes('item')) {
     const concurrency = typeof params?.concurrency === 'number' ? params.concurrency : 5;
 
-    // Render all URLs upfront
     const renderedHeaders: Record<string, string> = {};
     for (const [k, v] of Object.entries(headers)) renderedHeaders[k] = String(render(v, { args, data }));
     const renderedParams: Record<string, string> = {};
@@ -123,17 +128,15 @@ export async function stepFetch(page: IPage | null, params: any, data: any, args
       return url;
     });
 
-    // BATCH IPC: if browser is available, batch all fetches into a single evaluate() call
     if (page !== null) {
-      return fetchBatchInBrowser(page, urls, method.toUpperCase(), renderedHeaders, concurrency);
+      return fetchBatchInBrowser(page, urls, method.toUpperCase(), renderedHeaders, concurrency, credentials);
     }
 
-    // Non-browser: use concurrent pool (already optimized)
     return mapConcurrent(data, concurrency, async (item, index) => {
       const itemUrl = String(render(urlTemplate, { args, data, item, index }));
-      return fetchSingle(null, itemUrl, method, queryParams, headers, args, data);
+      return fetchSingle(null, itemUrl, method, queryParams, headers, args, data, credentials);
     });
   }
   const url = render(urlOrObj, { args, data });
-  return fetchSingle(page, String(url), method, queryParams, headers, args, data);
+  return fetchSingle(page, String(url), method, queryParams, headers, args, data, credentials);
 }

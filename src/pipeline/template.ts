@@ -164,12 +164,21 @@ export function resolvePath(pathStr: string, ctx: RenderContext): any {
   else if (rootName === 'index') return index;
   else { obj = item; rest = parts; }
   for (const part of rest) {
+    // SECURITY: block prototype pollution via __proto__, constructor, etc.
+    if (BLOCKED_PROPS.has(part)) return null;
     if (obj && typeof obj === 'object' && !Array.isArray(obj)) obj = obj[part];
     else if (Array.isArray(obj) && /^\d+$/.test(part)) obj = obj[parseInt(part, 10)];
     else return null;
   }
   return obj;
 }
+
+/** Blocklist of dangerous property names for resolvePath */
+const BLOCKED_PROPS = new Set([
+  '__proto__', 'constructor', 'prototype',
+  '__defineGetter__', '__defineSetter__',
+  '__lookupGetter__', '__lookupSetter__',
+]);
 
 /**
  * Normalize JavaScript source for browser evaluate() calls.

@@ -259,11 +259,10 @@ export async function ytdlpDownload(
       '--progress',
     ];
 
+    // SECURITY: Only use per-site cookies via explicit cookiesFile.
+    // --cookies-from-browser exposes the entire Chrome cookie jar to yt-dlp.
     if (cookiesFile && fs.existsSync(cookiesFile)) {
       args.push('--cookies', cookiesFile);
-    } else {
-      // Try to use browser cookies
-      args.push('--cookies-from-browser', 'chrome');
     }
 
     args.push(...extraArgs);

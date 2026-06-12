@@ -9,6 +9,7 @@ export { Page } from './page.js';
 export { BrowserBridge, BrowserBridge as PlaywrightMCP } from './mcp.js';
 export { CDPBridge } from './cdp.js';
 export { isDaemonRunning } from './daemon-client.js';
+export { safeEvaluate, safeEvaluateWrapper, setEvaluateArgs } from './safe-eval.js';
 
 import { extractTabEntries, diffTabIndexes, appendLimited } from './tabs.js';
 import { __test__ as cdpTest } from './cdp.js';
