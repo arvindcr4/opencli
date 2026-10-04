@@ -5,13 +5,14 @@ import type { IPage } from '../../types.js';
 export const contactsCommand = cli({
   site: 'wechat',
   name: 'contacts',
+  access: 'read',
   description: 'Open the WeChat contacts panel',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,
   browser: false,
   args: [],
   columns: ['Status'],
-  func: async (page: IPage | null) => {
+  func: async () => {
     if (process.platform !== 'darwin') {
       return [{ Status: 'Not supported on Linux — this command requires the macOS desktop app.' }];
     }

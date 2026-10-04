@@ -4,6 +4,7 @@ import type { IPage } from '../../types.js';
 export const readCommand = cli({
   site: 'gemini',
   name: 'read',
+  access: 'read',
   description: 'Read the latest Gemini conversation messages',
   domain: 'gemini.google.com',
   strategy: Strategy.COOKIE,

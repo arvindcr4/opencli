@@ -1,23 +1,21 @@
 #!/usr/bin/env node
 
 /**
- * postinstall script — automatically install shell completion files.
+ * postinstall script — install shell completion files and print setup instructions.
  *
  * Detects the user's default shell and writes the completion script to the
- * standard system completion directory so that tab-completion works immediately
- * after `npm install -g`.
+ * standard completion directory.  For zsh and bash, the script prints manual
+ * instructions instead of modifying rc files (~/.zshrc, ~/.bashrc) — this
+ * avoids breaking multi-line shell commands and other fragile rc structures.
+ * Fish completions work automatically without rc changes.
  *
  * Supported shells: bash, zsh, fish.
- *
- * SECURITY: This script only writes completion files to well-known
- * completion directories. It does NOT auto-modify shell config files.
- * Shell config modifications require explicit user action (opencli completion install).
  *
  * This script is intentionally plain Node.js (no TypeScript, no imports from
  * the main source tree) so that it can run without a build step.
  */
 
-import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 
@@ -104,9 +102,13 @@ function main() {
         writeFileSync(completionFile, ZSH_COMPLETION, 'utf8');
 
         console.log(`✓ Zsh completion installed to ${completionFile}`);
-        console.log(`  To activate, add this to your ~/.zshrc (BEFORE the compinit line):`);
-        console.log(`  fpath=(${completionsDir} $fpath)`);
-        console.log(`  Or run: opencli completion install`);
+        console.log('');
+        console.log('  \x1b[1mTo enable, add these lines to your ~/.zshrc:\x1b[0m');
+        console.log(`    fpath=(${completionsDir} $fpath)`);
+        console.log('    autoload -Uz compinit && compinit');
+        console.log('');
+        console.log('  If you already have compinit (oh-my-zsh, zinit, etc.), just add the fpath line \x1b[1mbefore\x1b[0m it.');
+        console.log('  Then restart your shell or run: \x1b[36mexec zsh\x1b[0m');
         break;
       }
       case 'bash': {
@@ -116,9 +118,11 @@ function main() {
         writeFileSync(completionFile, BASH_COMPLETION, 'utf8');
 
         console.log(`✓ Bash completion installed to ${completionFile}`);
-        console.log(`  To activate, add this to your ~/.bashrc:`);
-        console.log(`  [ -f "${completionFile}" ] && source "${completionFile}"`);
-        console.log(`  Or run: opencli completion install`);
+        console.log('');
+        console.log('  \x1b[1mTo enable, add this line to your ~/.bashrc:\x1b[0m');
+        console.log(`    [ -f "${completionFile}" ] && source "${completionFile}"`);
+        console.log('');
+        console.log('  Then restart your shell or run: \x1b[36msource ~/.bashrc\x1b[0m');
         break;
       }
       case 'fish': {
@@ -138,6 +142,33 @@ function main() {
       console.error(`Warning: Could not install shell completion: ${err.message}`);
     }
   }
+
+  // ── Spotify credentials template ────────────────────────────────────
+  const opencliDir = join(home, '.opencli');
+  const spotifyEnvFile = join(opencliDir, 'spotify.env');
+  ensureDir(opencliDir);
+  if (!existsSync(spotifyEnvFile)) {
+    writeFileSync(spotifyEnvFile,
+      `# Spotify credentials — get them at https://developer.spotify.com/dashboard\n` +
+      `# Add http://127.0.0.1:8888/callback as a Redirect URI in your Spotify app\n` +
+      `SPOTIFY_CLIENT_ID=your_spotify_client_id_here\n` +
+      `SPOTIFY_CLIENT_SECRET=your_spotify_client_secret_here\n`,
+      'utf8'
+    );
+    console.log(`✓ Spotify credentials template created at ${spotifyEnvFile}`);
+    console.log(`  Edit the file and add your Client ID and Secret, then run: opencli spotify auth`);
+  }
+
+  // ── Browser Bridge setup hint ───────────────────────────────────────
+  console.log('');
+  console.log('  \x1b[1mNext step — Browser Bridge setup\x1b[0m');
+  console.log('  Browser commands (bilibili, zhihu, twitter...) require the extension:');
+  console.log('  1. Download: https://github.com/jackwener/opencli/releases');
+  console.log('  2. In Chrome or Chromium, open chrome://extensions → enable Developer Mode → Load unpacked');
+  console.log('');
+  console.log('  Then run \x1b[36mopencli doctor\x1b[0m to verify.');
+  console.log('');
+
 }
 
 main();

@@ -5,13 +5,14 @@ import type { IPage } from '../../types.js';
 export const searchCommand = cli({
   site: 'wechat',
   name: 'search',
+  access: 'read',
   description: 'Open WeChat search and type a query (find contacts or messages)',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,
   browser: false,
   args: [{ name: 'query', required: true, positional: true, help: 'Search query (contact name or keyword)' }],
   columns: ['Status'],
-  func: async (page: IPage | null, kwargs: any) => {
+  func: async (kwargs: any) => {
     if (process.platform !== 'darwin') {
       return [{ Status: 'Not supported on Linux — this command requires the macOS desktop app.' }];
     }

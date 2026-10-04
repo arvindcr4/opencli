@@ -4,6 +4,7 @@ import type { IPage } from '../../types.js';
 export const askCommand = cli({
   site: 'gemini',
   name: 'ask',
+  access: 'write',
   description: 'Send a prompt to Gemini and wait for the response',
   domain: 'gemini.google.com',
   strategy: Strategy.COOKIE,
@@ -14,7 +15,6 @@ export const askCommand = cli({
     { name: 'new', type: 'boolean', default: false, help: 'Start a new conversation first' },
   ],
   columns: ['Role', 'Text'],
-  timeoutSeconds: 180,
   func: async (page: IPage, kwargs: Record<string, any>) => {
     const prompt = kwargs.prompt as string;
     const timeoutMs = ((kwargs.timeout as number) || 120) * 1000;

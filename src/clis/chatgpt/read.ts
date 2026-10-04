@@ -6,6 +6,7 @@ import { getVisibleChatMessages, getVisibleChatMessagesFromPage } from './ax.js'
 export const readCommand = cli({
   site: 'chatgpt',
   name: 'read',
+  access: 'read',
   description: 'Read the most recent ChatGPT response (desktop app on macOS, browser on Linux)',
   domain: 'chatgpt.com',
   strategy: Strategy.PUBLIC,
@@ -32,4 +33,4 @@ export const readCommand = cli({
       throw new Error("Failed to read from ChatGPT: " + err.message);
     }
   },
-});
+} as Parameters<typeof cli>[0]);

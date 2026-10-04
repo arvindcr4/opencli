@@ -4,6 +4,7 @@ import type { IPage } from '../../types.js';
 export const deepResearchCommand = cli({
   site: 'gemini',
   name: 'deep-research',
+  access: 'write',
   description: 'Run Gemini Deep Research on a topic and return the full report',
   domain: 'gemini.google.com',
   strategy: Strategy.COOKIE,
@@ -13,7 +14,6 @@ export const deepResearchCommand = cli({
     { name: 'timeout', type: 'int', default: 600, help: 'Max seconds to wait for research (default: 600 = 10min)' },
   ],
   columns: ['Role', 'Text'],
-  timeoutSeconds: 660,
   func: async (page: IPage, kwargs: Record<string, any>) => {
     const prompt = kwargs.prompt as string;
     const timeoutMs = ((kwargs.timeout as number) || 600) * 1000;

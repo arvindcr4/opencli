@@ -12,6 +12,7 @@ import {
 export const askCommand = cli({
   site: 'chatgpt',
   name: 'ask',
+  access: 'write',
   description: 'Send a prompt and wait for the AI response (send + wait + read)',
   domain: 'chatgpt.com',
   strategy: Strategy.PUBLIC,
@@ -115,4 +116,4 @@ export const askCommand = cli({
     }
     return [{ Role: 'User', Text: text }, { Role: 'Assistant', Text: response }];
   },
-});
+} as Parameters<typeof cli>[0]);

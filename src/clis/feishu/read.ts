@@ -5,13 +5,14 @@ import type { IPage } from '../../types.js';
 export const readCommand = cli({
   site: 'feishu',
   name: 'read',
+  access: 'read',
   description: 'Read the current chat content by selecting all and copying',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,
   browser: false,
   args: [],
   columns: ['Content'],
-  func: async (page: IPage | null) => {
+  func: async () => {
     if (process.platform !== 'darwin') {
       return [{ Status: 'Not supported on Linux — this command requires the macOS desktop app.' }];
     }

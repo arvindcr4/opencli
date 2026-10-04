@@ -4,6 +4,7 @@ import type { IPage } from '../../types.js';
 export const conversationsCommand = cli({
   site: 'gemini',
   name: 'conversations',
+  access: 'read',
   description: 'List recent Gemini conversations from the sidebar',
   domain: 'gemini.google.com',
   strategy: Strategy.COOKIE,

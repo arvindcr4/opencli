@@ -4,6 +4,7 @@ import type { IPage } from '../../types.js';
 export const statusCommand = cli({
   site: 'gemini',
   name: 'status',
+  access: 'read',
   description: 'Check active CDP connection to Google Gemini',
   domain: 'gemini.google.com',
   strategy: Strategy.COOKIE,
