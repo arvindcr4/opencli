@@ -5,7 +5,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import TurndownService from 'turndown';
-import { LoginWallError } from './errors.js';
+import { ArgumentError, LoginWallError } from './errors.js';
 
 /** Type guard: checks if a value is a non-null, non-array object. */
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -18,6 +18,10 @@ export async function mapConcurrent<T, R>(
   limit: number,
   fn: (item: T, index: number) => Promise<R>,
 ): Promise<R[]> {
+  if (!Number.isInteger(limit) || limit < 1) {
+    throw new ArgumentError(`Concurrency limit must be a positive integer. Received: "${String(limit)}"`);
+  }
+
   const results: R[] = new Array(items.length);
   let index = 0;
 
@@ -142,10 +146,7 @@ export async function parseJsonOrThrowLoginWall(
 
   const looksLikeHtml =
     contentType.toLowerCase().includes('text/html')
-    || trimmed.startsWith('<!DOCTYPE')
-    || trimmed.startsWith('<!doctype')
-    || trimmed.startsWith('<html')
-    || trimmed.startsWith('<HTML');
+    || /^<(?:!doctype|html|head|body|title)(?:[\s>/]|$)/i.test(trimmed);
 
   if (looksLikeHtml) {
     throw new LoginWallError(
@@ -190,10 +191,7 @@ async function fetchJsonOrLoginWall(input, init) {
   const trimmed = text.replace(/^\\s+/, '');
   const looksLikeHtml =
     contentType.toLowerCase().includes('text/html')
-    || trimmed.startsWith('<!DOCTYPE')
-    || trimmed.startsWith('<!doctype')
-    || trimmed.startsWith('<html')
-    || trimmed.startsWith('<HTML');
+    || /^<(?:!doctype|html|head|body|title)(?:[\\s>/]|$)/i.test(trimmed);
   if (looksLikeHtml) {
     return {
       __loginWall: true,

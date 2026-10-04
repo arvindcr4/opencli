@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import {
+  mapConcurrent,
   parseJsonOrThrowLoginWall,
   throwIfLoginWall,
   BROWSER_JSON_SNIFF_FN,
   type LoginWallSignal,
 } from './utils.js';
-import { LoginWallError } from './errors.js';
+import { ArgumentError, LoginWallError } from './errors.js';
 
 function makeResponse(body: string, opts: { status?: number; contentType?: string; url?: string } = {}): Response {
   return new Response(body, {
@@ -13,6 +14,17 @@ function makeResponse(body: string, opts: { status?: number; contentType?: strin
     headers: { 'content-type': opts.contentType ?? 'application/json' },
   });
 }
+
+describe('mapConcurrent', () => {
+  it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
+    'rejects invalid concurrency limit %s instead of skipping work',
+    async (limit) => {
+      const worker = async (value: number) => value * 2;
+
+      await expect(mapConcurrent([1, 2], limit, worker)).rejects.toBeInstanceOf(ArgumentError);
+    },
+  );
+});
 
 describe('parseJsonOrThrowLoginWall', () => {
   it('returns parsed JSON on a normal application/json response', async () => {
@@ -59,6 +71,35 @@ describe('parseJsonOrThrowLoginWall', () => {
       headers: { 'content-type': 'application/json' },
     });
     await expect(parseJsonOrThrowLoginWall(res)).rejects.toBeInstanceOf(LoginWallError);
+  });
+
+  it('detects mixed-case HTML tags when content-type claims JSON', async () => {
+    const res = new Response('<HtMl lang="en"><body>nope</body></HtMl>', {
+      status: 403,
+      headers: { 'content-type': 'application/json' },
+    });
+
+    await expect(parseJsonOrThrowLoginWall(res)).rejects.toBeInstanceOf(LoginWallError);
+  });
+
+  it('detects mixed-case HTML fragments without a top-level html tag', async () => {
+    for (const html of ['<BoDy>blocked</BoDy>', '<TiTlE>login</TiTlE>']) {
+      const res = new Response(html, {
+        status: 403,
+        headers: { 'content-type': 'application/json' },
+      });
+
+      await expect(parseJsonOrThrowLoginWall(res)).rejects.toBeInstanceOf(LoginWallError);
+    }
+  });
+
+  it('does not treat arbitrary angle-prefixed non-HTML text as a login wall', async () => {
+    const res = new Response('<htmlish', {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+
+    await expect(parseJsonOrThrowLoginWall(res)).rejects.not.toBeInstanceOf(LoginWallError);
   });
 
   it('throws LoginWallError when body has leading whitespace before <!DOCTYPE', async () => {
@@ -165,5 +206,53 @@ describe('BROWSER_JSON_SNIFF_FN', () => {
     // We can't run the actual fetch path here (no Response polyfill loop), but
     // we CAN confirm the fragment parses cleanly when embedded inside an async IIFE.
     expect(() => new Function(`(async () => { ${BROWSER_JSON_SNIFF_FN} })`)).not.toThrow();
+  });
+
+  it('detects mixed-case HTML tags in browser-side responses', async () => {
+    const fetchJsonOrLoginWall = new Function(
+      'fetch',
+      `${BROWSER_JSON_SNIFF_FN}; return fetchJsonOrLoginWall;`,
+    )(
+      async () => new Response('<HtMl><body>login</body></HtMl>', {
+        status: 403,
+        headers: { 'content-type': 'application/json' },
+      }),
+    ) as (input: string) => Promise<LoginWallSignal>;
+
+    await expect(fetchJsonOrLoginWall('/api')).resolves.toMatchObject({
+      __loginWall: true,
+      status: 403,
+    });
+  });
+
+  it('detects mixed-case HTML fragments in browser-side responses', async () => {
+    const fetchJsonOrLoginWall = new Function(
+      'fetch',
+      `${BROWSER_JSON_SNIFF_FN}; return fetchJsonOrLoginWall;`,
+    )(
+      async () => new Response('<BoDy>login</BoDy>', {
+        status: 403,
+        headers: { 'content-type': 'application/json' },
+      }),
+    ) as (input: string) => Promise<LoginWallSignal>;
+
+    await expect(fetchJsonOrLoginWall('/api')).resolves.toMatchObject({
+      __loginWall: true,
+      status: 403,
+    });
+  });
+
+  it('does not flag browser-side non-HTML angle-prefixed text', async () => {
+    const fetchJsonOrLoginWall = new Function(
+      'fetch',
+      `${BROWSER_JSON_SNIFF_FN}; return fetchJsonOrLoginWall;`,
+    )(
+      async () => new Response('<htmlish', {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      }),
+    ) as (input: string) => Promise<LoginWallSignal>;
+
+    await expect(fetchJsonOrLoginWall('/api')).rejects.toThrow('JSON parse failed');
   });
 });

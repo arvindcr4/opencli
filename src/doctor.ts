@@ -5,13 +5,13 @@
  */
 
 import { DEFAULT_DAEMON_PORT } from './constants.js';
-import { BrowserBridge } from './browser/index.js';
-import { getDaemonHealth } from './browser/daemon-client.js';
+import { sendCommand, setDaemonCommandTimeoutSeconds } from './browser/daemon-client.js';
+import { getDaemonHealth } from './browser/daemon-transport.js';
 import { getErrorMessage } from './errors.js';
 import { getRuntimeLabel } from './runtime-detect.js';
 import { getCachedLatestExtensionVersion } from './update-check.js';
-import type { BrowserProfileStatus } from './browser/daemon-client.js';
-import { aliasForContextId, loadProfileConfig } from './browser/profile.js';
+import type { BrowserProfileStatus } from './browser/daemon-transport.js';
+import { aliasForContextId, loadProfileConfig, profileRouteParams, resolveProfileSelection } from './browser/profile.js';
 import { formatDaemonVersion, isDaemonStale, staleDaemonIssue } from './browser/daemon-version.js';
 import { findShadowedUserAdapters, formatAdapterShadowIssue, type AdapterShadow } from './adapter-shadow.js';
 
@@ -75,37 +75,38 @@ export type DoctorReport = {
 };
 
 /**
- * Test connectivity by attempting a real browser command.
+ * Test connectivity with a daemon-to-extension command that does not resolve a
+ * page or create a Browser Bridge container window.
  */
 export async function checkConnectivity(opts?: { timeout?: number }): Promise<ConnectivityResult> {
   const start = Date.now();
+  const timeoutSeconds = opts?.timeout ?? DOCTOR_LIVE_TIMEOUT_SECONDS;
+  // This is a health probe: shrink the transport's per-command deadline so a
+  // hung daemon/extension fails the check in seconds, not the default 120s.
+  setDaemonCommandTimeoutSeconds(timeoutSeconds);
   try {
-    const bridge = new BrowserBridge();
-    const page = await bridge.connect({
-      timeout: opts?.timeout ?? DOCTOR_LIVE_TIMEOUT_SECONDS,
+    await sendCommand('cookies', {
+      domain: 'opencli-probe.invalid',
       session: DOCTOR_SESSION,
       surface: 'browser',
     });
-    try {
-      // Try a simple eval to verify end-to-end connectivity.
-      await page.evaluate('1 + 1');
-      await page.closeWindow?.();
-    } finally {
-      await bridge.close();
-    }
     return { ok: true, durationMs: Date.now() - start };
   } catch (err) {
     return { ok: false, error: getErrorMessage(err), durationMs: Date.now() - start };
+  } finally {
+    setDaemonCommandTimeoutSeconds(null);
   }
 }
 
 export async function runBrowserDoctor(opts: DoctorOptions = {}): Promise<DoctorReport> {
-  // Live connectivity check is the core of doctor — it doubles as auto-start
-  // (bridge.connect spawns daemon) and validates end-to-end browser bridge health.
+  // Live connectivity is the core of doctor. The command transport doubles as
+  // daemon auto-start and validates end-to-end Browser Bridge health.
   const connectivity = await checkConnectivity();
 
-  // Single status read *after* connectivity side-effects settle.
-  const health = await getDaemonHealth();
+  // Single status read *after* connectivity side-effects settle. Threads the
+  // profile selection like command dispatch does, so a configured default is
+  // arbitrated instead of read as multi-profile ambiguity (#2259).
+  const health = await getDaemonHealth(profileRouteParams(resolveProfileSelection()));
   const daemonRunning = health.state !== 'stopped';
   const extensionConnected = health.state === 'ready';
   const daemonFlaky = connectivity.ok && !daemonRunning;
@@ -163,6 +164,24 @@ export async function runBrowserDoctor(opts: DoctorOptions = {}): Promise<Doctor
   }
   if (!connectivity.ok) {
     issues.push(`Browser connectivity test failed: ${connectivity.error ?? 'unknown'}`);
+  }
+  // Stale default detection: a persisted default profile routinely outlives
+  // the extension instance it names (reinstalls regenerate the contextId).
+  // Commands keep working via the daemon's single-profile fallback, but the
+  // user should refresh the default so multi-profile setups stay predictable.
+  const profileConfig = loadProfileConfig();
+  const staleDefault = profileConfig.defaultContextId;
+  if (staleDefault && profiles?.length && !profiles.some((p) => p.contextId === staleDefault)) {
+    const alias = aliasForContextId(profileConfig, staleDefault);
+    const label = alias ? `${alias} (${staleDefault})` : staleDefault;
+    const fallbackNote = profiles.length === 1
+      ? `Commands currently fall back to the only connected profile: ${profiles[0].contextId}.`
+      : 'Multiple profiles are connected, so commands will ask you to choose.';
+    issues.push(
+      `Default browser profile is stale: ${label} is not connected (the extension instance it names no longer exists).\n` +
+      `  ${fallbackNote}\n` +
+      '  Refresh it with: opencli profile list, then opencli profile use <name>.',
+    );
   }
   const extensionCompatRange = health.status?.extensionCompatRange;
   if (extensionVersion && opts.cliVersion && extensionCompatRange) {

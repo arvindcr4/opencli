@@ -131,6 +131,17 @@ export class ArgumentError extends CliError {
   }
 }
 
+/**
+ * Thrown when a write command cannot run because another write command already
+ * holds the same persistent site session (see session-lease.ts). Uses TEMPFAIL
+ * so callers/scripts treat it as "retry later" rather than a permanent failure.
+ */
+export class SessionBusyError extends CliError {
+  constructor(message: string, hint?: string) {
+    super('SESSION_BUSY', message, hint, EXIT_CODES.TEMPFAIL);
+  }
+}
+
 export class EmptyResultError extends CliError {
   constructor(command: string, hint?: string) {
     super(
@@ -246,14 +257,31 @@ export function toEnvelope(err: unknown): ErrorEnvelope {
     receiptPath: traceReceipt.receiptPath,
     status: traceReceipt.status,
   } : undefined;
-  if (err instanceof CliError) {
+  // Duck typing: accept own CliError instances AND cross-package copies that
+  // carry the same shape. `instanceof` fails when the throwing module resolves
+  // a different copy of @jackwener/opencli (e.g. a plugin with its own
+  // node_modules) — those errors used to degrade to UNKNOWN and lose `hint`.
+  //
+  // `exitCode` is the discriminator: CliError's constructor always assigns it
+  // (defaulting to GENERIC_ERROR), while Node system errors carry a string
+  // `code` (ENOENT, ECONNREFUSED, EACCES) and a string `message` but never an
+  // `exitCode`. Without this check those would be reported with their errno as
+  // the envelope `code`, silently widening the contract that callers switch on.
+  const isCliErrorLike =
+    err !== null &&
+    typeof err === 'object' &&
+    typeof (err as any).code === 'string' &&
+    typeof (err as any).message === 'string' &&
+    typeof (err as any).exitCode === 'number';
+  if (err instanceof CliError || isCliErrorLike) {
+    const e = err as any;
     return {
       ok: false,
       error: {
-        code: err.code,
-        message: err.message,
-        ...(err.hint ? { help: err.hint } : {}),
-        exitCode: err.exitCode,
+        code: e.code,
+        message: e.message,
+        ...(typeof e.hint === 'string' && e.hint ? { help: e.hint } : {}),
+        exitCode: e.exitCode ?? EXIT_CODES.GENERIC_ERROR,
         ...(cause ? { cause } : {}),
       },
       ...(trace ? { trace } : {}),

@@ -15,13 +15,22 @@ OpenCLI 可以用同一套 CLI 做三类事情：
 - **让 AI Agent 操作任意网站**：在你的 AI Agent（Claude Code、Cursor 等）中安装 `opencli-browser` skill，Agent 就能用你的已登录浏览器导航、点击、输入/填充、提取任意网页内容。
 - **把新网站写成 CLI**：用 `opencli browser` 原语 + `opencli-adapter-author` skill，从站点侦察、API 发现、字段解码到 `opencli browser verify` 一条龙。
 
-除了网站能力，OpenCLI 还是一个 **CLI 枢纽**：你可以把 `gh`、`docker`、`longbridge`、`tg`、`discord`、`wx`、`ntn`（Notion）等本地工具统一注册到 `opencli` 下，也可以通过桌面端适配器控制 Cursor、Trae CN、Codex、Antigravity、ChatGPT、Trae SOLO 等 Electron 应用。
+除了网站能力，OpenCLI 也可以通过桌面端适配器控制 Cursor、Trae CN、Codex、Antigravity、ChatGPT、Trae SOLO 等 Electron 应用。
 
 ## 快速开始
 
 ### 1. 安装 OpenCLI
 
-OpenCLI 要求 **Node.js >= 20**。
+如果你是在自己的电脑上使用，优先安装 **OpenCLIApp**。它会内置
+OpenCLI runtime，帮你安装 / 修复受管理的 `opencli` 命令，并提供系统托盘
+UI 来做环境诊断、更新、浏览器登录态保活和网页转 Markdown。
+
+**方式 A — OpenCLIApp（macOS / Windows 推荐）：**
+从 <https://opencli.info/download> 下载最新版 App，安装后打开一次，在
+System 页面安装或修复 `opencli` 命令。
+
+**方式 B — npm 全局安装（纯 CLI / CI / 服务器）：**
+通过 npm 安装时，OpenCLI 要求 **Node.js >= 20.18.1**。
 
 ```bash
 node --version
@@ -60,7 +69,6 @@ opencli bilibili hot --limit 5
 
 - `opencli list` 查看当前所有命令
 - `opencli <site> <command>` 调用内置或生成好的适配器
-- `opencli external register mycli` 把本地 CLI 接入同一发现入口
 - `opencli doctor` 处理浏览器连通性问题
 
 ## 扩展 OpenCLI
@@ -73,7 +81,6 @@ opencli bilibili hot --limit 5
 | 快速写一个本机私人 adapter | `opencli browser init <site>/<command>`，放在 `~/.opencli/clis/` |
 | 本地修改官方 adapter | `opencli adapter eject <site>` + `opencli adapter reset <site>` |
 | 发布或安装第三方命令 | `opencli plugin install github:user/repo` |
-| 包装已有本机 binary | `opencli external register <name>` |
 
 ## 给 AI Agent
 
@@ -91,8 +98,6 @@ npx skills add jackwener/opencli
 npx skills add jackwener/opencli --skill opencli-adapter-author
 npx skills add jackwener/opencli --skill opencli-autofix
 npx skills add jackwener/opencli --skill opencli-browser
-npx skills add jackwener/opencli --skill opencli-browser-sitemap
-npx skills add jackwener/opencli --skill opencli-sitemap-author
 npx skills add jackwener/opencli --skill opencli-usage
 ```
 
@@ -103,8 +108,6 @@ npx skills add jackwener/opencli --skill opencli-usage
 | **opencli-adapter-author** | 为新站点写可复用适配器，或给已有站点添加命令 | "帮我做一个抖音热门的适配器" / "帮我做一个抓取这个页面热帖的命令" |
 | **opencli-autofix** | 内置命令失败时修复已有适配器 | "`opencli zhihu hot` 返回空了，修一下" |
 | **opencli-browser** | 实时驱动 Chrome 页面——导航、填表单、点击、抓取 | "帮我看看小红书的通知" / "帮我填一下这个表单" / "用浏览器命令抓取这个页面" |
-| **opencli-browser-sitemap** | 使用站点 sitemap 上下文来操作浏览器任务 | "用 sitemap 帮我少走弯路地操作这个网站" |
-| **opencli-sitemap-author** | 创建或更新面向浏览器 Agent 的站点 sitemap | "把刚发现的稳定流程记录到这个站点的 sitemap" |
 | **opencli-usage** | 所有命令和站点的快速参考 | "OpenCLI 有哪些 Twitter 相关的命令？" |
 
 ### 工作原理
@@ -121,8 +124,6 @@ Agent 在内部自动处理所有 `opencli browser` 命令——你只需用自�
 
 **Skill 参考文档：**
 - [`skills/opencli-browser/SKILL.md`](./skills/opencli-browser/SKILL.md) — 实时驱动 Chrome（导航、填表单、点击、抓取）
-- [`skills/opencli-browser-sitemap/SKILL.md`](./skills/opencli-browser-sitemap/SKILL.md) — 操作浏览器任务时消费 sitemap 上下文
-- [`skills/opencli-sitemap-author/SKILL.md`](./skills/opencli-sitemap-author/SKILL.md) — 创建或更新站点 sitemap 知识
 - [`skills/opencli-adapter-author/SKILL.md`](./skills/opencli-adapter-author/SKILL.md) — 给新站点写适配器，全流程
 - [`skills/opencli-autofix/SKILL.md`](./skills/opencli-autofix/SKILL.md) — 修复已有适配器
 - [`skills/opencli-usage/SKILL.md`](./skills/opencli-usage/SKILL.md) — 命令和站点参考
@@ -146,14 +147,16 @@ Agent 在内部自动处理所有 `opencli browser` 命令——你只需用自�
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `OPENCLI_DAEMON_PORT` | `19825` | daemon-extension 通信端口 |
 | `OPENCLI_WINDOW` | 命令默认值 | 设为 `foreground` 或 `background` 来覆盖 Browser Bridge 窗口位置。浏览器型命令也支持 `--window <foreground\|background>` |
-| `OPENCLI_BROWSER_CONNECT_TIMEOUT` | `30` | 浏览器连接超时（秒） |
+| `OPENCLI_SITE_SESSION` | adapter 默认值 | 设为 `ephemeral` 或 `persistent`，覆盖浏览器型 adapter 命令的 `siteSession` 元数据。`ephemeral` 会在命令结束时关闭一次性自动化窗口；`persistent` 会复用该站点的 session。命令级 `--site-session` 优先。 |
+| `OPENCLI_BROWSER_CONNECT_TIMEOUT` | `45` | 浏览器连接超时（秒） |
 | `OPENCLI_BROWSER_COMMAND_TIMEOUT` | `60` | 单个浏览器命令超时（秒） |
 | `OPENCLI_CDP_ENDPOINT` | — | Chrome DevTools Protocol 端点，用于远程浏览器或 Electron 应用 |
 | `OPENCLI_CDP_TARGET` | — | 按 URL 子串过滤 CDP target（如 `detail.1688.com`） |
 | `OPENCLI_VERBOSE` | `false` | 启用详细日志（`-v` 也可以） |
 | `DEBUG_SNAPSHOT` | — | 设为 `1` 输出 DOM 快照调试信息 |
+
+Browser Bridge daemon 与扩展的通信端口固定为 `localhost:19825`，不再支持通过 `OPENCLI_DAEMON_PORT` 配置自定义端口。
 
 `opencli browser *` 必须紧跟一个 `<session>` 位置参数，默认使用前台窗口，并保留该 session 的 tab lease，直到你手动执行 `opencli browser <session> close` 或等空闲超时。浏览器型 adapter 默认使用后台 adapter 窗口并在命令结束后释放一次性 tab lease；如果需要调试最终页面，可以传 `--window foreground --keep-tab true`。
 
@@ -163,10 +166,11 @@ Agent 在内部自动处理所有 `opencli browser` 命令——你只需用自�
 
 | 站点 | 命令 |
 |------|------|
-| **xiaohongshu** | `search` `note` `comments` `notifications` `feed` `user` `download` `publish` `creator-notes` `creator-note-detail` `creator-notes-summary` `creator-profile` `creator-stats` |
-| **bilibili** | `hot` `search` `me` `favorite` `history` `feed` `subtitle` `summary` `video` `comments` `dynamic` `ranking` `following` `user-videos` `download` |
+| **xiaohongshu** | `search` `ask` `note` `comments` `notifications` `feed` `user` `saved` `liked` `download` `publish` `follow` `unfollow` `creator-notes` `creator-note-detail` `creator-notes-summary` `creator-profile` `creator-stats` |
+| **bilibili** | `hot` `search` `me` `favorite` `history` `feed` `subtitle` `summary` `video` `comments` `dynamic` `ranking` `following` `follow` `unfollow` `user-videos` `download` `creator-stats` |
 | **zhihu** | `hot` `search` `question` `download` `follow` `like` `favorite` `comment` `answer` |
 | **hackernews** | `top` `new` `best` `ask` `show` `jobs` `search` `user` |
+| **hltv** | `search` `player-summary` `player-matches` `player-form` `player-map-pool` `player-vs-team` `player-teammate-impact` `player-duel` `match-map` `match-series` `team-matches` `team-map-pool` `event-matches` |
 | **geogebra** | `eval` `add-point` `add-line` `add-circle` `add-polygon` `triangle` `hexagon` `list` `info` |
 | **linkedin** | `connect` `inbox` `job-detail` `jobs-preferences` `post-analytics` `posts` `profile-experience` `profile-projects` `profile-read` `profile-analytics` `safe-send` `search` `people-search` `services-read` `sent-invitations` `thread-snapshot` `timeline` `salesnav-search` `salesnav-inbox` `salesnav-message` `salesnav-thread` |
 | **reddit** | `hot` `frontpage` `popular` `search` `subreddit` `read` `user` `user-posts` `user-comments` `upvote` `save` `comment` `subscribe` `saved` `upvoted` |
@@ -176,16 +180,11 @@ Agent 在内部自动处理所有 `opencli browser` 命令——你只需用自�
 | **notebooklm** | `status` `list` `open` `current` `get` `history` `summary` `note-list` `notes-get` `source-list` `source-get` `source-fulltext` `source-guide` |
 | **amazon** | `bestsellers` `search` `product` `offer` `discussion` `movers-shakers` `new-releases` `rankings` |
 | **upwork** | `search` `feed` `detail` |
+| **slock** | `message-send` `message-read` `message-search` `channel-list` `channel-info` `channel-create` `channel-members` `channel-join` `task-list` `task-create` `task-claim` `task-status` `task-convert` `task-delete` `thread-list` `thread-follow` `attachment-upload` `attachment-download` `bookmark-add` `inbox` `dm-list` `server-list` `server-use` `whoami` |
+| **huodongxing** | `events` |
+| **midjourney** | `login` `whoami` `settings` `quota` `generate` `describe` `history` `status` `action` `download` |
 
 精选清单 — **[→ 查看全部 100+ 站点和命令](./docs/adapters/index.md)**（小红书 / B站 / 知乎 / Twitter / Reddit / 抖音 / 微博 / 微信读书 / 小宇宙 / 1688 / 夸克 / Spotify / 牛客 / arxiv / Chess.com / Bilibili / 等）。
-
-### 外部 CLI 枢纽
-
-把现有命令行工具统一接入 `opencli <tool> ...`：
-
-`gh` · `docker` · `vercel` · `wrangler` · `obsidian` · `longbridge` · `lark-cli` · `ntn(notion)` · `dws(DingTalk Workspace)` · `wecom-cli(企业微信)` · `tg(tg-cli)` · `discord(discord-cli)` · `wx(wx-cli)`
-
-注册自定义本地 CLI：`opencli external register <name>`；查看所有：`opencli external list`。
 
 **桌面应用适配器**（Electron，通过 CDP）：Cursor / Trae CN / Codex / Antigravity / ChatGPT App / ChatWise / Qoder / Discord / Doubao / Trae SOLO — 详见 [`docs/adapters/desktop/`](./docs/adapters/desktop/)。
 
@@ -301,6 +300,7 @@ opencli plugin uninstall my-tool                            # 卸载
 | [opencli-plugin-hot-digest](https://github.com/ByteYue/opencli-plugin-hot-digest) | JS | 多平台热榜聚合 |
 | [opencli-plugin-juejin](https://github.com/Astro-Han/opencli-plugin-juejin) | JS | 稀土掘金热门文章 |
 | [opencli-plugin-vk](https://github.com/flobo3/opencli-plugin-vk) | JS | VK (VKontakte) 动态、信息流和搜索 |
+| [opencli-plugin-x-article-publisher](https://github.com/genoooool/opencli-plugin-x-article-publisher) | JS | 通过 OpenCLI 与 xPoster 将带本地图片的 Markdown 发布为 X 长文 |
 
 详见 [插件指南](./docs/zh/guide/plugins.md) 了解如何创建自己的插件。
 
@@ -313,7 +313,7 @@ opencli plugin uninstall my-tool                            # 卸载
 - **返回空数据，或者报错 "Unauthorized"**
   - Chrome/Chromium 里的登录态可能已经过期。请打开当前页面，在新标签页重新手工登录或刷新该页面。
 - **Node API 错误 / 缺少 `fetch` / 旧 Node 启动即崩**
-  - OpenCLI 要求 **Node.js >= 20**。先执行 `node --version`，如果版本过低先升级，再重试命令。
+  - OpenCLI 要求 **Node.js >= 20.18.1**。先执行 `node --version`，如果版本过低先升级，再重试命令。
 - **Daemon 问题**
   - 检查 daemon 状态：`curl localhost:19825/status`
   - 查看扩展日志：`curl localhost:19825/logs`
@@ -321,7 +321,7 @@ opencli plugin uninstall my-tool                            # 卸载
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=jackwener/opencli&type=Date)](https://star-history.com/#jackwener/opencli&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=jackwener/opencli&type=Date)](https://star-history.dera.page/#jackwener/opencli&Date)
 
 
 

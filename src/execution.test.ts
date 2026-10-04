@@ -1,14 +1,39 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import type { CliCommand } from './registry.js';
-import { executeCommand, prepareCommandArgs } from './execution.js';
+import { coerceAndValidateArgs, executeCommand, prepareCommandArgs } from './execution.js';
 import { ArgumentError, TimeoutError, toEnvelope } from './errors.js';
 import { cli, Strategy } from './registry.js';
 import { withTimeoutMs } from './runtime.js';
 import * as runtime from './runtime.js';
 import * as capRouting from './capabilityRouting.js';
+import * as daemonClient from './browser/daemon-client.js';
+import { BrowserCommandError } from './browser/daemon-client.js';
+import { clearAllHooks, onBeforeExecute } from './hooks.js';
+
+afterEach(() => {
+  clearAllHooks();
+  vi.unstubAllEnvs();
+  vi.restoreAllMocks();
+});
+
+describe('coerceAndValidateArgs', () => {
+  it('rejects fractional values for integer arguments', () => {
+    const args = [{ name: 'limit', type: 'int' as const, help: 'Result limit' }];
+
+    expect(() => coerceAndValidateArgs(args, { limit: '1.5' })).toThrow(ArgumentError);
+  });
+
+  it('rejects non-finite values for numeric arguments', () => {
+    const integerArgs = [{ name: 'limit', type: 'int' as const, help: 'Result limit' }];
+    const numberArgs = [{ name: 'threshold', type: 'number' as const, help: 'Threshold' }];
+
+    expect(() => coerceAndValidateArgs(integerArgs, { limit: 'Infinity' })).toThrow(ArgumentError);
+    expect(() => coerceAndValidateArgs(numberArgs, { threshold: '-Infinity' })).toThrow(ArgumentError);
+  });
+});
 
 describe('executeCommand — non-browser timeout', () => {
   it('applies the user --timeout arg as the ceiling for non-browser commands', async () => {
@@ -233,10 +258,16 @@ describe('executeCommand — non-browser timeout', () => {
     vi.restoreAllMocks();
   });
 
-  it('lets user --site-session ephemeral override adapter persistent metadata', async () => {
+  it.each([
+    { label: 'lets ephemeral env override persistent metadata', env: 'ephemeral', metadata: 'persistent', explicit: undefined, expected: 'ephemeral' },
+    { label: 'lets persistent env override ephemeral metadata', env: 'persistent', metadata: 'ephemeral', explicit: undefined, expected: 'persistent' },
+    { label: 'lets ephemeral flag override persistent env', env: 'persistent', metadata: 'persistent', explicit: 'ephemeral', expected: 'ephemeral' },
+    { label: 'lets persistent flag override ephemeral env', env: 'ephemeral', metadata: 'ephemeral', explicit: 'persistent', expected: 'persistent' },
+    { label: 'does not parse a shadowed invalid env', env: '', metadata: 'ephemeral', explicit: 'persistent', expected: 'persistent' },
+  ] as const)('$label', async ({ env, metadata, explicit, expected }) => {
     const closeWindow = vi.fn().mockResolvedValue(undefined);
     const mockPage = { closeWindow } as any;
-    const sessionOpts: Array<{ session?: string; idleTimeout?: number }> = [];
+    const sessionOpts: Array<{ session?: string; siteSession?: string }> = [];
 
     vi.spyOn(capRouting, 'shouldUseBrowserSession').mockReturnValue(true);
     vi.spyOn(runtime, 'browserSession').mockImplementation(async (_Factory, fn, opts) => {
@@ -244,26 +275,66 @@ describe('executeCommand — non-browser timeout', () => {
       return fn(mockPage);
     });
 
-    try {
-      const cmd = cli({
-        site: 'test-execution',
-        name: 'site-session-override-ephemeral', access: 'read',
-        description: 'test user site-session override',
-        browser: true,
-        strategy: Strategy.PUBLIC,
-        siteSession: 'persistent',
-        func: async () => [{ ok: true }],
-      });
+    vi.stubEnv('OPENCLI_SITE_SESSION', env);
+    const cmd = cli({
+      site: 'test-execution',
+      name: 'site-session-precedence', access: 'read',
+      description: 'test site-session precedence',
+      browser: true,
+      strategy: Strategy.PUBLIC,
+      siteSession: metadata,
+      func: async () => [{ ok: true }],
+    });
 
-      await executeCommand(cmd, {}, false, { siteSession: 'ephemeral' });
+    await executeCommand(cmd, {}, false, explicit === undefined ? {} : { siteSession: explicit });
 
-      expect(sessionOpts).toHaveLength(1);
+    expect(sessionOpts).toHaveLength(1);
+    expect(sessionOpts[0]?.siteSession).toBe(expected);
+    if (expected === 'persistent') {
+      expect(sessionOpts[0]?.session).toBe('site:test-execution');
+      expect(closeWindow).not.toHaveBeenCalled();
+    } else {
       expect(sessionOpts[0]?.session).toMatch(/^site:test-execution:/);
-      expect(sessionOpts[0]?.idleTimeout).toBeUndefined();
       expect(closeWindow).toHaveBeenCalledTimes(1);
-    } finally {
-      vi.restoreAllMocks();
     }
+  });
+
+  it.each(['', ' ', 'Persistent'])('rejects invalid OPENCLI_SITE_SESSION=%j before hooks or browser setup', async (env) => {
+    const beforeHook = vi.fn();
+    const adapter = vi.fn(async () => [{ ok: true }]);
+    onBeforeExecute(beforeHook);
+    vi.spyOn(capRouting, 'shouldUseBrowserSession').mockReturnValue(true);
+    const browserSessionSpy = vi.spyOn(runtime, 'browserSession');
+
+    vi.stubEnv('OPENCLI_SITE_SESSION', env);
+    const cmd = cli({
+      site: 'test-execution',
+      name: 'site-session-invalid-env', access: 'read',
+      description: 'test invalid site-session env fails before side effects',
+      browser: true,
+      strategy: Strategy.PUBLIC,
+      navigateBefore: 'https://example.com/',
+      func: adapter,
+    });
+
+    await expect(executeCommand(cmd, {})).rejects.toMatchObject({ code: 'ARGUMENT' });
+    expect(beforeHook).not.toHaveBeenCalled();
+    expect(browserSessionSpy).not.toHaveBeenCalled();
+    expect(adapter).not.toHaveBeenCalled();
+  });
+
+  it('does not apply OPENCLI_SITE_SESSION to non-browser commands', async () => {
+    vi.stubEnv('OPENCLI_SITE_SESSION', 'invalid');
+    const cmd = cli({
+      site: 'test-execution',
+      name: 'site-session-node-only', access: 'read',
+      description: 'test browser env does not poison node-only commands',
+      browser: false,
+      strategy: Strategy.PUBLIC,
+      func: async () => [{ ok: true }],
+    });
+
+    await expect(executeCommand(cmd, {})).resolves.toEqual([{ ok: true }]);
   });
 
   it('skips repeated domain pre-navigation for persistent site sessions', async () => {
@@ -413,7 +484,7 @@ describe('executeCommand — non-browser timeout', () => {
     vi.restoreAllMocks();
   });
 
-  it('calls closeWindow on browser command failure', async () => {
+  it('lets env ephemeral override persistent metadata and closes the window on failure', async () => {
     const closeWindow = vi.fn().mockResolvedValue(undefined);
     const mockPage = { closeWindow } as any;
 
@@ -428,16 +499,16 @@ describe('executeCommand — non-browser timeout', () => {
     const cmd = cli({
       site: 'test-execution',
       name: 'browser-close-on-error', access: 'read',
-      description: 'test closeWindow on failure',
+      description: 'test env ephemeral closeWindow on failure',
       browser: true,
       strategy: Strategy.PUBLIC,
+      siteSession: 'persistent',
       func: async () => { throw new Error('adapter failure'); },
     });
 
+    vi.stubEnv('OPENCLI_SITE_SESSION', 'ephemeral');
     await expect(executeCommand(cmd, {})).rejects.toThrow('adapter failure');
     expect(closeWindow).toHaveBeenCalledTimes(1);
-
-    vi.restoreAllMocks();
   });
 
   it('skips closeWindow when --keep-tab=true (success path)', async () => {
@@ -735,5 +806,163 @@ describe('executeCommand — non-browser timeout', () => {
       fs.rmSync(baseDir, { recursive: true, force: true });
       vi.restoreAllMocks();
     }
+  });
+});
+
+describe('executeCommand — persistent write lease release', () => {
+  function persistentWriteCmd(func: () => Promise<unknown>): CliCommand {
+    return cli({
+      site: 'test-execution',
+      name: 'lease-write', access: 'write',
+      description: 'test persistent write lease release',
+      browser: true,
+      strategy: Strategy.PUBLIC,
+      siteSession: 'persistent',
+      func,
+    });
+  }
+
+  it('releases the lease after a successful persistent write', async () => {
+    vi.spyOn(capRouting, 'shouldUseBrowserSession').mockReturnValue(true);
+    vi.spyOn(runtime, 'browserSession').mockImplementation(async (_Factory, fn) => fn({} as any));
+    const releaseSpy = vi.spyOn(daemonClient, 'releaseSiteSessionLease').mockResolvedValue(undefined);
+    const runCtxSpy = vi.spyOn(daemonClient, 'setDaemonRunContext');
+
+    await executeCommand(persistentWriteCmd(async () => [{ ok: true }]), {});
+
+    expect(releaseSpy).toHaveBeenCalledTimes(1);
+    expect(runCtxSpy).toHaveBeenLastCalledWith(null);
+    vi.restoreAllMocks();
+  });
+
+  it('releases the lease after an ordinary persistent write failure', async () => {
+    vi.spyOn(capRouting, 'shouldUseBrowserSession').mockReturnValue(true);
+    vi.spyOn(runtime, 'browserSession').mockImplementation(async (_Factory, fn) => fn({} as any));
+    const releaseSpy = vi.spyOn(daemonClient, 'releaseSiteSessionLease').mockResolvedValue(undefined);
+    const runCtxSpy = vi.spyOn(daemonClient, 'setDaemonRunContext');
+
+    const cmd = persistentWriteCmd(async () => { throw new BrowserCommandError('boom', 'attach_failed'); });
+    await expect(executeCommand(cmd, {})).rejects.toThrow('boom');
+
+    expect(releaseSpy).toHaveBeenCalledTimes(1);
+    expect(runCtxSpy).toHaveBeenLastCalledWith(null);
+    vi.restoreAllMocks();
+  });
+
+  it('does NOT release the lease after an unknown-outcome failure but still clears the run context', async () => {
+    vi.spyOn(capRouting, 'shouldUseBrowserSession').mockReturnValue(true);
+    vi.spyOn(runtime, 'browserSession').mockImplementation(async (_Factory, fn) => fn({} as any));
+    const releaseSpy = vi.spyOn(daemonClient, 'releaseSiteSessionLease').mockResolvedValue(undefined);
+    const runCtxSpy = vi.spyOn(daemonClient, 'setDaemonRunContext');
+
+    // The browser-side command may still be running against the persistent tab,
+    // so releasing now would let a manual rerun collide with it — the TTL must
+    // reclaim the lease instead.
+    const cmd = persistentWriteCmd(async () => { throw new BrowserCommandError('result unknown', 'command_result_unknown'); });
+    await expect(executeCommand(cmd, {})).rejects.toThrow('result unknown');
+
+    expect(releaseSpy).not.toHaveBeenCalled();
+    expect(runCtxSpy).toHaveBeenLastCalledWith(null);
+    vi.restoreAllMocks();
+  });
+
+  it('keeps the run identity bound through a CLI-layer timeout and cleans up when the adapter settles', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(capRouting, 'shouldUseBrowserSession').mockReturnValue(true);
+    vi.spyOn(runtime, 'browserSession').mockImplementation(async (_Factory, fn) => fn({} as any));
+    const releaseSpy = vi.spyOn(daemonClient, 'releaseSiteSessionLease').mockResolvedValue(undefined);
+    const runCtxSpy = vi.spyOn(daemonClient, 'setDaemonRunContext');
+    const clearCtxSpy = vi.spyOn(daemonClient, 'clearDaemonRunContext');
+
+    try {
+      // runWithTimeout does not cancel the adapter promise, and the process
+      // only exits when the event loop drains — the adapter can keep driving
+      // the tab well past the lease TTL. The run context must stay bound (its
+      // follow-up commands heartbeat the lease, blocking challengers) and the
+      // lease released only when the adapter actually settles.
+      let finishAdapter!: () => void;
+      const adapterGate = new Promise<void>((resolve) => { finishAdapter = resolve; });
+      const cmd = persistentWriteCmd(async () => { await adapterGate; return [{ ok: true }]; });
+      const rejection = expect(executeCommand(cmd, {})).rejects.toThrow('timed out');
+      await vi.advanceTimersByTimeAsync(30 * 60 * 1000);
+      await rejection;
+
+      expect(releaseSpy).not.toHaveBeenCalled();
+      expect(runCtxSpy).not.toHaveBeenCalledWith(null);
+      expect(clearCtxSpy).not.toHaveBeenCalled();
+
+      finishAdapter();
+      await vi.advanceTimersByTimeAsync(0);
+
+      const runId = runCtxSpy.mock.calls[0][0]?.runId;
+      expect(clearCtxSpy).toHaveBeenCalledWith(runId);
+      expect(releaseSpy).toHaveBeenCalledTimes(1);
+      expect(releaseSpy).toHaveBeenCalledWith(expect.objectContaining({ runId }));
+    } finally {
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+      daemonClient.setDaemonRunContext(null);
+    }
+  });
+
+  it('skips the deferred release when a timed-out adapter ends with an unknown outcome', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(capRouting, 'shouldUseBrowserSession').mockReturnValue(true);
+    vi.spyOn(runtime, 'browserSession').mockImplementation(async (_Factory, fn) => fn({} as any));
+    const releaseSpy = vi.spyOn(daemonClient, 'releaseSiteSessionLease').mockResolvedValue(undefined);
+    const runCtxSpy = vi.spyOn(daemonClient, 'setDaemonRunContext');
+    const clearCtxSpy = vi.spyOn(daemonClient, 'clearDaemonRunContext');
+
+    try {
+      // Same rule as the immediate path: if the zombie's last browser command
+      // ends result-unknown, the browser side may still be busy — the lease
+      // must lapse via TTL, not an explicit release.
+      let failAdapter!: (err: Error) => void;
+      const adapterGate = new Promise<never>((_resolve, reject) => { failAdapter = reject; });
+      const cmd = persistentWriteCmd(async () => adapterGate);
+      const rejection = expect(executeCommand(cmd, {})).rejects.toThrow('timed out');
+      await vi.advanceTimersByTimeAsync(30 * 60 * 1000);
+      await rejection;
+
+      failAdapter(new BrowserCommandError('late result unknown', 'command_result_unknown'));
+      await vi.advanceTimersByTimeAsync(0);
+
+      const runId = runCtxSpy.mock.calls[0][0]?.runId;
+      expect(clearCtxSpy).toHaveBeenCalledWith(runId);
+      expect(releaseSpy).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+      daemonClient.setDaemonRunContext(null);
+    }
+  });
+
+  it('does NOT release the lease when pre-navigation fails with an unknown outcome', async () => {
+    const mockPage = {
+      goto: vi.fn().mockRejectedValue(new BrowserCommandError('navigate result unknown', 'command_result_unknown')),
+    } as any;
+    vi.spyOn(capRouting, 'shouldUseBrowserSession').mockReturnValue(true);
+    vi.spyOn(runtime, 'browserSession').mockImplementation(async (_Factory, fn) => fn(mockPage));
+    const releaseSpy = vi.spyOn(daemonClient, 'releaseSiteSessionLease').mockResolvedValue(undefined);
+    const runCtxSpy = vi.spyOn(daemonClient, 'setDaemonRunContext');
+
+    // The pre-nav wrapper must keep the original error on the cause chain so
+    // the release decision still sees the unknown outcome.
+    const cmd = cli({
+      site: 'test-execution',
+      name: 'lease-prenav-unknown', access: 'write',
+      description: 'test pre-nav unknown outcome keeps the lease',
+      browser: true,
+      strategy: Strategy.PUBLIC,
+      siteSession: 'persistent',
+      navigateBefore: 'https://example.com/inbox',
+      func: async () => [{ ok: true }],
+    });
+    await expect(executeCommand(cmd, {})).rejects.toThrow('Pre-navigation to https://example.com/inbox failed');
+
+    expect(mockPage.goto).toHaveBeenCalledWith('https://example.com/inbox');
+    expect(releaseSpy).not.toHaveBeenCalled();
+    expect(runCtxSpy).toHaveBeenLastCalledWith(null);
+    vi.restoreAllMocks();
   });
 });

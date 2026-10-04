@@ -26,10 +26,11 @@ import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import { executePipeline } from './pipeline/index.js';
-import { adapterLoadError, ArgumentError, CommandExecutionError, attachTraceReceipt, getErrorMessage } from './errors.js';
+import { adapterLoadError, ArgumentError, CommandExecutionError, SessionBusyError, attachTraceReceipt, getErrorMessage } from './errors.js';
 import { shouldUseBrowserSession } from './capabilityRouting.js';
 import { getBrowserFactory, browserSession, runWithTimeout, DEFAULT_BROWSER_COMMAND_TIMEOUT, type BrowserWindowMode } from './runtime.js';
-import { resolveProfileContextId } from './browser/profile.js';
+import { profileRouteParams, resolveProfileSelection } from './browser/profile.js';
+import { clearDaemonRunContext, generateRunId, isUnknownOutcomeError, releaseSiteSessionLease, setDaemonCommandTimeoutSeconds, setDaemonRunContext } from './browser/daemon-client.js';
 import { emitHook, type HookContext } from './hooks.js';
 import { log } from './logger.js';
 import { isElectronApp } from './electron-apps.js';
@@ -66,8 +67,11 @@ export function coerceAndValidateArgs(cmdArgs: Arg[], kwargs: CommandArgs): Comm
     if (val !== undefined && val !== null) {
       if (argDef.type === 'int' || argDef.type === 'number') {
         const num = Number(val);
-        if (Number.isNaN(num)) {
+        if (!Number.isFinite(num)) {
           throw new ArgumentError(`Argument "${argDef.name}" must be a valid number. Received: "${val}"`);
+        }
+        if (argDef.type === 'int' && !Number.isInteger(num)) {
+          throw new ArgumentError(`Argument "${argDef.name}" must be a valid integer. Received: "${val}"`);
         }
         result[argDef.name] = num;
       } else if (argDef.type === 'boolean' || argDef.type === 'bool') {
@@ -207,6 +211,13 @@ export async function executeCommand(
     onTraceExport?: (trace: ObservationExportResult) => void;
   } = {},
 ): Promise<unknown> {
+  // Resolve browser-only configuration before argument hooks or any browser
+  // lifecycle setup. Non-browser commands must not be affected by browser
+  // environment defaults, even when those defaults are invalid.
+  const siteSession = shouldUseBrowserSession(cmd)
+    ? resolveSiteSession(cmd, opts.siteSession)
+    : null;
+
   let kwargs: CommandArgs;
   try {
     kwargs = opts.prepared ? rawKwargs : prepareCommandArgs(cmd, rawKwargs);
@@ -216,6 +227,11 @@ export async function executeCommand(
   }
 
   const userTimeoutSec = readUserTimeoutSeconds(cmd, kwargs);
+  // Propagate --timeout to the daemon transport so its per-command deadline
+  // (and the derived extension/HTTP deadlines) honor the user's value instead
+  // of the default. Set unconditionally so a previous command's value never
+  // leaks into this one.
+  setDaemonCommandTimeoutSeconds(userTimeoutSec);
   const traceMode = normalizeTraceMode(opts.trace);
 
   const hookCtx: HookContext = {
@@ -227,7 +243,7 @@ export async function executeCommand(
 
   let result: unknown;
   try {
-    if (shouldUseBrowserSession(cmd)) {
+    if (siteSession !== null) {
       const electron = isElectronApp(cmd.site);
       let cdpEndpoint: string | undefined;
 
@@ -249,12 +265,31 @@ export async function executeCommand(
       }
 
       const BrowserFactory = getBrowserFactory(cmd.site);
-      const contextId = resolveProfileContextId(opts.profile);
+      // Requirement vs preference: --profile / OPENCLI_PROFILE route strictly;
+      // the config default is a soft preference the daemon arbitrates.
+      const profileSelection = resolveProfileSelection(opts.profile);
+      const profileRouting = profileRouteParams(profileSelection);
+      const contextId = profileSelection?.contextId;
       const internal = cmd as InternalCliCommand;
-      const siteSession = resolveSiteSession(cmd, opts.siteSession);
       const session = resolveAdapterBrowserSession(cmd, siteSession);
       const keepTab = resolveKeepTab(siteSession, opts.keepTab);
       const windowMode = resolveBrowserWindowMode(cmd.defaultWindowMode ?? 'background', opts.windowMode);
+      // Persistent-session write commands take a logical lease on the site
+      // session so a concurrent retry fails fast instead of driving the same
+      // Chrome tab. The runId flows to the daemon on every command (acquire +
+      // heartbeat); we release it explicitly when the command settles. Read and
+      // ephemeral commands are never leased.
+      const leaseRun = siteSession === 'persistent' && cmd.access === 'write'
+        ? { runId: generateRunId(), session }
+        : null;
+      if (leaseRun) setDaemonRunContext({ runId: leaseRun.runId, command: fullName(cmd), access: 'write' });
+      let browserRunError: unknown;
+      // `as` casts defeat literal narrowing: both are assigned only inside the
+      // browserSession callback, which TS's flow analysis does not see from the
+      // finally block below.
+      let adapterStillRunning = false as boolean;
+      let adapterRun = null as Promise<unknown> | null;
+      try {
       result = await browserSession(BrowserFactory, async (page) => {
         const observation = traceMode === 'off'
           ? null
@@ -299,6 +334,9 @@ export async function executeCommand(
               data: { url: preNavUrl },
             });
           } catch (err) {
+            // A busy-session rejection is the whole point of the arbitration —
+            // surface it verbatim instead of burying it in a pre-nav wrapper.
+            if (err instanceof SessionBusyError) throw err;
             observation?.record({
               stream: 'action',
               name: 'pre_navigate',
@@ -309,6 +347,10 @@ export async function executeCommand(
               `Pre-navigation to ${preNavUrl} failed: ${err instanceof Error ? err.message : err}`,
               'Check that the site is reachable and the browser extension is running.',
             );
+            // Keep the original error reachable: the lease-release decision walks
+            // the cause chain, and a pre-nav navigate/exec can itself end with an
+            // unknown outcome while still running against the persistent tab.
+            wrapped.cause = err;
             if (observation && (traceMode === 'on' || traceMode === 'retain-on-failure')) {
               observation.record({
                 stream: 'error',
@@ -323,11 +365,19 @@ export async function executeCommand(
             throw wrapped;
           }
         }
+        const browserTimeout = userTimeoutSec !== null
+          ? userTimeoutSec + RUNTIME_TIMEOUT_PADDING_SECONDS
+          : DEFAULT_BROWSER_COMMAND_TIMEOUT;
+        const commandRun = runCommand(cmd, page, kwargs, debug);
+        adapterRun = commandRun;
+        // runWithTimeout races but never cancels: when the CLI-layer timeout
+        // wins, the adapter promise keeps driving the tab from this process.
+        // Track settledness so the lease-release decision can tell a finished
+        // adapter apart from one still running behind a timeout.
+        let commandSettled = false;
+        commandRun.then(() => { commandSettled = true; }, () => { commandSettled = true; });
         try {
-          const browserTimeout = userTimeoutSec !== null
-            ? userTimeoutSec + RUNTIME_TIMEOUT_PADDING_SECONDS
-            : DEFAULT_BROWSER_COMMAND_TIMEOUT;
-          const result = await runWithTimeout(runCommand(cmd, page, kwargs, debug), {
+          const result = await runWithTimeout(commandRun, {
             timeout: browserTimeout,
             label: fullName(cmd),
           });
@@ -346,6 +396,7 @@ export async function executeCommand(
           if (!keepTab) await page.closeWindow?.().catch(() => {});
           return result;
         } catch (err) {
+          if (!commandSettled) adapterStillRunning = true;
           if (observation) {
             observation.record({
               stream: 'action',
@@ -369,7 +420,51 @@ export async function executeCommand(
           if (!keepTab) await page.closeWindow?.().catch(() => {});
           throw err;
         }
-      }, { session, cdpEndpoint, contextId, windowMode, surface: 'adapter', siteSession });
+      }, { session, cdpEndpoint, ...profileRouting, windowMode, surface: 'adapter', siteSession });
+      } catch (err) {
+        browserRunError = err;
+        throw err;
+      } finally {
+        // Clear the run identity whether the command succeeded or failed, then
+        // release the lease so a retry succeeds immediately. Best-effort: TTL
+        // reclaims it if the release is lost.
+        //
+        // Exceptions — cases where the session may still be driven, so an
+        // immediate explicit release would hand the lease to a challenger that
+        // then collides with the stale work (the very collision this lease
+        // prevents):
+        // - A CLI-layer timeout does not cancel the adapter promise, and the
+        //   process only exits when the event loop drains, so the adapter may
+        //   keep driving the tab for minutes. Keep the run identity bound: its
+        //   follow-up commands heartbeat the lease (challengers stay blocked
+        //   past the TTL), and cleanup runs when the adapter finally settles.
+        //   If the process dies first, the daemon TTL reclaims the lease.
+        // - An unknown-outcome failure (result-unknown / command-lost /
+        //   result-evicted, anywhere in the cause chain) means the browser-side
+        //   command may STILL be running against the persistent tab; there is
+        //   nothing to await client-side, so the TTL is the quiet period.
+        if (leaseRun) {
+          if (adapterStillRunning && adapterRun) {
+            const runId = leaseRun.runId;
+            const session = leaseRun.session;
+            const settle = (err?: unknown) => {
+              clearDaemonRunContext(runId);
+              // Same rule as the immediate path below: an unknown-outcome
+              // ending means the browser side may still be busy — skip the
+              // explicit release and leave the lease to TTL reclamation.
+              if (!isUnknownOutcomeError(err)) {
+                void releaseSiteSessionLease({ runId, session, surface: 'adapter' });
+              }
+            };
+            adapterRun.then(() => settle(), (err) => settle(err));
+          } else {
+            setDaemonRunContext(null);
+            if (!isUnknownOutcomeError(browserRunError)) {
+              await releaseSiteSessionLease({ runId: leaseRun.runId, session: leaseRun.session, surface: 'adapter' });
+            }
+          }
+        }
+      }
     } else {
       // Non-browser commands: enforce a timeout only when the command exposes
       // a `--timeout` arg (and the resolved value is positive). Without that
@@ -487,14 +582,17 @@ export function prepareCommandArgs(
  */
 const RUNTIME_TIMEOUT_PADDING_SECONDS = 30;
 
-function normalizeSiteSession(raw: unknown): SiteSessionMode | null {
-  if (raw === undefined || raw === null || raw === '') return null;
+function normalizeSiteSession(name: string, raw: unknown): SiteSessionMode | null {
+  if (raw === undefined) return null;
   if (raw === 'ephemeral' || raw === 'persistent') return raw;
-  throw new ArgumentError(`--site-session must be one of: ephemeral, persistent. Received: "${String(raw)}"`);
+  throw new ArgumentError(`${name} must be one of: ephemeral, persistent. Received: "${String(raw)}"`);
 }
 
 function resolveSiteSession(cmd: CliCommand, rawOption?: unknown): SiteSessionMode {
-  return normalizeSiteSession(rawOption) ?? cmd.siteSession ?? 'ephemeral';
+  return normalizeSiteSession('--site-session', rawOption)
+    ?? normalizeSiteSession('OPENCLI_SITE_SESSION', process.env.OPENCLI_SITE_SESSION)
+    ?? cmd.siteSession
+    ?? 'ephemeral';
 }
 
 function resolveAdapterBrowserSession(cmd: CliCommand, siteSession: SiteSessionMode): string {

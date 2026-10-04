@@ -1,14 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ArgumentError, AuthRequiredError, CommandExecutionError, EmptyResultError } from '@jackwener/opencli/errors';
 import { getRegistry } from '@jackwener/opencli/registry';
-import { __test__ } from './utils.js';
+import { __test__, normalizeLimit } from './utils.js';
 import { __test__ as priceTest } from './price.js';
 import { __test__ as trainTest } from './train.js';
+import { __test__ as trainsTest } from './trains.js';
 import './orders.js';
 
 const { parseStationBundle, resolveStation, validateDate, buildCookieHeader, parseTrainRecord, maskEmail, maskMobile, maskChineseName, unwrapEvaluateResult, requireEvaluateObject, isAuthLikePayload } = __test__;
 const { parsePriceData, queryStopsForPrice, queryPrice, TRAIN_NO_RE: PRICE_TRAIN_NO_RE } = priceTest;
 const { queryStops, TRAIN_NO_RE: TRAIN_TRAIN_NO_RE } = trainTest;
+const { queryLeftTickets, extractQueryEndpoint } = trainsTest;
+
+afterEach(() => {
+    vi.unstubAllGlobals();
+});
 
 describe('12306 utils - parseStationBundle', () => {
     it('parses the `@`-delimited station bundle into structured records', () => {
@@ -83,6 +89,34 @@ describe('12306 utils - validateDate', () => {
     it('throws ArgumentError on impossible calendar dates', () => {
         expect(() => validateDate('2026-02-30')).toThrow(ArgumentError);
         expect(() => validateDate('2026-13-01')).toThrow(ArgumentError);
+    });
+});
+
+describe('12306 utils - normalizeLimit', () => {
+    it('uses the default for omitted, null, and empty values', () => {
+        expect(normalizeLimit(undefined, 20, 50)).toBe(20);
+        expect(normalizeLimit(null, 30, 80)).toBe(30);
+        expect(normalizeLimit('', 50, 100)).toBe(50);
+    });
+
+    it('accepts numeric values and numeric strings at legal boundaries', () => {
+        expect(normalizeLimit(1, 20, 50)).toBe(1);
+        expect(normalizeLimit('25', 20, 50)).toBe(25);
+        expect(normalizeLimit(50, 20, 50)).toBe(50);
+    });
+
+    it('rejects non-integer and non-positive values with the positive integer message', () => {
+        expect(() => normalizeLimit('abc', 20, 50)).toThrow(ArgumentError);
+        expect(() => normalizeLimit('abc', 20, 50)).toThrow('limit must be a positive integer (1-50)');
+        expect(() => normalizeLimit(1.5, 20, 50)).toThrow('limit must be a positive integer (1-50)');
+        expect(() => normalizeLimit(0, 20, 50)).toThrow('limit must be a positive integer (1-50)');
+        expect(() => normalizeLimit(-1, 20, 50)).toThrow('limit must be a positive integer (1-50)');
+    });
+
+    it('rejects values over the command max with the max message', () => {
+        expect(() => normalizeLimit(51, 20, 50)).toThrow(ArgumentError);
+        expect(() => normalizeLimit(51, 20, 50)).toThrow('limit must be <= 50');
+        expect(() => normalizeLimit('101', 50, 100)).toThrow('limit must be <= 100');
     });
 });
 
@@ -271,6 +305,69 @@ describe('12306 public API typed boundaries', () => {
             .rejects.toBeInstanceOf(CommandExecutionError);
         await expect(queryPrice('cookie=1', '24000000G10L', '01', '02', 'OM9', '2026-05-22', nonJsonFetch))
             .rejects.toBeInstanceOf(CommandExecutionError);
+    });
+});
+
+describe('12306 trains endpoint rotation', () => {
+    const successBody = { data: { result: ['row|payload'] } };
+
+    it('extracts only leftTicket query endpoints from rotation hints', () => {
+        expect(extractQueryEndpoint('leftTicket/queryB')).toBe('queryB');
+        expect(extractQueryEndpoint('/otn/leftTicket/queryC')).toBe('queryC');
+        expect(extractQueryEndpoint('https://kyfw.12306.cn/otn/leftTicket/queryD')).toBe('queryD');
+        expect(extractQueryEndpoint('/otn/error.html')).toBe('');
+        expect(extractQueryEndpoint('https://example.com/leftTicket/queryB')).toBe('');
+        expect(extractQueryEndpoint('leftTicket/querybad')).toBe('');
+    });
+
+    it('follows a 302 JSON c_url rotation signal before trying fallback endpoints', async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce(new Response(JSON.stringify({ c_url: 'leftTicket/queryB' }), { status: 302 }))
+            .mockResolvedValueOnce(new Response(JSON.stringify(successBody), { status: 200 }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(queryLeftTickets('cookie=1', 'BJP', 'AOH', '2026-05-22')).resolves.toEqual(['row|payload']);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[0][0]).toContain('/leftTicket/queryG?');
+        expect(fetchMock.mock.calls[1][0]).toContain('/leftTicket/queryB?');
+    });
+
+    it('follows a 302 Location header rotation signal when the body is not JSON', async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce(new Response('<html>redirect</html>', {
+                status: 302,
+                headers: { location: '/otn/leftTicket/queryB' },
+            }))
+            .mockResolvedValueOnce(new Response(JSON.stringify(successBody), { status: 200 }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(queryLeftTickets('cookie=1', 'BJP', 'AOH', '2026-05-22')).resolves.toEqual(['row|payload']);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[1][0]).toContain('/leftTicket/queryB?');
+    });
+
+    it('typed-fails a 302 that does not identify a leftTicket query endpoint', async () => {
+        const fetchMock = vi.fn().mockResolvedValueOnce(new Response('<html>error</html>', {
+            status: 302,
+            headers: { location: '/otn/error.html' },
+        }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(queryLeftTickets('cookie=1', 'BJP', 'AOH', '2026-05-22'))
+            .rejects.toBeInstanceOf(CommandExecutionError);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('deduplicates rotation endpoints request-locally and keeps fallback bounded', async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce(new Response(JSON.stringify({ c_url: 'leftTicket/queryG' }), { status: 302 }))
+            .mockResolvedValueOnce(new Response(JSON.stringify(successBody), { status: 200 }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(queryLeftTickets('cookie=1', 'BJP', 'AOH', '2026-05-22')).resolves.toEqual(['row|payload']);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[0][0]).toContain('/leftTicket/queryG?');
+        expect(fetchMock.mock.calls[1][0]).toContain('/leftTicket/queryO?');
     });
 });
 

@@ -5,9 +5,6 @@
  * The daemon architecture has a single failure mode: daemon not reachable or extension not connected.
  */
 
-import { BrowserConnectError, type BrowserConnectKind } from '../errors.js';
-import { DEFAULT_DAEMON_PORT } from '../constants.js';
-
 /**
  * Unified browser error classification.
  *
@@ -64,11 +61,36 @@ function errorMessage(err: unknown): string {
 }
 
 /**
+ * Machine-readable error codes set by the extension at the failure site.
+ * These are authoritative — the message-pattern tables below are only a
+ * fallback for extensions that predate error codes.
+ *
+ * `detached_mid_command` and `cdp_timeout` are deliberately non-retryable:
+ * both mean execution died MID-command, so a blind re-run could double-apply
+ * a write. (The legacy pattern table still retries "Detached while handling
+ * command" because old extensions cannot distinguish pre- from mid-execution.)
+ */
+const ERROR_CODE_ADVICE: Record<string, RetryAdvice> = {
+  attach_failed: { kind: 'extension-transient', retryable: true, delayMs: 1500 },
+  tab_gone: { kind: 'extension-transient', retryable: true, delayMs: 1500 },
+  target_navigated: { kind: 'target-navigation', retryable: true, delayMs: 200 },
+  detached_mid_command: { kind: 'non-retryable', retryable: false, delayMs: 0 },
+  cdp_timeout: { kind: 'non-retryable', retryable: false, delayMs: 0 },
+};
+
+/**
  * Classify a browser error and return retry advice.
  *
  * Single source of truth for "is this error transient?" across all layers.
+ * Prefers the machine-readable `code` carried by BrowserCommandError; falls
+ * back to message patterns for legacy extensions.
  */
 export function classifyBrowserError(err: unknown): RetryAdvice {
+  const code = err && typeof err === 'object' ? (err as { code?: unknown }).code : undefined;
+  if (typeof code === 'string' && ERROR_CODE_ADVICE[code]) {
+    return ERROR_CODE_ADVICE[code];
+  }
+
   const msg = errorMessage(err);
 
   // Extension/daemon transient errors — longer recovery time
@@ -97,36 +119,4 @@ export function classifyBrowserError(err: unknown): RetryAdvice {
  */
 export function isTransientBrowserError(err: unknown): boolean {
   return classifyBrowserError(err).retryable;
-}
-
-// Re-export so callers don't need to import from two places
-export type ConnectFailureKind = BrowserConnectKind;
-
-export function formatBrowserConnectError(kind: ConnectFailureKind, detail?: string): BrowserConnectError {
-  switch (kind) {
-    case 'daemon-not-running':
-      return new BrowserConnectError(
-        'Cannot connect to opencli daemon.' + (detail ? `\n\n${detail}` : ''),
-        `Run \`opencli doctor\` to diagnose, or \`opencli daemon restart\` to force a fresh daemon. Default port is ${DEFAULT_DAEMON_PORT}.`,
-        kind,
-      );
-    case 'extension-not-connected':
-      return new BrowserConnectError(
-        'Browser Bridge extension is not connected.' + (detail ? `\n\n${detail}` : ''),
-        'Install the extension from GitHub Releases, then reload.',
-        kind,
-      );
-    case 'command-failed':
-      return new BrowserConnectError(
-        `Browser command failed: ${detail ?? 'unknown error'}`,
-        undefined,
-        kind,
-      );
-    default:
-      return new BrowserConnectError(
-        detail ?? 'Failed to connect to browser',
-        undefined,
-        kind,
-      );
-  }
 }
