@@ -15,6 +15,7 @@ import {
 export const appStatusCommand = cli({
   site: 'gemini',
   name: 'app-status',
+  access: 'read',
   description: 'Check whether the Google Gemini MacOS Desktop App is running',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,

@@ -18,6 +18,7 @@ cli({
         const username = kwargs.username.replace(/^@/, '');
         await page.goto(`https://x.com/${username}`);
         await page.wait({ selector: '[data-testid="primaryColumn"]' });
+        const usernameJs = JSON.stringify(username);
         const result = await page.evaluate(`(async () => {
         let writeStarted = false;
         try {
@@ -36,7 +37,7 @@ cli({
                 // Check if not blocked (follow button visible means not blocked)
                 const followBtn = primary.querySelector('[data-testid$="-follow"]');
                 if (followBtn) {
-                    return { ok: true, message: 'Not blocking @${username} (already unblocked).' };
+                    return { ok: true, message: 'Not blocking @' + ${usernameJs} + ' (already unblocked).' };
                 }
 
                 unblockBtn = primary.querySelector('[data-testid$="-unblock"]');
@@ -66,7 +67,7 @@ cli({
             // Verify
             const verify = getPrimary()?.querySelector('[data-testid$="-follow"]');
             if (verify) {
-                return { ok: true, message: 'Successfully unblocked @${username}.' };
+                return { ok: true, message: 'Successfully unblocked @' + ${usernameJs} + '.' };
             } else {
                 return { ok: false, unconfirmed: true, message: 'Unblock action initiated but UI did not update.' };
             }

@@ -14,6 +14,7 @@ import {
 export const appReadCommand = cli({
   site: 'gemini',
   name: 'app-read',
+  access: 'read',
   description: 'Read the latest visible chat content from the Gemini MacOS Desktop App',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,

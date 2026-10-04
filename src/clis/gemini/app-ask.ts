@@ -19,6 +19,7 @@ import {
 export const appAskCommand = cli({
   site: 'gemini',
   name: 'app-ask',
+  access: 'write',
   description: 'Send a prompt to the Gemini MacOS Desktop App and read back the response',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,
@@ -28,7 +29,7 @@ export const appAskCommand = cli({
     { name: 'timeout', type: 'int', default: 60, help: 'Max seconds to wait for the response' },
   ],
   columns: ['Role', 'Text'],
-  func: async (_page, kwargs) => {
+  func: async (kwargs: Record<string, any>) => {
     const text = kwargs.text as string;
     const timeoutMs = ((kwargs.timeout as number) || 60) * 1000;
     const beforeText = getVisibleGeminiText().join('\n');

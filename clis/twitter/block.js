@@ -18,6 +18,7 @@ cli({
         const username = kwargs.username.replace(/^@/, '');
         await page.goto(`https://x.com/${username}`);
         await page.wait({ selector: '[data-testid="primaryColumn"]' });
+        const usernameJs = JSON.stringify(username);
         const result = await page.evaluate(`(async () => {
         let writeStarted = false;
         try {
@@ -42,7 +43,7 @@ cli({
                 }
                 const blockedIndicator = primary.querySelector('[data-testid$="-unblock"]');
                 if (blockedIndicator) {
-                    return { ok: true, message: 'Already blocking @${username}.' };
+                    return { ok: true, message: 'Already blocking @' + ${usernameJs} + '.' };
                 }
 
                 const moreBtn = primary.querySelector('[data-testid="userActions"]');
@@ -91,7 +92,7 @@ cli({
             // Verify
             const verify = getPrimary()?.querySelector('[data-testid$="-unblock"]');
             if (verify) {
-                return { ok: true, message: 'Successfully blocked @${username}.' };
+                return { ok: true, message: 'Successfully blocked @' + ${usernameJs} + '.' };
             } else {
                 return { ok: false, unconfirmed: true, message: 'Block action initiated but UI did not update.' };
             }

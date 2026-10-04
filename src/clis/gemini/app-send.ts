@@ -14,6 +14,7 @@ import {
 export const appSendCommand = cli({
   site: 'gemini',
   name: 'app-send',
+  access: 'write',
   description: 'Send a message to the active Google Gemini MacOS Desktop App window',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,
@@ -22,7 +23,7 @@ export const appSendCommand = cli({
     { name: 'text', required: true, positional: true, help: 'Message to send' },
   ],
   columns: ['Status'],
-  func: async (_page, kwargs) => {
+  func: async (kwargs: Record<string, any>) => {
     const text = kwargs.text as string;
     if (!text) {
       return [{ Status: 'Error: no text provided' }];

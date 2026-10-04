@@ -10,6 +10,7 @@ import { newGeminiConversation } from './desktop.js';
 export const appNewCommand = cli({
   site: 'gemini',
   name: 'app-new',
+  access: 'write',
   description: 'Start a new conversation in the Google Gemini MacOS Desktop App',
   domain: 'localhost',
   strategy: Strategy.PUBLIC,

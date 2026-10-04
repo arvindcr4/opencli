@@ -33,13 +33,14 @@ export function parseBatchUsernames(input) {
 }
 
 async function readFollowState(page, username) {
+    const usernameJs = JSON.stringify(username);
     return unwrapBrowserResult(await page.evaluate(`(async () => {
         try {
             let attempts = 0;
             while (attempts < 20) {
                 const unfollowBtn = document.querySelector('[data-testid$="-unfollow"]');
                 if (unfollowBtn) {
-                    return { ok: true, status: 'noop', message: 'Already following @${username}.' };
+                    return { ok: true, status: 'noop', message: 'Already following @' + ${usernameJs} + '.' };
                 }
 
                 const followBtn = document.querySelector('[data-testid$="-follow"]');
@@ -59,6 +60,7 @@ async function readFollowState(page, username) {
 }
 
 async function clickFollowAndVerify(page, username) {
+    const usernameJs = JSON.stringify(username);
     return unwrapBrowserResult(await page.evaluate(`(async () => {
         try {
             const followBtn = document.querySelector('[data-testid$="-follow"]');
@@ -71,7 +73,7 @@ async function clickFollowAndVerify(page, username) {
                 await new Promise(r => setTimeout(r, 500));
                 const verify = document.querySelector('[data-testid$="-unfollow"]');
                 if (verify) {
-                    return { ok: true, status: 'success', message: 'Successfully followed @${username}.' };
+                    return { ok: true, status: 'success', message: 'Successfully followed @' + ${usernameJs} + '.' };
                 }
             }
 
@@ -95,7 +97,7 @@ export async function followOne(page, username) {
         await page.wait({ selector: '[data-testid="primaryColumn"]' });
         const refreshed = await readFollowState(page, username);
         if (refreshed.ok) {
-            result = { ...refreshed, status: 'success', message: `Successfully followed @${username}.` };
+            result = { ...refreshed, status: 'success', message: 'Successfully followed @' + username + '.' };
         }
     }
     if (!result.ok && !result.message) {
